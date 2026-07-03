@@ -66,7 +66,7 @@ The user does not need a generic WWII card generator. The target is a local stat
 - [x] Add an optional current-canvas versus reference-PNG pixel diff path.
 - [x] Add unit tests for asset-slot selection, renderer asset usage, and pixel diff math.
 - [x] Run final validation and review before integration.
-- [ ] Commit, merge back to `main`, push, and clean the worktree if validation stays green.
+- [x] Commit, merge back to `main`, push, and clean the worktree if validation stays green.
 
 ## Stage 2 Visual Thesis
 

@@ -5,9 +5,9 @@
 - Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness`
 - Thread/task: KARDS official-style private asset-pack calibration and reference pixel diff
 - Base branch/base commit: `main`, `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`
-- Current branch/HEAD: `codex/kards-private-asset-harness`, uncommitted implementation pending integration commit
+- Current branch/HEAD: merged into `main` at `460294a0f3aa45c661e59e41ccc1e24ca2b94625`
 - Task goal: support personal local official-material validation through a user-selected asset pack and reference-PNG pixel metrics while keeping official assets out of git and default builds
-- Status: ready-for-integration
+- Status: integrated
 - Shared hotspot files touched: `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/App.tsx`, renderer tests, active docs
 - Tests run:
   - `npm ci`: passed, 0 vulnerabilities
@@ -44,7 +44,7 @@
    - `CardSpec` schema remains unchanged; local official assets are not saved into JSON/localStorage.
    - Default rendering still works without an asset pack.
 4. Commit status:
-   - Not committed yet; pending final review/validation and integration closeout.
+   - Committed as `460294a0f3aa45c661e59e41ccc1e24ca2b94625` and fast-forward merged into `main`.
 5. Base divergence:
    - Branch was created from current `main` at `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`; main has not been updated during this implementation yet.
 6. Potential conflicts:
@@ -58,7 +58,7 @@
 9. Recommended next step:
    - Commit, merge into `main`, push, then use an external Unreal asset browser/exporter to create a private `kards-asset-pack.json` folder for actual official-material calibration.
 10. Integration recommendation:
-   - Merge this branch into `main` after final review; no cherry-pick needed unless another renderer branch appears before integration.
+   - Integrated by normal fast-forward merge into `main`; no cherry-pick was needed.
 
 ## Stage 1 Current Worktree
 

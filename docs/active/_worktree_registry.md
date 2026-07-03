@@ -5,9 +5,9 @@
 - Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness`
 - Thread/task: KARDS official-style private asset-pack calibration and pixel reference validation
 - Base branch/base commit: `main`, `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`
-- Current branch/HEAD: `codex/kards-private-asset-harness`, initially at `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`
+- Current branch/HEAD: merged into `main` at `460294a0f3aa45c661e59e41ccc1e24ca2b94625`
 - Task goal: allow personal local official-asset calibration through a user-selected asset pack and reference-PNG pixel diff, without committing or bundling official KARDS assets
-- Status: ready-for-integration
+- Status: integrated
 - Main changed files:
   - `src/canvas/renderAssets.ts`
   - `src/canvas/cardRenderer.ts`
@@ -40,7 +40,7 @@
   - Direct file overlap with future renderer/layout/UI work: `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/App.tsx`
   - No other KARDS feature worktree was present when this branch was created
 - Recommended integration order: integrate this private calibration infrastructure before any exact extracted-material atlas work, because later official slices need these slots and diff metrics
-- Next action: commit this branch, merge to `main`, push, and clean the worktree if checks stay green
+- Next action: push `main` and remove the integrated private asset harness worktree after final verification
 
 ## KARDS GitHub initialization
 

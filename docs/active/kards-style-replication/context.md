@@ -142,3 +142,19 @@
   - `npm run build`: passed.
   - HTTP smoke on temporary Vite dev server `http://127.0.0.1:5174/`: passed with HTTP 200 and root marker present.
   - Temporary dev server parent and child listener were stopped; port 5174 was confirmed clear.
+
+## 2026-07-03 Stage 2 Integration Closeout
+
+- Committed Stage 2 on branch `codex/kards-private-asset-harness` as `460294a0f3aa45c661e59e41ccc1e24ca2b94625`.
+- Main was clean and already up to date with `origin/main` before integration.
+- `git worktree list` showed only main and the Stage 2 private asset harness worktree; no competing KARDS implementation worktree was present.
+- Changed-file overlap analysis found no cross-worktree overlap because only this implementation branch was ready for integration.
+- Fast-forward merged `codex/kards-private-asset-harness` into `main`.
+- Merge-result validation on `main`:
+  - `npm run typecheck`: passed.
+  - `npm run test`: passed, 7 files and 36 tests.
+  - `npm run build`: passed.
+- Pending after this note:
+  - Commit this closeout note.
+  - Push `main`.
+  - Remove the integrated Stage 2 worktree.
