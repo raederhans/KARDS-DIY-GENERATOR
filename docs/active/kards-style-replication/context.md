@@ -84,3 +84,9 @@
   - Network requests: 22/22 returned 200.
   - Screenshot evidence: `.runtime/qa/stage1-precision-layout-isolated.png`.
 - Pending before final closeout: commit and integration decision.
+
+## 2026-07-03 Repository Publish Context
+
+- A later repository initialization pass is adding the root `README.md`, renaming the local default branch from `master` to `main`, and publishing the project to GitHub.
+- Historical notes above still mention `master` because that was the branch name when the research and Stage 1 implementation work happened.
+- Future implementation work should branch from `main` after the GitHub initialization commit is pushed.

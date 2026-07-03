@@ -1,5 +1,30 @@
 # Worktree Registry
 
+## KARDS GitHub initialization
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: initialize repository metadata and publish the project to GitHub
+- Base branch/base commit: local `master`, `61a35d32c334af60056f585da7c7b68e9aa3885e`
+- Current branch/HEAD: `main`, pending GitHub publish commit
+- Remote: `origin` -> `https://github.com/raederhans/KARDS` (private)
+- Task goal: add basic project information, keep the publish boundary explicit, create a GitHub remote, and push the initialized project
+- Status: in-progress
+- Main changed files:
+  - `README.md`
+  - `docs/active/_worktree_registry.md`
+  - `docs/active/kards-style-replication/context.md`
+- Shared hotspot files touched: documentation only; no runtime source, schema, renderer, tests, or build config touched
+- Validation run:
+  - `npm run typecheck`: passed
+  - `npm run test`: passed, 4 files and 25 tests
+  - `npm run build`: passed
+  - `gh repo create raederhans/KARDS --private --description "Local static KARDS-style custom card-face generator" --source=. --remote=origin`: passed
+  - Pending push verification
+- Tests not run: no browser smoke; this pass changed documentation only
+- Potential overlap with other worktrees: none detected; `git worktree list` shows only this KARDS checkout
+- Recommended integration order: publish this documentation/remote initialization after the existing Stage 1 renderer baseline
+- Next action: commit README/registry updates, push `main`, and verify remote state
+
 ## KARDS initial static generator
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
@@ -29,7 +54,7 @@
 - Potential overlap with other worktrees: none detected; `git worktree list` has not shown parallel KARDS worktrees in this checkout
 - Recommended integration order: integrate this initial skeleton first before future asset-pack, preset-library, or typography refinements
 - Delivery package: `docs/archive/kards-card-generator/task.md`
-- Next action: no push because no remote is configured; future work can branch from the current `master` commit
+- Next action: published later by the GitHub initialization task; future work should branch from `main`
 
 ## KARDS official-style replication research
 
