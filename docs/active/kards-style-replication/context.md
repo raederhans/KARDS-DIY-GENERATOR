@@ -545,3 +545,36 @@
 - Stage 6 stop condition:
   - Current renderer-safe manifest remains exactly the 37 proved icon/package/nation/type elements.
   - Pak/font/view/HQ/card-back/frame/board sources are now inventoried and copied or indexed where feasible, but remain private reference or unwired candidate material until a clean exporter or captured source plus slot-level visual smoke exists.
+
+## 2026-07-03 Stage 7 Visible Preview Correction
+
+- User review correctly found that the visible app still did not resemble an official KARDS full card closely enough.
+- Root cause:
+  - Stage 6 had only proved `nation-mark`, `type-icon`, `rarity-pip`, and `set-mark` slots.
+  - The homepage still showed the user's saved/default draft unless the Stage 6 sample was manually loaded.
+  - The renderer had not wired full-card frame/board candidates into a visible full-card comparison surface.
+- Implemented correction on the main checkout from base `7ca3319`:
+  - Added dev-server URL loading for private `.runtime` asset-pack manifests.
+  - Added dev-only automatic loading of the Stage 6 private card-face preview pack plus `samples/t70.card.json`.
+  - Added generated-vs-official side-by-side preview using the official T-70 full-card reference.
+  - Fixed the dev StrictMode mounted-ref guard so successful async asset loads are not discarded.
+  - Added KardsGen frame/cost/command/HQ candidates and private derived clean attack/defense board previews to `.runtime/kards-private-assets/stage6-cardface-preview/kards-asset-pack.json`.
+  - Adjusted stat, cost, and keyword text sizing/placement for the visible T-70 comparison.
+- Browser evidence:
+  - Dev server: `http://127.0.0.1:5174/`.
+  - Homepage smoke loaded T-70, generated canvas `500x702`, reference image `500x702`, 44 private preview images, no console errors, no failed requests.
+  - Screenshot: `.runtime/qa/stage6-current-homepage-preview.png`.
+  - Generated card: `.runtime/qa/stage6-current-generated.png`.
+  - Reference card: `.runtime/qa/stage6-current-reference.png`.
+- Pixel metrics:
+  - Before derived board/text correction: full MAE `4.732`, stats MAE `12.604`, rulesText MAE `12.223`.
+  - After correction: full MAE `4.006`, header MAE `10.175`, artwork MAE `0.637`, stats MAE `6.800`, rulesText MAE `10.154`, footer MAE `6.079`.
+  - Interpretation: artwork alignment is good; remaining visible error is mainly header typography, rules text font, footer/print-wear lighting, and exact font/atlas extraction.
+- Validation:
+  - `npx vitest run src/canvas/cardRenderer.test.ts src/canvas/layout.test.ts`: passed, 18 tests.
+  - `npm test`: passed, 7 files and 39 tests.
+  - `npm run build`: passed, including typecheck and Vite production build.
+- Boundary:
+  - `.runtime` private official-derived and derived-preview images remain gitignored.
+  - Temporary Playwright/Pillow helper scripts were removed after use.
+  - This stage creates an honest visible calibration surface; it is not a final pixel-perfect replica.

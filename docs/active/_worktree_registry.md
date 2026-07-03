@@ -1,5 +1,46 @@
 # Worktree Registry
 
+## KARDS visible full-card preview Stage 7
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: visible homepage full-card preview calibration after Stage 6 scope mismatch
+- Base branch/base commit: `main`, `7ca3319`
+- Current branch/HEAD: `main`, validated on main; closeout commit is recorded in git history
+- Task goal: ensure the dev homepage loads the private Stage 6 preview pack and shows generated T-70 beside the official T-70 reference, with pixel evidence that separates full-card gaps from element-slot smoke
+- Status: integrated-on-main after closeout
+- Main changed files:
+  - `src/App.tsx`
+  - `src/assetPack.ts`
+  - `src/assetPack.test.ts`
+  - `src/canvas/layout.ts`
+  - `src/canvas/cardRenderer.ts`
+  - `src/canvas/cardRenderer.test.ts`
+  - `src/components/CardCanvas.tsx`
+  - `src/components/ProjectPanel.tsx`
+  - `src/styles.css`
+  - `docs/active/kards-style-replication/plan.md`
+  - `docs/active/kards-style-replication/context.md`
+  - `docs/active/kards-style-replication/task.md`
+  - `docs/active/_worktree_registry.md`
+  - `lessons learned.md`
+- Shared hotspot files touched: app state, asset-pack loading, Canvas renderer/layout, card preview UI, active task docs
+- Validation run so far:
+  - Private preview manifest HTTP check on `http://127.0.0.1:5174/.runtime/kards-private-assets/stage6-cardface-preview/kards-asset-pack.json`: 200
+  - T-70 sample JSON HTTP check: 200
+  - T-70 official reference PNG HTTP check: 200
+  - `npx vitest run src/canvas/cardRenderer.test.ts src/canvas/layout.test.ts`: passed, 18 tests
+  - Browser full-card smoke on `http://127.0.0.1:5174/`: passed, no console errors, no failed requests, T-70 loaded, 44 private preview images loaded
+  - Latest smoke metrics: full MAE `4.006`, header MAE `10.175`, artwork MAE `0.637`, stats MAE `6.800`, rulesText MAE `10.154`, footer MAE `6.079`
+  - `npm test`: passed, 7 files and 39 tests
+  - `npm run build`: passed, including typecheck and Vite production build
+- Tests not run yet:
+  - No official font/pak atlas extraction or broad E2E suite in this hotfix
+- Potential overlap with other worktrees:
+  - No other active KARDS worktree was found in this pass
+  - Direct future overlap with renderer/layout/font extraction branches
+- Recommended integration order: commit this before further font/pak/atlas work so all future visual calibration starts from the side-by-side full-card surface
+- Next action: continue exact font/atlas extraction as the next stage
+
 ## KARDS multi-source clean extraction Stage 6
 
 - Worktree name/path: multi-source clean extraction, `C:\Users\raede\Documents\KARDS-multisource-clean-extraction` (removed after integration)

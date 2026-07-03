@@ -1,5 +1,76 @@
 # KARDS Style Replication Task Notes
 
+## Stage 7 Visible Preview Calibration Hotfix
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: make the visible dev homepage show an honest official T-70 full-card comparison instead of the old/default draft
+- Base branch/base commit: `main`, `7ca3319`
+- Current branch/HEAD: `main`, validated on main; closeout commit is recorded in git history
+- Task goal: correct the Stage 6 scope mismatch by wiring a full-card preview pack, official sample card, side-by-side reference display, and region-level browser smoke evidence
+- Status: integrated-on-main after closeout
+- Shared hotspot files touched:
+  - `src/App.tsx`
+  - `src/assetPack.ts`
+  - `src/components/CardCanvas.tsx`
+  - `src/components/ProjectPanel.tsx`
+  - `src/canvas/layout.ts`
+  - `src/canvas/cardRenderer.ts`
+  - `src/styles.css`
+  - active replication docs
+- Tests run:
+  - `npx vitest run src/canvas/cardRenderer.test.ts src/canvas/layout.test.ts`: passed, 18 tests
+  - `npm test`: passed, 7 files and 39 tests
+  - `npm run build`: passed, including typecheck and Vite production build
+  - Browser full-card smoke against `http://127.0.0.1:5174/`: passed, no console errors, no failed requests, T-70 loaded, 44 private preview images loaded
+- Pixel evidence:
+  - Before this correction, full-card smoke with the first preview wiring produced full MAE `4.732`, stats MAE `12.604`, rulesText MAE `12.223`.
+  - After derived board/text correction, full MAE is `4.006`, stats MAE `6.800`, rulesText MAE `10.154`.
+  - Latest screenshot evidence: `.runtime/qa/stage6-current-homepage-preview.png`.
+- Tests not run:
+  - No official font extraction or pak atlas extraction, because no local exporter is installed.
+  - No broad Playwright suite beyond the focused full-card smoke.
+- Potential overlap with other worktrees:
+  - No other active KARDS worktree was detected in this pass.
+  - Direct future overlap with renderer/layout/font work touching the same Canvas files.
+- Recommended integration order:
+  - Integrate this visible preview hotfix before any further font/pak extraction, because it makes the homepage expose the true full-card gap.
+
+## Stage 7 Delivery Package Draft
+
+1. Changed this phase:
+   - Dev homepage now auto-loads the Stage 6 private card-face preview pack and T-70 sample.
+   - Generated and official T-70 cards render side by side.
+   - Dev-server asset-pack loading supports `.runtime` manifest URLs.
+   - React dev StrictMode no longer drops successful async private pack loads.
+   - Private derived clean attack/defense board previews are used for the visible T-70 comparison.
+2. Files touched:
+   - Core files: `src/App.tsx`, `src/assetPack.ts`, `src/canvas/layout.ts`, `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/styles.css`.
+   - Test files: `src/assetPack.test.ts`, `src/canvas/cardRenderer.test.ts`.
+   - Docs: `docs/active/kards-style-replication/plan.md`, `context.md`, `task.md`, `docs/active/_worktree_registry.md`.
+   - Lessons: `lessons learned.md`.
+   - Temporary/private files: `.runtime/kards-private-assets/stage6-cardface-preview/**`, `.runtime/qa/stage6-current-*.png`; gitignored.
+3. Diff summary:
+   - Production build still ships no official assets.
+   - Dev mode can load a private local preview pack by URL and display an official reference image from `.runtime`.
+   - Unit card stat/keyword text placement is calibrated closer to the T-70 reference.
+4. Commit status:
+   - Committed on `main` as part of the closeout that includes this note.
+5. Base divergence:
+   - Work started from `main` commit `7ca3319`; no parallel worktree overlap was found.
+6. Potential conflicts:
+   - Moderate conflict risk with any future renderer/layout branch.
+   - Low distribution risk because official-derived files remain under `.runtime` and are ignored.
+7. Validation:
+   - Targeted renderer tests, full unit tests, production build, and focused browser full-card smoke passed.
+8. Unverified risks:
+   - Header/title/cost typography is still not exact without official font extraction.
+   - Footer/print-wear lighting and paper texture remain imperfect.
+   - Derived attack/defense board previews are suitable for private calibration only, not redistribution.
+9. Recommended next step:
+   - Continue with official font/pak atlas extraction or multi-sample clean-template derivation, using this side-by-side homepage as the acceptance surface.
+10. Integration recommendation:
+   - Merge/commit directly on `main`; no cherry-pick is needed because this pass used the main checkout.
+
 ## Stage 6 Integrated Worktree
 
 - Worktree name/path: multi-source clean extraction, `C:\Users\raede\Documents\KARDS-multisource-clean-extraction` (removed after integration)

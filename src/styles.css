@@ -258,14 +258,53 @@ input[type="range"] {
   padding: 26px;
 }
 
+.canvas-comparison {
+  width: min(100%, 1040px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  align-items: start;
+  justify-items: center;
+  gap: 22px;
+}
+
+.canvas-comparison.is-single {
+  max-width: 500px;
+  grid-template-columns: 1fr;
+}
+
+.card-preview-frame {
+  width: 100%;
+  max-width: 500px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.card-preview-frame figcaption {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .card-canvas {
-  width: min(500px, 100%);
+  width: 100%;
   height: auto;
   border-radius: 22px;
   box-shadow:
     0 34px 80px rgba(0, 0, 0, 0.52),
     0 0 0 1px rgba(218, 191, 120, 0.14);
   touch-action: none;
+}
+
+.reference-card-image {
+  width: 100%;
+  height: auto;
+  border-radius: 22px;
+  box-shadow:
+    0 34px 80px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(218, 191, 120, 0.14);
 }
 
 .card-canvas.is-draggable {
@@ -420,6 +459,10 @@ input[type="range"] {
   .canvas-stage {
     order: -1;
     padding: 20px 14px;
+  }
+
+  .canvas-comparison {
+    grid-template-columns: 1fr;
   }
 
   .panel {

@@ -9,6 +9,7 @@ type CardCanvasProps = {
   onCropChange: (crop: CardSpec["artwork"]["crop"]) => void;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   renderOptions?: RenderCardOptions;
+  referenceImageUrl?: string | null;
 };
 
 type DragState = {
@@ -19,7 +20,14 @@ type DragState = {
   cropY: number;
 };
 
-export function CardCanvas({ card, artworkImage, onCropChange, canvasRef, renderOptions }: CardCanvasProps) {
+export function CardCanvas({
+  card,
+  artworkImage,
+  onCropChange,
+  canvasRef,
+  renderOptions,
+  referenceImageUrl,
+}: CardCanvasProps) {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
 
@@ -102,18 +110,29 @@ export function CardCanvas({ card, artworkImage, onCropChange, canvasRef, render
 
   return (
     <section className="canvas-stage" aria-label="Card canvas preview" ref={previewRef}>
-      <canvas
-        ref={canvasRef}
-        width={CARD_WIDTH}
-        height={CARD_HEIGHT}
-        className={artworkImage ? "card-canvas is-draggable" : "card-canvas"}
-        aria-label="Generated card preview"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onWheel={handleWheel}
-      />
+      <div className={referenceImageUrl ? "canvas-comparison" : "canvas-comparison is-single"}>
+        <figure className="card-preview-frame">
+          <canvas
+            ref={canvasRef}
+            width={CARD_WIDTH}
+            height={CARD_HEIGHT}
+            className={artworkImage ? "card-canvas is-draggable" : "card-canvas"}
+            aria-label="Generated card preview"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onWheel={handleWheel}
+          />
+          <figcaption>Generated</figcaption>
+        </figure>
+        {referenceImageUrl ? (
+          <figure className="card-preview-frame">
+            <img className="reference-card-image" src={referenceImageUrl} alt="Official reference card" />
+            <figcaption>Official reference</figcaption>
+          </figure>
+        ) : null}
+      </div>
       <p className="canvas-hint">
         Drag uploaded artwork inside the frame. Use the mouse wheel over artwork to zoom.
       </p>

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_CARD } from "./cardModel";
-import { loadAssetPackFromFiles } from "./assetPack";
+import { loadAssetPackFromFiles, loadAssetPackFromUrl } from "./assetPack";
 import type { CardRenderAssetContext } from "./canvas/renderAssets";
 
 const assetContext: CardRenderAssetContext = {
@@ -12,6 +12,7 @@ const assetContext: CardRenderAssetContext = {
   template: "unit",
 };
 
+const NativeURL = globalThis.URL;
 let objectUrlCounter = 0;
 let createdUrls: string[] = [];
 let revokedUrls: string[] = [];
@@ -63,17 +64,21 @@ describe("local asset pack loader", () => {
         }),
       },
     });
-    vi.stubGlobal("URL", {
-      createObjectURL: vi.fn((file: File) => {
-        const url = `blob:${file.name}:${objectUrlCounter}`;
-        objectUrlCounter += 1;
-        createdUrls.push(url);
-        return url;
-      }),
-      revokeObjectURL: vi.fn((url: string) => {
-        revokedUrls.push(url);
-      }),
-    });
+    vi.stubGlobal(
+      "URL",
+      class TestURL extends NativeURL {
+        static createObjectURL(file: File) {
+          const url = `blob:${file.name}:${objectUrlCounter}`;
+          objectUrlCounter += 1;
+          createdUrls.push(url);
+          return url;
+        }
+
+        static revokeObjectURL(url: string) {
+          revokedUrls.push(url);
+        }
+      },
+    );
   });
 
   afterEach(() => {
@@ -123,6 +128,30 @@ describe("local asset pack loader", () => {
     expect(pack.imageCount).toBe(0);
     expect(pack.resolveImage("frame", assetContext)).toBeUndefined();
     expect(pack.warnings).toEqual(["Missing image: images/missing.png"]);
+  });
+
+  it("loads manifest images from a dev-server URL", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        return new Response(
+          JSON.stringify({
+            version: 1,
+            name: "Dev pack",
+            images: [{ slot: "type-icon", kind: "tank", file: "images/tank.png" }],
+          }),
+        );
+      }),
+    );
+    vi.stubGlobal("window", { location: { href: "http://127.0.0.1:5174/" } });
+
+    const pack = await loadAssetPackFromUrl(
+      "http://127.0.0.1:5174/.runtime/kards-private-assets/stage6/kards-asset-pack.json",
+    );
+
+    expect(pack.name).toBe("Dev pack");
+    expect(pack.imageCount).toBe(1);
+    expect(pack.resolveImage("type-icon", assetContext)).toBeInstanceOf(FakeImage);
   });
 
   it("releases already loaded URLs when a later image fails", async () => {

@@ -56,7 +56,7 @@ const UNIT_LAYOUT: CardFaceLayout = {
   nameBar: { x: 98, y: 13, width: 390, height: 86 },
   splitter: { x: 98, y: 91, width: 390, height: 8 },
   costBoard: { x: 12, y: 13, width: 86, height: 86 },
-  title: { x: 265, y: 55, maxWidth: 320, size: 35 },
+  title: { x: 265, y: 56, maxWidth: 320, size: 39 },
   nationCenter: { x: 450, y: 52 },
   nationSize: 54,
   rarity: { x: 222, y: 675, width: 56, height: 20 },
@@ -65,7 +65,7 @@ const UNIT_LAYOUT: CardFaceLayout = {
   specialAttackBoard: { x: 82, y: 468, width: 96, height: 82 },
   defenseBoard: { x: 330, y: 473, width: 82, height: 82 },
   typeIcon: { x: 208, y: 473, width: 84, height: 72 },
-  text: { keywordY: 552, bodyY: 585, bodyBottomY: 650, maxWidth: 390, lineHeight: 28, maxLines: 4 },
+  text: { keywordY: 580, bodyY: 616, bodyBottomY: 650, maxWidth: 390, lineHeight: 28, maxLines: 3 },
 };
 
 const COMMAND_LAYOUT: CardFaceLayout = {

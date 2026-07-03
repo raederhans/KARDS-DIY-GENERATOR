@@ -3,23 +3,32 @@ import { DEFAULT_CARD, normalizeCardSpec } from "./cardModel";
 import { CardCanvas } from "./components/CardCanvas";
 import { FieldPanel } from "./components/FieldPanel";
 import { ProjectPanel } from "./components/ProjectPanel";
-import { loadAssetPackFromFiles, type LoadedAssetPack } from "./assetPack";
+import { loadAssetPackFromFiles, loadAssetPackFromUrl, type LoadedAssetPack } from "./assetPack";
 import { loadDraftCard, saveDraftCard } from "./storage";
 import type { CardSpec, CardUpdate } from "./types";
 import { compareCanvasToReferenceFile, type ImageDiffMetrics } from "./visualDiff";
 import "./styles.css";
+
+const DEV_STAGE6_ASSET_PACK_URL =
+  "/.runtime/kards-private-assets/stage6-cardface-preview/kards-asset-pack.json";
+const DEV_STAGE6_SAMPLE_CARD_URL =
+  "/.runtime/kards-private-assets/stage6-multisource-clean-extraction/samples/t70.card.json";
+const DEV_STAGE6_SAMPLE_REFERENCE_URL =
+  "/.runtime/kards-private-assets/stage5-card-face-elements/references/cards/t70.png";
 
 function App() {
   const [card, setCard] = useState<CardSpec>(() => loadDraftCard(window.localStorage, DEFAULT_CARD));
   const [artworkImage, setArtworkImage] = useState<HTMLImageElement | null>(null);
   const [assetPack, setAssetPack] = useState<LoadedAssetPack | null>(null);
   const [assetPackError, setAssetPackError] = useState<string | null>(null);
+  const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
   const [referenceDiff, setReferenceDiff] = useState<ImageDiffMetrics | null>(null);
   const [referenceDiffError, setReferenceDiffError] = useState<string | null>(null);
   const [autosavePaused, setAutosavePaused] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const assetPackRequestRef = useRef(0);
   const isMountedRef = useRef(true);
+  const didLoadDevStage6PreviewRef = useRef(false);
 
   useEffect(() => {
     setAutosavePaused(!saveDraftCard(window.localStorage, card));
@@ -28,8 +37,11 @@ function App() {
   useEffect(() => () => assetPack?.dispose(), [assetPack]);
 
   useEffect(
-    () => () => {
-      isMountedRef.current = false;
+    () => {
+      isMountedRef.current = true;
+      return () => {
+        isMountedRef.current = false;
+      };
     },
     [],
   );
@@ -60,6 +72,19 @@ function App() {
       image.onerror = null;
     };
   }, [card.artwork.dataUrl]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || new URLSearchParams(window.location.search).get("privatePack") === "off") {
+      return;
+    }
+
+    if (didLoadDevStage6PreviewRef.current) {
+      return;
+    }
+    didLoadDevStage6PreviewRef.current = true;
+
+    void loadDevStage6Preview();
+  }, []);
 
   const previewCard = useMemo(() => normalizeCardSpec(card), [card]);
   const renderOptions = useMemo(
@@ -100,6 +125,44 @@ function App() {
     }
   }
 
+  async function loadDevStage6Preview() {
+    const requestId = assetPackRequestRef.current + 1;
+    assetPackRequestRef.current = requestId;
+    setAssetPackError(null);
+    setReferenceDiff(null);
+    setReferenceDiffError(null);
+    try {
+      const [loadedPack, sampleCard] = await Promise.all([
+        loadAssetPackFromUrl(DEV_STAGE6_ASSET_PACK_URL),
+        loadDevStage6SampleCard(),
+      ]);
+      if (!isMountedRef.current || requestId !== assetPackRequestRef.current) {
+        loadedPack.dispose();
+        return;
+      }
+      setAssetPack(loadedPack);
+      setCard(normalizeCardSpec(sampleCard));
+      setReferenceImageUrl(DEV_STAGE6_SAMPLE_REFERENCE_URL);
+    } catch (error) {
+      if (requestId !== assetPackRequestRef.current) {
+        return;
+      }
+      setAssetPackError(error instanceof Error ? error.message : "Could not load the Stage 6 private preview.");
+    }
+  }
+
+  async function handleStage6SampleLoad() {
+    await loadDevStage6Preview();
+  }
+
+  async function loadDevStage6SampleCard(): Promise<CardSpec> {
+    const response = await fetch(DEV_STAGE6_SAMPLE_CARD_URL, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Could not load ${DEV_STAGE6_SAMPLE_CARD_URL}.`);
+    }
+    return normalizeCardSpec(await response.json());
+  }
+
   async function handleReferenceCompare(file: File | null) {
     const canvas = canvasRef.current;
     if (!file || !canvas) {
@@ -137,6 +200,7 @@ function App() {
           artworkImage={artworkImage}
           canvasRef={canvasRef}
           renderOptions={renderOptions}
+          referenceImageUrl={referenceImageUrl}
           onCropChange={(crop) =>
             updateCard((currentCard) => ({
               ...currentCard,
@@ -166,6 +230,7 @@ function App() {
           referenceDiffError={referenceDiffError}
           onAssetPackLoad={handleAssetPackLoad}
           onReferenceCompare={handleReferenceCompare}
+          onStage6SampleLoad={import.meta.env.DEV ? handleStage6SampleLoad : undefined}
         />
       </div>
     </main>

@@ -232,21 +232,21 @@ function drawCostBoard(
   }
 
   const deploymentText = String(deployment ?? 0);
-  const deploymentSize = deploymentText.length > 1 ? 45 : 58;
+  const deploymentSize = deploymentText.length > 1 ? 52 : 70;
   ctx.fillStyle = LIGHT;
   ctx.font = `800 ${deploymentSize}px ${fonts.utility}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(deploymentText, rect.x + 36, rect.y + 45);
+  ctx.fillText(deploymentText, rect.x + 35, rect.y + 47);
 
   ctx.fillStyle = ACTIVATED;
-  ctx.font = `800 22px ${fonts.utility}`;
-  ctx.fillText("K", rect.x + 66, rect.y + 26);
+  ctx.font = `800 24px ${fonts.utility}`;
+  ctx.fillText("K", rect.x + 66, rect.y + 27);
 
   if (operation !== undefined) {
     ctx.fillStyle = LIGHT;
-    ctx.font = `800 20px ${fonts.utility}`;
-    ctx.fillText(String(operation), rect.x + 68, rect.y + 63);
+    ctx.font = `800 24px ${fonts.utility}`;
+    ctx.fillText(String(operation), rect.x + 68, rect.y + 64);
   }
   ctx.restore();
 }
@@ -390,14 +390,14 @@ function drawValues(
       attackRect,
       card.stats.attack,
       "",
-      42,
+      52,
       isSpecialAttackKind(card.kind) ? "special-attack-board" : "attack-board",
       options,
       assetContext,
       fonts,
     );
   }
-  drawStatBoard(ctx, layout.defenseBoard, card.stats.defense, "", 42, "defense-board", options, assetContext, fonts);
+  drawStatBoard(ctx, layout.defenseBoard, card.stats.defense, "", 52, "defense-board", options, assetContext, fonts);
 }
 
 function drawTypeIcon(
@@ -456,13 +456,13 @@ function drawText(
 
   if (keywordLine) {
     ctx.fillStyle = accent;
-    ctx.font = `800 22px ${fonts.utility}`;
-    ctx.fillText(keywordLine, 250, layout.text.keywordY);
+    ctx.font = `800 27px ${fonts.utility}`;
+    ctx.fillText(formatKeywordLine(keywordLine), 250, layout.text.keywordY);
   }
 
   ctx.fillStyle = DARK;
   ctx.font = `400 24px ${fonts.body}`;
-  const bodyY = layout.text.bodyY;
+  const bodyY = keywordLine ? layout.text.bodyY : layout.text.keywordY;
   const bodyMaxLines = Math.max(
     1,
     Math.min(layout.text.maxLines, Math.floor((layout.text.bodyBottomY - bodyY) / layout.text.lineHeight) + 1),
@@ -689,6 +689,14 @@ function resolveTypeGlyph(kind: CardKind, defaultSymbol: string): string {
   }
 
   return defaultSymbol;
+}
+
+function formatKeywordLine(keywordLine: string): string {
+  return keywordLine
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => (/^[A-Z]{2,}$/.test(word) ? `${word[0]}${word.slice(1).toLowerCase()}` : word))
+    .join(" ");
 }
 
 function getRarityPipCount(rarityId: string): number {

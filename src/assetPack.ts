@@ -108,6 +108,54 @@ export async function loadAssetPackFromFiles(fileList: FileList | File[]): Promi
   };
 }
 
+export async function loadAssetPackFromUrl(manifestUrl: string): Promise<LoadedAssetPack> {
+  const manifestResponse = await fetch(manifestUrl, { cache: "no-store" });
+  if (!manifestResponse.ok) {
+    throw new Error(`Could not load ${LOCAL_ASSET_PACK_MANIFEST} from ${manifestUrl}.`);
+  }
+
+  const manifest = parseAssetPackManifest(await manifestResponse.json());
+  const baseUrl = new URL(manifestUrl, window.location.href);
+  const loadedFonts: FontFace[] = [];
+  const warnings: string[] = [];
+  const imageEntries: CardRenderAssetEntry[] = [];
+  const fonts: CardRenderFontSet = {};
+
+  for (const entry of manifest.images ?? []) {
+    try {
+      imageEntries.push({
+        ...entry,
+        image: await loadImageUrl(resolveManifestUrl(baseUrl, entry.file)),
+      });
+    } catch {
+      warnings.push(`Could not load image: ${entry.file}`);
+    }
+  }
+
+  for (const entry of manifest.fonts ?? []) {
+    try {
+      const loadedFont = await loadFontUrl(entry.family, resolveManifestUrl(baseUrl, entry.file));
+      loadedFonts.push(loadedFont);
+      fonts[entry.role ?? "body"] = quoteFontFamily(entry.family);
+    } catch {
+      warnings.push(`Could not load font: ${entry.file}`);
+    }
+  }
+
+  const resolver = createStaticAssetResolver(imageEntries, manifest.name ?? "Local KARDS asset pack");
+  return {
+    ...resolver,
+    name: manifest.name ?? "Local KARDS asset pack",
+    imageCount: imageEntries.length,
+    fontCount: Object.keys(fonts).length,
+    warnings,
+    fonts,
+    dispose() {
+      loadedFonts.forEach((font) => document.fonts.delete(font));
+    },
+  };
+}
+
 function parseAssetPackManifest(value: unknown): AssetPackManifest {
   if (!value || typeof value !== "object") {
     throw new Error(`${LOCAL_ASSET_PACK_MANIFEST} must contain a JSON object.`);
@@ -190,11 +238,31 @@ function loadImageFile(file: File): Promise<{ image: HTMLImageElement; url: stri
   });
 }
 
+function loadImageUrl(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error(`Could not read ${url} as an image.`));
+    image.src = url;
+  });
+}
+
 async function loadFontFile(family: string, file: File): Promise<FontFace> {
   const font = new FontFace(family, await file.arrayBuffer());
   await font.load();
   document.fonts.add(font);
   return font;
+}
+
+async function loadFontUrl(family: string, url: string): Promise<FontFace> {
+  const font = new FontFace(family, `url("${url.replace(/"/g, '\\"')}")`);
+  await font.load();
+  document.fonts.add(font);
+  return font;
+}
+
+function resolveManifestUrl(baseUrl: URL, relativePath: string): string {
+  return new URL(relativePath, baseUrl).toString();
 }
 
 function quoteFontFamily(family: string): string {

@@ -137,7 +137,7 @@ describe("card renderer output", () => {
 
     const lowerBodyTextYs = calls.fillText
       .map(([, , y]) => Number(y))
-      .filter((y) => y >= 585 && y < 675);
+      .filter((y) => y >= 616 && y < 675);
     expect(lowerBodyTextYs.length).toBeGreaterThan(0);
     expect(Math.max(...lowerBodyTextYs)).toBeLessThanOrEqual(650);
   });
@@ -153,7 +153,7 @@ describe("card renderer output", () => {
     renderCard(canvas, card, null);
 
     const bodyCall = calls.fillText.find(([text]) => text === "alpha beta");
-    expect(bodyCall?.[2]).toBe(585);
+    expect(bodyCall?.[2]).toBe(580);
   });
 
   it("draws limited rarity pips on integer pixels", () => {

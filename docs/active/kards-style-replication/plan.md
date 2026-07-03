@@ -198,3 +198,21 @@ The user does not need a generic WWII card generator. The target is a local stat
 - Stage6 visual smoke result: 37/37 pass, 0 review, 0 fail; app smoke canvas was `500x702` and nonblank.
 - Merge-result validation on `main` repeated syntax checks, Stage6 generation, safety guard negative checks, Stage6 visual smoke, full unit tests, and production build successfully.
 - Integrated worktree and local Stage6 branch were removed after the fast-forward merge; recovery commit is `5e48a54`.
+
+## Stage 7 Visible Full-Card Preview Calibration
+
+- [x] Acknowledge and correct the scope error: Stage 6's 37/37 result was only element-slot validation, not full-card visual equivalence.
+- [x] Make the dev preview automatically load the private Stage 6 card-face pack, T-70 sample card, and official T-70 reference image.
+- [x] Render generated and official reference cards side-by-side so the homepage no longer hides behind an old local draft.
+- [x] Add dev-server URL asset-pack loading for `.runtime` private preview packs.
+- [x] Patch the React dev StrictMode mounted-ref issue so async private pack loads are not discarded.
+- [x] Replace the visible Stage 6 attack/defense board candidates with private derived clean board previews under `.runtime`.
+- [x] Calibrate unit cost/stat/keyword text positions and sizes against the T-70 reference.
+- [x] Run browser full-card smoke with region metrics and keep screenshot evidence under `.runtime/qa`.
+- [x] Run full unit tests and production build.
+
+## Stage 7 Boundary
+
+- This stage proves the visible dev preview is now an honest full-card side-by-side calibration surface.
+- It still does not claim perfect KARDS equivalence. Remaining gaps are official font extraction, title/cost exact typography, footer/print-wear lighting, and clean atlas/pak-derived UI layers.
+- Official-derived and derived preview pixels remain under `.runtime`; they are not committed or bundled into `src`, `public`, or default `dist`.

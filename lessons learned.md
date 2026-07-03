@@ -8,3 +8,4 @@
 - Element-slot visual smoke must state its scope plainly: a 37/37 crop match proves slot geometry and asset identity, not full-card typography, print wear, or complete visual equivalence.
 - Coverage reports must keep source status separate from variable coverage: synthetic/layout-only samples can prove renderer stress cases, but must not be counted as extracted official pixel assets.
 - Private official-asset tools must reject `public`, `dist`, and `src` output paths even when `.runtime` appears below them; gitignore is not enough to prevent static bundling or accidental publication.
+- React dev StrictMode can run effect cleanup before the visible mount settles; mounted refs used to guard async asset loads must set `true` in effect setup, or local asset packs can download successfully and still be discarded.
