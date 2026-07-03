@@ -22,7 +22,7 @@ describe("normalizeCardSpec", () => {
       kind: "fighter",
       nation: "britain",
       rarity: "elite",
-      set: "frontline",
+      set: "blood-and-iron",
       title: "ACE",
       body: "Gain air superiority.",
       keywordLine: "GUARD",
@@ -38,7 +38,7 @@ describe("normalizeCardSpec", () => {
     expect(card.kind).toBe("fighter");
     expect(card.nation).toBe("britain");
     expect(card.rarity).toBe("elite");
-    expect(card.set).toBe("frontline");
+    expect(card.set).toBe("blood-and-iron");
     expect(card.artwork.source).toBe("upload");
     expect(card.artwork.crop.scale).toBe(1.4);
   });

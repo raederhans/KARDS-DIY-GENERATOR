@@ -91,6 +91,14 @@ export const NATIONS: NationPreset[] = [
     deep: "#4a4a42",
   },
   {
+    id: "anzac",
+    label: "Anzac",
+    shortLabel: "AN",
+    emblem: "block",
+    accent: "#7d7861",
+    deep: "#2a2921",
+  },
+  {
     id: "neutral",
     label: "Neutral",
     shortLabel: "NE",
@@ -116,9 +124,21 @@ export const RARITIES: RarityPreset[] = [
 ];
 
 export const SETS: SetPreset[] = [
-  { id: "base", label: "Base Archive", mark: "A" },
-  { id: "frontline", label: "Frontline", mark: "F" },
-  { id: "high-command", label: "High Command", mark: "H" },
+  { id: "base", label: "Base", mark: "B" },
+  { id: "allegiance", label: "Allegiance", mark: "AL" },
+  { id: "blood-and-iron", label: "Blood and Iron", mark: "BI" },
+  { id: "breakthrough", label: "Breakthrough", mark: "BR" },
+  { id: "brothers-in-arms", label: "Brothers in Arms", mark: "BA" },
+  { id: "covert-ops", label: "Covert Ops", mark: "CO" },
+  { id: "homefront", label: "Homefront", mark: "HF" },
+  { id: "legions", label: "Legions", mark: "LG" },
+  { id: "naval-warfare", label: "Naval Warfare", mark: "NW" },
+  { id: "oceania-storm", label: "Oceania Storm", mark: "OS" },
+  { id: "only-spawnable", label: "Only Spawnable", mark: "SP" },
+  { id: "special", label: "Special", mark: "S" },
+  { id: "theaters-of-war", label: "Theaters of War", mark: "TW" },
+  { id: "winter-war", label: "Winter War", mark: "WW" },
+  { id: "world-at-war", label: "World at War", mark: "WA" },
   { id: "custom", label: "Custom Set", mark: "*" },
 ];
 

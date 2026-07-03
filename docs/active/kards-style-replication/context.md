@@ -164,3 +164,82 @@
 - Retained recovery pointers in git history and registry:
   - Feature commit: `460294a0f3aa45c661e59e41ccc1e24ca2b94625`.
   - Integration closeout commit: `9018579`.
+
+## 2026-07-03 Stage 3 Source Asset Calibration Start
+
+- Created isolated worktree `C:\Users\raede\Documents\KARDS-source-asset-calibration` on branch `codex/kards-source-asset-calibration` from `main` commit `7e0f1a`.
+- Re-read `research-before-fix`, `frontend-skill`, and `lessons learned.md`.
+- No project-local `AGENTS.md`, `.codex/**`, or `.omx/**` project override files were found by the required `rg --files` pass.
+- Python 3.12 and Pillow 12.2 are available locally, so private image conversion/cropping can run without adding a Node image dependency.
+- Read-only subagent review recommended the short route for Stage 3:
+  - Use CraftSoul `data.json` as the card index.
+  - Download official KARDS full-card images from `https://www.kards.com/images/card/v52/<lang>/<image>`.
+  - Keep local pak extraction for a later clean-atlas pass because UnrealPak/FModel/repak/umodel are not currently installed.
+- Local KARDS evidence from the subagent:
+  - Install exists at `C:\Program Files (x86)\Steam\steamapps\common\KARDS`.
+  - Main pak exists at `...\kards\Content\Paks\kards-Windows.pak`, about 7.1GB, dated 2026-07-02.
+  - No `UnrealPak.exe`, `FModel.exe`, `repak.exe`, or `umodel.exe` was found in PATH, Downloads, or common install locations.
+
+## 2026-07-03 Stage 3 Coverage Decision
+
+- The user clarified that coverage does not need every faction-kind combination. The target is one representative per subcategory:
+  - every faction, including Neutral and Anzac,
+  - every card kind: infantry, tank, fighter, bomber, artillery, order, countermeasure,
+  - every rarity,
+  - every set/package mark in the data.
+- CraftSoul data contains 1613 card entries, 11 factions, 7 card kinds, 4 rarities, and 15 sets.
+- A full existing faction-kind matrix would require 65 samples; the clarified coverage target only needs a compact representative set.
+- Implemented `tools/kards_private_calibration.py` to:
+  - download or reuse CraftSoul data,
+  - greedily select a deterministic compact coverage set,
+  - download official full-card AVIF images,
+  - convert them to PNG,
+  - crop reference artwork and measured slices using the current 500x702 layout coordinates,
+  - generate a browser-loadable `kards-asset-pack.json` with only nation marks, type icons, rarity pips, and set marks,
+  - generate sample `.card.json` project files with local data-URL artwork under `.runtime`.
+- Updated the app presets to include Anzac and the 15 set ids from the official card data, so generated sample JSON does not collapse to fallback presets.
+
+## 2026-07-03 Stage 3 Private Pack Output
+
+- Ran:
+  - `py -3 tools\kards_private_calibration.py --data-file C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\sources\craftsoul-data.json --output C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-official-coverage-pack`
+- Generated private output folder:
+  - `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-official-coverage-pack`
+- Output summary:
+  - selected samples: 15
+  - required coverage items: 37
+  - covered items: 37
+  - missing items: 0
+  - manifest images: 37
+  - total generated files: 229
+- Coverage report confirms:
+  - factions: Anzac, Britain, Finland, France, Germany, Italy, Japan, Neutral, Poland, Soviet, USA
+  - types: artillery, bomber, countermeasure, fighter, infantry, order, tank
+  - rarities: Elite, Limited, Special, Standard
+  - sets: Allegiance, Base, BloodAndIron, Breakthrough, BrothersInArms, CovertOps, Homefront, Legions, NavalWarfare, OceaniaStorm, OnlySpawnable, Special, TheatersOfWar, WinterWar, WorldAtWar
+- Image spot checks:
+  - `references/cards/t70.png`: 500x702 RGBA
+  - `images/nations/soviet.png`: 54x54 RGBA
+  - `images/types/tank.png`: 84x72 RGBA
+  - `images/sets/base.png`: 28x28 RGBA
+  - `samples/t70.card.json`: generated with embedded artwork data URL
+- Policy boundary:
+  - generated official-derived files are in `.runtime`, which is gitignored.
+  - only the generation script, preset ids, and documentation should be committed.
+
+## 2026-07-03 Stage 3 Review Fix And Validation
+
+- Independent code review found no critical or high severity blockers.
+- Accepted the medium-risk review finding:
+  - Previous script output accepted arbitrary directories and would clean `references/`, `images/`, and `samples` under that output path.
+  - Fixed by requiring output under a `.runtime` path unless `--allow-outside-runtime` is explicit.
+  - Added `.kards-private-calibration-output` marker ownership before cleaning generated subdirectories.
+- Validation after the fix:
+  - Private pack regeneration: passed, still selected 15 samples and covered 37/37 requirements.
+  - Marker check: passed, `.kards-private-calibration-output` exists.
+  - Manifest integrity: passed, 37 manifest image entries and no missing files.
+  - Safety refusal check: passed, output to `C:\Users\raede\Documents\KARDS\unsafe-private-output` was rejected because it is outside `.runtime`.
+  - `py -3 -B -m py_compile tools\kards_private_calibration.py`: passed.
+  - `npm run typecheck`: passed.
+  - `npm run test`: passed, 7 files and 36 tests.
+  - `npm run build`: passed.

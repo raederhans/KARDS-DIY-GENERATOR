@@ -81,3 +81,23 @@ The user does not need a generic WWII card generator. The target is a local stat
 - No network download path for official cards.
 - No gameplay, rules, deck, account, or automation features.
 - No README edits.
+
+## Stage 3 Private Official Coverage Pack
+
+- [x] Create an isolated worktree from `main` for source-asset calibration.
+- [x] Re-check local lessons learned, active docs, and current asset-pack boundaries.
+- [x] Use a read-only subagent to review local pak extraction versus official web-card download routes.
+- [x] Confirm the local KARDS pak exists but no UnrealPak/FModel/repak/umodel command is currently installed.
+- [x] Use CraftSoul `data.json` as the private calibration index and official KARDS card images as the source image route.
+- [x] Select a compact coverage set that covers every faction, every card kind, every rarity, and every set/package mark at least once.
+- [x] Generate private local official card references, artwork crops, reusable manifest slices, sample project JSON, and a coverage report under `.runtime`.
+- [x] Run typecheck, tests, and script validation after the final documentation updates.
+- [ ] Commit, merge back to `main`, push, and clean the worktree if validation stays green.
+
+## Stage 3 Non-Goals
+
+- No official PNG/AVIF/font files are committed or bundled.
+- No public redistribution of the generated private asset pack.
+- No full Unreal pak extraction in this stage; clean UI atlas extraction remains a later step if full-card crops are not enough.
+- No automatic browser download path; generation stays in the local Python tool and `.runtime`.
+- No README edits.

@@ -1,5 +1,68 @@
 # KARDS Style Replication Task Notes
 
+## Stage 3 Current Worktree
+
+- Worktree name/path: source asset calibration, `C:\Users\raede\Documents\KARDS-source-asset-calibration`
+- Thread/task: KARDS official-card source asset import and compact coverage calibration
+- Base branch/base commit: `main`, `7e0f1a0`
+- Current branch/HEAD: `codex/kards-source-asset-calibration`, working changes pending commit
+- Task goal: generate a private local official-reference coverage pack from CraftSoul/KARDS official card images while keeping official-derived assets out of git and default builds
+- Status: ready-for-integration
+- Shared hotspot files touched: `src/presets.ts`, card import normalization tests, active docs, private calibration tooling
+- Tests run so far:
+  - Private calibration script: passed, selected 15 samples, covered 37/37 requirements, generated 37 manifest images
+  - Output image spot checks: passed for full card, nation mark, type icon, set mark, and sample JSON presence
+  - Marker/output safety: passed, output outside `.runtime` is refused unless explicitly overridden
+  - Independent code review: passed after fixing the medium-risk output-cleaning issue
+  - `py -3 -B -m py_compile tools\kards_private_calibration.py`: passed
+  - `npm run typecheck`: passed
+  - `npm run test`: passed, 7 files and 36 tests
+  - `npm run build`: passed
+- Tests not run yet:
+  - Browser private pack load smoke
+- Potential overlap with other worktrees:
+  - Direct overlap with any parallel preset/schema work touching `src/presets.ts` or `src/cardModel.test.ts`
+  - No other active KARDS worktree was present when this branch was created
+- Recommended integration order:
+  - Integrate after Stage 2 private asset harness, before deeper renderer calibration or full Unreal atlas extraction
+
+## Stage 3 Delivery Package Draft
+
+1. Changed this phase:
+   - Added a Python private calibration tool that selects representative official cards and builds a local coverage pack.
+   - Generated a private `.runtime` pack covering every faction, card kind, rarity, and set/package mark at least once.
+   - Added Anzac and official set ids to the app presets so generated samples import without fallback drift.
+   - Kept official-derived PNGs and sample JSON outputs outside git.
+2. Files touched:
+   - Core files: `src/presets.ts`.
+   - Test files: `src/cardModel.test.ts`.
+   - Tooling files: `tools/kards_private_calibration.py`.
+   - Docs: `docs/active/kards-style-replication/plan.md`, `context.md`, `task.md`, `docs/active/_worktree_registry.md`.
+   - Temporary/private files: `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-official-coverage-pack/**` and `sources/craftsoul-data.json`, gitignored.
+3. Diff summary:
+   - Production behavior changes are limited to official set/faction preset coverage.
+   - The private generation path is a local CLI script; the browser still only loads a user-selected asset-pack folder.
+   - Official-derived files are not committed.
+4. Commit status:
+   - Not committed yet; final validation and review passed.
+5. Base divergence:
+   - Branch was created from current `main` at `7e0f1a0`; remote/main drift still needs final integration check.
+6. Potential conflicts:
+   - Low direct conflict risk unless another branch also changes `src/presets.ts` or active replication docs.
+7. Validation:
+   - Script generation passed and output report shows 37/37 coverage.
+   - Spot checks confirmed expected image dimensions.
+   - Output safety guard rejects non-`.runtime` destinations by default and marker-protects generated subdirectory cleanup.
+   - Typecheck, unit tests, and production build passed.
+8. Unverified risks:
+   - Generated slices come from full rendered cards, so text/number-bearing crops remain measurement references only.
+   - Clean reusable boards, frames, and fonts still require later pak/UI-atlas extraction.
+   - No browser load smoke has run yet for this newly generated private pack.
+9. Recommended next step:
+   - Commit, merge into `main`, push, then use the app's Load Assets and Compare PNG path for a focused browser calibration pass if needed.
+10. Integration recommendation:
+   - If validation passes, merge normally into `main`; no cherry-pick is expected.
+
 ## Stage 2 Current Worktree
 
 - Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness`

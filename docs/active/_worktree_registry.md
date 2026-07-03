@@ -1,5 +1,40 @@
 # Worktree Registry
 
+## KARDS source asset calibration Stage 3
+
+- Worktree name/path: source asset calibration, `C:\Users\raede\Documents\KARDS-source-asset-calibration`
+- Thread/task: KARDS official-card source asset import and compact coverage calibration
+- Base branch/base commit: `main`, `7e0f1a0`
+- Current branch/HEAD: `codex/kards-source-asset-calibration`, pending commit
+- Task goal: generate a private official-reference coverage pack from CraftSoul/KARDS official card images without committing official-derived assets
+- Status: ready-for-integration
+- Main changed files:
+  - `src/presets.ts`
+  - `src/cardModel.test.ts`
+  - `tools/kards_private_calibration.py`
+  - `docs/active/kards-style-replication/plan.md`
+  - `docs/active/kards-style-replication/context.md`
+  - `docs/active/kards-style-replication/task.md`
+  - `docs/active/_worktree_registry.md`
+- Shared hotspot files touched: visual presets, import normalization test, private calibration tooling, active task docs
+- Validation run so far:
+  - Private calibration script: passed, selected 15 samples and covered 37/37 faction/type/rarity/set requirements
+  - Generated private output: `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-official-coverage-pack`
+  - Spot checks: full card 500x702, nation mark 54x54, type icon 84x72, set mark 28x28, sample project JSON present
+  - Marker/output safety: passed, non-`.runtime` output is refused by default and generated cleanup requires `.kards-private-calibration-output`
+  - Independent code review: passed after fixing the output-cleaning guard
+  - `py -3 -B -m py_compile tools\kards_private_calibration.py`: passed
+  - `npm run typecheck`: passed
+  - `npm run test`: passed, 7 files and 36 tests
+  - `npm run build`: passed
+- Tests not run yet:
+  - Browser private pack load smoke
+- Potential overlap with other worktrees:
+  - Direct overlap with any branch changing `src/presets.ts`, set/nation ids, or the active replication docs
+  - No other KARDS worktree was present before this branch was created
+- Recommended integration order: integrate this after Stage 2 asset-pack infrastructure and before deeper pak/UI-atlas extraction work
+- Next action: commit, merge into `main`, push, then remove the worktree only after merge verification
+
 ## KARDS private asset calibration Stage 2
 
 - Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness` (removed after integration)
