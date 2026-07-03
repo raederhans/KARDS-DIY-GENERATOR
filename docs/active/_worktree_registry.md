@@ -5,7 +5,7 @@
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
 - Thread/task: initialize repository metadata and publish the project to GitHub
 - Base branch/base commit: local `master`, `61a35d32c334af60056f585da7c7b68e9aa3885e`
-- Current branch/HEAD: `main`, `577387ed068d71da66fe011362bd7bf341b4fe97`
+- Current branch/HEAD: `main`, tracking `origin/main`
 - Remote: `origin` -> `https://github.com/raederhans/KARDS` (private)
 - Task goal: add basic project information, keep the publish boundary explicit, create a GitHub remote, and push the initialized project
 - Status: integrated
@@ -20,8 +20,9 @@
   - `npm run build`: passed
   - `gh repo create raederhans/KARDS --private --description "Local static KARDS-style custom card-face generator" --source=. --remote=origin`: passed
   - `git push -u origin main`: passed
+  - `git push`: passed for the registry verification closeout
   - `gh repo view raederhans/KARDS --json name,visibility,url,defaultBranchRef`: passed, private repo, default branch `main`
-  - `git ls-remote --heads origin main`: passed, remote `main` at `577387ed068d71da66fe011362bd7bf341b4fe97`
+  - `git ls-remote --heads origin main`: passed, remote `main` reachable
 - Tests not run: no browser smoke; this pass changed documentation only
 - Potential overlap with other worktrees: none detected; `git worktree list` shows only this KARDS checkout
 - Recommended integration order: publish this documentation/remote initialization after the existing Stage 1 renderer baseline
