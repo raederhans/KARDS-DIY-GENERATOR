@@ -8,11 +8,17 @@ import {
   type CardFaceLayout,
   type Rect,
 } from "./layout";
+import type {
+  CardRenderAssetContext,
+  CardRenderAssetSlot,
+  CardRenderFontSet,
+  RenderCardOptions,
+} from "./renderAssets";
 
 export { CARD_HEIGHT, CARD_WIDTH, getArtworkRect } from "./layout";
 export { isPointInsideArtwork } from "./layout";
 
-const TEXT_FONT = "'Arial Narrow', 'Roboto Condensed', Arial, sans-serif";
+const DEFAULT_TEXT_FONT = "'Arial Narrow', 'Roboto Condensed', Arial, sans-serif";
 const DARK = "#4f514c";
 const LIGHT = "#cfd5c2";
 const PAPER = "#d8d2bd";
@@ -20,10 +26,13 @@ const ACTIVATED = "#ce8a31";
 
 type TextMeasureContext = Pick<CanvasRenderingContext2D, "font" | "measureText">;
 
+type ResolvedRenderFonts = Required<CardRenderFontSet>;
+
 export function renderCard(
   canvas: HTMLCanvasElement,
   card: CardSpec,
   artworkImage?: HTMLImageElement | null,
+  options: RenderCardOptions = {},
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) {
@@ -39,29 +48,57 @@ export function renderCard(
   const set = getSet(card.set);
   const kind = getKind(card.kind);
   const layout = getCardFaceLayout(card.kind);
+  const assetContext: CardRenderAssetContext = {
+    card,
+    kind: card.kind,
+    nationId: card.nation,
+    rarityId: card.rarity,
+    setId: card.set,
+    template: layout.template,
+  };
+  const fonts = resolveRenderFonts(options.fonts);
 
-  drawCardMat(ctx);
+  drawCardMat(ctx, options, assetContext);
   drawArtwork(ctx, layout.artwork, card, artworkImage, nation.deep);
   if (layout.template === "unit") {
-    drawNameBar(ctx, layout, nation.accent);
+    drawNameBar(ctx, layout, nation.accent, options, assetContext);
   } else {
-    drawExtraBorder(ctx, layout);
+    drawExtraBorder(ctx, layout, options, assetContext);
   }
   if (layout.costBoard) {
-    drawCostBoard(ctx, layout.costBoard, card.costs.deployment, isUnitKind(card.kind) ? card.costs.operation : undefined);
+    drawCostBoard(
+      ctx,
+      layout.costBoard,
+      card.costs.deployment,
+      isUnitKind(card.kind) ? card.costs.operation : undefined,
+      options,
+      assetContext,
+      fonts,
+    );
   }
-  drawNationMark(ctx, layout, nation);
-  drawFrame(ctx);
-  drawRarity(ctx, layout, rarity.color, card.rarity);
-  drawSet(ctx, layout, set.mark);
-  drawValues(ctx, layout, card);
-  drawTypeIcon(ctx, layout, card.kind, kind.symbol);
-  drawText(ctx, layout, card, nation.accent);
-  drawPrintWear(ctx);
+  drawNationMark(ctx, layout, nation, options, assetContext, fonts);
+  drawFrame(ctx, options, assetContext);
+  drawRarity(ctx, layout, rarity.color, card.rarity, options, assetContext);
+  drawSet(ctx, layout, set.mark, options, assetContext, fonts);
+  drawValues(ctx, layout, card, options, assetContext, fonts);
+  drawTypeIcon(ctx, layout, card.kind, kind.symbol, options, assetContext, fonts);
+  drawText(ctx, layout, card, nation.accent, fonts);
+  if (!options.disablePrintWear) {
+    drawPrintWear(ctx);
+  }
 }
 
-function drawCardMat(ctx: CanvasRenderingContext2D): void {
+function drawCardMat(
+  ctx: CanvasRenderingContext2D,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+): void {
   ctx.save();
+  if (drawAsset(ctx, options, "card-mat", { x: 0, y: 0, width: CARD_WIDTH, height: CARD_HEIGHT }, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   roundRect(ctx, 0, 0, CARD_WIDTH, CARD_HEIGHT, 18);
   ctx.fillStyle = "#12110d";
   ctx.fill();
@@ -113,7 +150,7 @@ function drawArtwork(
     }
     ctx.globalAlpha = 1;
     ctx.fillStyle = "rgba(35, 35, 29, 0.72)";
-    ctx.font = `700 18px ${TEXT_FONT}`;
+    ctx.font = `700 18px ${DEFAULT_TEXT_FONT}`;
     ctx.textAlign = "center";
     ctx.fillText("ARTWORK", rect.x + rect.width / 2, rect.y + rect.height / 2);
   }
@@ -121,12 +158,23 @@ function drawArtwork(
   ctx.restore();
 }
 
-function drawNameBar(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, accent: string): void {
+function drawNameBar(
+  ctx: CanvasRenderingContext2D,
+  layout: CardFaceLayout,
+  accent: string,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+): void {
   if (!layout.nameBar) {
     return;
   }
 
   ctx.save();
+  if (drawAsset(ctx, options, "unit-name-bar", layout.nameBar, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   ctx.fillStyle = accent;
   ctx.fillRect(layout.nameBar.x, layout.nameBar.y, layout.nameBar.width, layout.nameBar.height);
   if (layout.splitter) {
@@ -136,13 +184,23 @@ function drawNameBar(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, acce
   ctx.restore();
 }
 
-function drawExtraBorder(ctx: CanvasRenderingContext2D, layout: CardFaceLayout): void {
+function drawExtraBorder(
+  ctx: CanvasRenderingContext2D,
+  layout: CardFaceLayout,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+): void {
   if (!layout.extraBorder) {
     return;
   }
 
   ctx.save();
   const rect = layout.extraBorder;
+  if (drawAsset(ctx, options, "command-border", rect, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   ctx.fillStyle = PAPER;
   ctx.fillRect(rect.x + 8, rect.y, rect.width - 16, rect.height);
   ctx.strokeStyle = "rgba(79, 81, 76, 0.35)";
@@ -159,29 +217,35 @@ function drawCostBoard(
   rect: Rect,
   deployment: number | undefined,
   operation: number | undefined,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+  fonts: ResolvedRenderFonts,
 ): void {
   ctx.save();
-  ctx.fillStyle = DARK;
-  ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-  ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4);
+  const hasAsset = drawAsset(ctx, options, "cost-board", rect, assetContext);
+  if (!hasAsset) {
+    ctx.fillStyle = DARK;
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4);
+  }
 
   const deploymentText = String(deployment ?? 0);
   const deploymentSize = deploymentText.length > 1 ? 45 : 58;
   ctx.fillStyle = LIGHT;
-  ctx.font = `800 ${deploymentSize}px ${TEXT_FONT}`;
+  ctx.font = `800 ${deploymentSize}px ${fonts.utility}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(deploymentText, rect.x + 36, rect.y + 45);
 
   ctx.fillStyle = ACTIVATED;
-  ctx.font = `800 22px ${TEXT_FONT}`;
+  ctx.font = `800 22px ${fonts.utility}`;
   ctx.fillText("K", rect.x + 66, rect.y + 26);
 
   if (operation !== undefined) {
     ctx.fillStyle = LIGHT;
-    ctx.font = `800 20px ${TEXT_FONT}`;
+    ctx.font = `800 20px ${fonts.utility}`;
     ctx.fillText(String(operation), rect.x + 68, rect.y + 63);
   }
   ctx.restore();
@@ -191,26 +255,43 @@ function drawNationMark(
   ctx: CanvasRenderingContext2D,
   layout: CardFaceLayout,
   nation: { accent: string; shortLabel: string; emblem: string },
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+  fonts: ResolvedRenderFonts,
 ): void {
   ctx.save();
   const size = layout.nationSize;
   const x = layout.nationCenter.x - size / 2;
   const y = layout.nationCenter.y - size / 2;
+  if (drawAsset(ctx, options, "nation-mark", { x, y, width: size, height: size }, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   ctx.fillStyle = "rgba(79, 81, 76, 0.88)";
   ctx.fillRect(x, y, size, size);
   ctx.strokeStyle = "rgba(223, 222, 196, 0.68)";
   ctx.lineWidth = 3;
   ctx.strokeRect(x + 2, y + 2, size - 4, size - 4);
   ctx.fillStyle = LIGHT;
-  ctx.font = nation.emblem === "star" ? `800 34px ${TEXT_FONT}` : `800 20px ${TEXT_FONT}`;
+  ctx.font = nation.emblem === "star" ? `800 34px ${fonts.utility}` : `800 20px ${fonts.utility}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(resolveNationGlyph(nation), layout.nationCenter.x, layout.nationCenter.y + 1);
   ctx.restore();
 }
 
-function drawFrame(ctx: CanvasRenderingContext2D): void {
+function drawFrame(
+  ctx: CanvasRenderingContext2D,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+): void {
   ctx.save();
+  if (drawAsset(ctx, options, "frame", { x: 0, y: 0, width: CARD_WIDTH, height: CARD_HEIGHT }, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   ctx.lineWidth = 8;
   ctx.strokeStyle = "#c3bda8";
   roundRect(ctx, 4, 4, CARD_WIDTH - 8, CARD_HEIGHT - 8, 16);
@@ -223,7 +304,14 @@ function drawFrame(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
 }
 
-function drawRarity(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, color: string, rarityId: string): void {
+function drawRarity(
+  ctx: CanvasRenderingContext2D,
+  layout: CardFaceLayout,
+  color: string,
+  rarityId: string,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+): void {
   if (!layout.rarity) {
     return;
   }
@@ -235,31 +323,59 @@ function drawRarity(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, color
   const totalWidth = pipCount * pipWidth + (pipCount - 1) * gap;
   const startX = layout.rarity.x + (layout.rarity.width - totalWidth) / 2;
   ctx.fillStyle = color;
+  let usedPipAsset = false;
   for (let i = 0; i < pipCount; i += 1) {
-    ctx.fillRect(startX + i * (pipWidth + gap), layout.rarity.y + 4, pipWidth, layout.rarity.height - 8);
+    const pipRect = { x: startX + i * (pipWidth + gap), y: layout.rarity.y + 4, width: pipWidth, height: layout.rarity.height - 8 };
+    const hasPipAsset = drawAsset(ctx, options, "rarity-pip", pipRect, assetContext);
+    usedPipAsset = hasPipAsset || usedPipAsset;
+    if (!hasPipAsset) {
+      ctx.fillRect(pipRect.x, pipRect.y, pipRect.width, pipRect.height);
+    }
   }
-  ctx.strokeStyle = "rgba(79, 81, 76, 0.35)";
-  ctx.strokeRect(layout.rarity.x, layout.rarity.y, layout.rarity.width, layout.rarity.height);
+  if (!usedPipAsset) {
+    ctx.strokeStyle = "rgba(79, 81, 76, 0.35)";
+    ctx.strokeRect(layout.rarity.x, layout.rarity.y, layout.rarity.width, layout.rarity.height);
+  }
   ctx.restore();
 }
 
-function drawSet(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, mark: string): void {
+function drawSet(
+  ctx: CanvasRenderingContext2D,
+  layout: CardFaceLayout,
+  mark: string,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+  fonts: ResolvedRenderFonts,
+): void {
   if (!layout.setAnchor) {
     return;
   }
 
   ctx.save();
+  const setRect = { x: layout.setAnchor.x - 28, y: layout.setAnchor.y - 26, width: 28, height: 28 };
+  if (drawAsset(ctx, options, "set-mark", setRect, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   ctx.fillStyle = "rgba(79, 81, 76, 0.55)";
-  ctx.font = `800 16px ${TEXT_FONT}`;
+  ctx.font = `800 16px ${fonts.utility}`;
   ctx.textAlign = "right";
   ctx.textBaseline = "alphabetic";
   ctx.fillText(mark, layout.setAnchor.x, layout.setAnchor.y);
   ctx.restore();
 }
 
-function drawValues(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, card: CardSpec): void {
+function drawValues(
+  ctx: CanvasRenderingContext2D,
+  layout: CardFaceLayout,
+  card: CardSpec,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+  fonts: ResolvedRenderFonts,
+): void {
   if (layout.template === "hq" && layout.hqDefenseBoard) {
-    drawStatBoard(ctx, layout.hqDefenseBoard, card.stats.hqDefense, "HQ", 58);
+    drawStatBoard(ctx, layout.hqDefenseBoard, card.stats.hqDefense, "HQ", 58, "hq-defense-board", options, assetContext, fonts);
     return;
   }
 
@@ -269,32 +385,61 @@ function drawValues(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, card:
 
   const attackRect = isSpecialAttackKind(card.kind) && layout.specialAttackBoard ? layout.specialAttackBoard : layout.attackBoard;
   if (attackRect) {
-    drawStatBoard(ctx, attackRect, card.stats.attack, "", 42);
+    drawStatBoard(
+      ctx,
+      attackRect,
+      card.stats.attack,
+      "",
+      42,
+      isSpecialAttackKind(card.kind) ? "special-attack-board" : "attack-board",
+      options,
+      assetContext,
+      fonts,
+    );
   }
-  drawStatBoard(ctx, layout.defenseBoard, card.stats.defense, "", 42);
+  drawStatBoard(ctx, layout.defenseBoard, card.stats.defense, "", 42, "defense-board", options, assetContext, fonts);
 }
 
-function drawTypeIcon(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, kind: CardKind, symbol: string): void {
+function drawTypeIcon(
+  ctx: CanvasRenderingContext2D,
+  layout: CardFaceLayout,
+  kind: CardKind,
+  symbol: string,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+  fonts: ResolvedRenderFonts,
+): void {
   if (!layout.typeIcon) {
     return;
   }
 
   ctx.save();
   const rect = layout.typeIcon;
+  if (drawAsset(ctx, options, "type-icon", rect, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   ctx.fillStyle = DARK;
   ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
   ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
   ctx.lineWidth = 3;
   ctx.strokeRect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4);
   ctx.fillStyle = LIGHT;
-  ctx.font = `800 ${kind === "order" || kind === "countermeasure" ? 34 : 22}px ${TEXT_FONT}`;
+  ctx.font = `800 ${kind === "order" || kind === "countermeasure" ? 34 : 22}px ${fonts.utility}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(resolveTypeGlyph(kind, symbol), rect.x + rect.width / 2, rect.y + rect.height / 2 + 1);
   ctx.restore();
 }
 
-function drawText(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, card: CardSpec, accent: string): void {
+function drawText(
+  ctx: CanvasRenderingContext2D,
+  layout: CardFaceLayout,
+  card: CardSpec,
+  accent: string,
+  fonts: ResolvedRenderFonts,
+): void {
   const keywordLine = card.keywordLine?.trim();
 
   ctx.save();
@@ -303,20 +448,20 @@ function drawText(ctx: CanvasRenderingContext2D, layout: CardFaceLayout, card: C
 
   if (layout.title) {
     ctx.fillStyle = shouldUseDarkTitle(card.nation) ? DARK : LIGHT;
-    fitText(ctx, card.title.toUpperCase(), layout.title.x, layout.title.y, layout.title.maxWidth, layout.title.size);
+    fitText(ctx, card.title.toUpperCase(), layout.title.x, layout.title.y, layout.title.maxWidth, layout.title.size, fonts.title);
   } else if (layout.text.titleY !== undefined) {
     ctx.fillStyle = DARK;
-    fitText(ctx, card.title.toUpperCase(), 250, layout.text.titleY, 340, 32);
+    fitText(ctx, card.title.toUpperCase(), 250, layout.text.titleY, 340, 32, fonts.title);
   }
 
   if (keywordLine) {
     ctx.fillStyle = accent;
-    ctx.font = `800 22px ${TEXT_FONT}`;
+    ctx.font = `800 22px ${fonts.utility}`;
     ctx.fillText(keywordLine, 250, layout.text.keywordY);
   }
 
   ctx.fillStyle = DARK;
-  ctx.font = `400 24px ${TEXT_FONT}`;
+  ctx.font = `400 24px ${fonts.body}`;
   const bodyY = keywordLine ? layout.text.bodyY : layout.text.keywordY + 8;
   const bodyMaxLines = Math.max(
     1,
@@ -332,28 +477,35 @@ function drawStatBoard(
   value: number | undefined,
   label: string,
   fontSize: number,
+  assetSlot: CardRenderAssetSlot,
+  options: RenderCardOptions,
+  assetContext: CardRenderAssetContext,
+  fonts: ResolvedRenderFonts,
 ): void {
   ctx.save();
-  ctx.fillStyle = DARK;
-  ctx.beginPath();
-  ctx.moveTo(rect.x + 6, rect.y + 4);
-  ctx.lineTo(rect.x + rect.width - 6, rect.y + 4);
-  ctx.lineTo(rect.x + rect.width - 6, rect.y + rect.height - 18);
-  ctx.lineTo(rect.x + rect.width / 2, rect.y + rect.height - 4);
-  ctx.lineTo(rect.x + 6, rect.y + rect.height - 18);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
-  ctx.lineWidth = 3;
-  ctx.stroke();
+  const hasAsset = drawAsset(ctx, options, assetSlot, rect, assetContext);
+  if (!hasAsset) {
+    ctx.fillStyle = DARK;
+    ctx.beginPath();
+    ctx.moveTo(rect.x + 6, rect.y + 4);
+    ctx.lineTo(rect.x + rect.width - 6, rect.y + 4);
+    ctx.lineTo(rect.x + rect.width - 6, rect.y + rect.height - 18);
+    ctx.lineTo(rect.x + rect.width / 2, rect.y + rect.height - 4);
+    ctx.lineTo(rect.x + 6, rect.y + rect.height - 18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
 
   ctx.fillStyle = LIGHT;
-  ctx.font = `800 ${fontSize}px ${TEXT_FONT}`;
+  ctx.font = `800 ${fontSize}px ${fonts.utility}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(String(value ?? 0), rect.x + rect.width / 2, rect.y + rect.height / 2 - 4);
   if (label) {
-    ctx.font = `800 14px ${TEXT_FONT}`;
+    ctx.font = `800 14px ${fonts.utility}`;
     ctx.fillText(label, rect.x + rect.width / 2, rect.y + rect.height - 22);
   }
   ctx.restore();
@@ -432,9 +584,10 @@ function fitText(
   y: number,
   maxWidth: number,
   initialSize: number,
+  fontFamily = DEFAULT_TEXT_FONT,
 ): void {
-  const size = getFittedFontSize(ctx, text, maxWidth, initialSize, 18);
-  ctx.font = `800 ${size}px ${TEXT_FONT}`;
+  const size = getFittedFontSize(ctx, text, maxWidth, initialSize, 18, fontFamily);
+  ctx.font = `800 ${size}px ${fontFamily}`;
   ctx.fillText(truncateToWidth(ctx, text, maxWidth), x, y);
 }
 
@@ -444,10 +597,11 @@ export function getFittedFontSize(
   maxWidth: number,
   initialSize: number,
   minimumSize: number,
+  fontFamily = DEFAULT_TEXT_FONT,
 ): number {
   let size = initialSize;
   while (size > minimumSize) {
-    ctx.font = `800 ${size}px ${TEXT_FONT}`;
+    ctx.font = `800 ${size}px ${fontFamily}`;
     if (ctx.measureText(text).width <= maxWidth) {
       break;
     }
@@ -556,4 +710,28 @@ function isSpecialAttackKind(kind: CardKind): boolean {
 
 function shouldUseDarkTitle(nationId: string): boolean {
   return nationId === "finland";
+}
+
+function drawAsset(
+  ctx: CanvasRenderingContext2D,
+  options: RenderCardOptions,
+  slot: CardRenderAssetSlot,
+  rect: Rect,
+  assetContext: CardRenderAssetContext,
+): boolean {
+  const image = options.assets?.resolveImage(slot, assetContext);
+  if (!image) {
+    return false;
+  }
+
+  ctx.drawImage(image, rect.x, rect.y, rect.width, rect.height);
+  return true;
+}
+
+function resolveRenderFonts(fonts: CardRenderFontSet | undefined): ResolvedRenderFonts {
+  return {
+    title: fonts?.title ?? fonts?.body ?? DEFAULT_TEXT_FONT,
+    body: fonts?.body ?? DEFAULT_TEXT_FONT,
+    utility: fonts?.utility ?? fonts?.title ?? fonts?.body ?? DEFAULT_TEXT_FONT,
+  };
 }

@@ -1,5 +1,65 @@
 # KARDS Style Replication Task Notes
 
+## Stage 2 Current Worktree
+
+- Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness`
+- Thread/task: KARDS official-style private asset-pack calibration and reference pixel diff
+- Base branch/base commit: `main`, `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`
+- Current branch/HEAD: `codex/kards-private-asset-harness`, uncommitted implementation pending integration commit
+- Task goal: support personal local official-material validation through a user-selected asset pack and reference-PNG pixel metrics while keeping official assets out of git and default builds
+- Status: ready-for-integration
+- Shared hotspot files touched: `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/App.tsx`, renderer tests, active docs
+- Tests run:
+  - `npm ci`: passed, 0 vulnerabilities
+  - `npm run typecheck`: passed
+  - `npm run test`: passed, 7 files and 36 tests
+  - `npm run build`: passed
+  - HTTP smoke at `http://127.0.0.1:5174/`: passed, HTTP 200 and root marker present
+  - Final review-fix target test: passed, 3 files and 18 tests
+- Tests not run yet:
+  - No real official extracted asset pack was loaded in browser because this worktree does not contain official assets and this machine lacks a local UnrealPak/FModel/repak executable.
+  - No Playwright/UI automation suite exists.
+- Potential overlap with other worktrees:
+  - Direct overlap risk with any parallel renderer/UI work touching `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, or `src/App.tsx`.
+  - No other KARDS worktree existed before creating this branch.
+- Recommended integration order:
+  - Integrate this infrastructure before any extracted-material atlas or exact official sprite-slicing pass.
+
+## Stage 2 Delivery Package Draft
+
+1. Changed this phase:
+   - Added typed renderer asset slots and a specificity-based local asset resolver.
+   - Extended `renderCard` with optional asset/font render options while preserving default placeholder rendering.
+   - Added a browser local asset-pack loader for a user-selected folder containing `kards-asset-pack.json`, images, and optional fonts.
+   - Added Project panel controls for loading local assets and comparing the current canvas against a reference PNG.
+   - Added pixel diff metrics for MAE, RMSE, max channel delta, and changed-pixel ratio.
+2. Files touched:
+   - Core files: `src/canvas/renderAssets.ts`, `src/canvas/cardRenderer.ts`, `src/assetPack.ts`, `src/visualDiff.ts`, `src/App.tsx`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/styles.css`.
+   - Test files: `src/canvas/cardRenderer.test.ts`, `src/canvas/renderAssets.test.ts`, `src/assetPack.test.ts`, `src/visualDiff.test.ts`.
+   - Docs: `docs/active/_worktree_registry.md`, `docs/active/kards-style-replication/plan.md`, `context.md`, `task.md`, `asset-pack-manifest.example.json`.
+   - Lessons: `lessons learned.md`.
+   - Temporary files: `.runtime/dev/*` only, gitignored.
+3. Diff summary:
+   - Production changes are concentrated in Canvas rendering options, local asset-pack session state, Project panel controls, and optional visual diff support.
+   - `CardSpec` schema remains unchanged; local official assets are not saved into JSON/localStorage.
+   - Default rendering still works without an asset pack.
+4. Commit status:
+   - Not committed yet; pending final review/validation and integration closeout.
+5. Base divergence:
+   - Branch was created from current `main` at `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`; main has not been updated during this implementation yet.
+6. Potential conflicts:
+   - High direct-conflict risk with future renderer/UI branches touching the same files; low conflict risk with docs-only or storage-only changes.
+7. Validation:
+   - Typecheck, unit tests, build, focused review-fix tests, and HTTP smoke all passed after `npm ci`.
+8. Unverified risks:
+   - Real official asset extraction was not performed because no local UnrealPak/FModel/repak executable was found.
+   - Browser folder loading is implemented around `webkitdirectory`, which is suitable for Chromium-style local use but not a full cross-browser asset management system.
+   - Pixel diff currently compares numeric output only; it does not yet render an overlay heatmap.
+9. Recommended next step:
+   - Commit, merge into `main`, push, then use an external Unreal asset browser/exporter to create a private `kards-asset-pack.json` folder for actual official-material calibration.
+10. Integration recommendation:
+   - Merge this branch into `main` after final review; no cherry-pick needed unless another renderer branch appears before integration.
+
 ## Stage 1 Current Worktree
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

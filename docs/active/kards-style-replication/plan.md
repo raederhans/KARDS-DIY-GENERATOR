@@ -54,3 +54,30 @@ The user does not need a generic WWII card generator. The target is a local stat
 - No asset-pack import UI is added in this stage.
 - No card rules parser, automation, deck validation, account, or game feature is added.
 - No README edits.
+
+## Stage 2 Private Asset Calibration
+
+- [x] Create an isolated worktree from `main` for private asset-pack calibration work.
+- [x] Re-check local lessons learned and current Stage 1 renderer boundaries.
+- [x] Run read-only subagent review for code hotspots, asset extraction constraints, and first-principles risk.
+- [x] Add a lightweight renderer asset-slot interface without changing the default `renderCard` call path.
+- [x] Add a browser-only local asset-pack loader based on `kards-asset-pack.json`.
+- [x] Keep local official-derived images/fonts out of git, `src`, `public`, and default `dist`.
+- [x] Add an optional current-canvas versus reference-PNG pixel diff path.
+- [x] Add unit tests for asset-slot selection, renderer asset usage, and pixel diff math.
+- [x] Run final validation and review before integration.
+- [ ] Commit, merge back to `main`, push, and clean the worktree if validation stays green.
+
+## Stage 2 Visual Thesis
+
+- Visual thesis: a private calibration mode that lets the Canvas surface use native KARDS-like material slices while keeping the editor quiet, dense, and tool-like.
+- Content plan: preserve the current editor as the first screen, add only two Project controls for local asset loading and reference comparison, then surface compact status metrics.
+- Interaction thesis: directory pick for one-step local pack loading, immediate canvas re-render when the pack resolves, and one-click PNG comparison with numeric diff feedback.
+
+## Stage 2 Non-Goals
+
+- No bundled official asset pack.
+- No automatic game-directory scanning from the browser.
+- No network download path for official cards.
+- No gameplay, rules, deck, account, or automation features.
+- No README edits.

@@ -345,6 +345,37 @@ input[type="range"] {
   font-size: 13px;
 }
 
+.asset-pack-status,
+.diff-status {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.asset-pack-status p,
+.diff-status p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.asset-pack-status strong,
+.diff-status strong {
+  color: var(--text);
+  text-align: right;
+}
+
+.asset-pack-status .status-warning,
+.diff-status .status-warning {
+  display: block;
+  color: #f1c0ad;
+  line-height: 1.35;
+}
+
 .disclaimer {
   margin: 0;
   color: var(--muted);

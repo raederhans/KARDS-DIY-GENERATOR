@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "name": "Local KARDS private calibration pack",
+  "rightsNotice": "Personal local validation only. Do not commit extracted official assets.",
+  "images": [
+    {
+      "slot": "frame",
+      "file": "images/frame/unit-frame.png",
+      "template": "unit"
+    },
+    {
+      "slot": "cost-board",
+      "file": "images/boards/cost-board.png"
+    },
+    {
+      "slot": "nation-mark",
+      "file": "images/nations/britain.png",
+      "nationId": "britain"
+    },
+    {
+      "slot": "type-icon",
+      "file": "images/types/tank.png",
+      "kind": "tank"
+    },
+    {
+      "slot": "attack-board",
+      "file": "images/boards/attack-board.png"
+    },
+    {
+      "slot": "defense-board",
+      "file": "images/boards/defense-board.png"
+    },
+    {
+      "slot": "rarity-pip",
+      "file": "images/rarity/standard-pip.png",
+      "rarityId": "standard"
+    },
+    {
+      "slot": "set-mark",
+      "file": "images/sets/base.png",
+      "setId": "base"
+    }
+  ],
+  "fonts": [
+    {
+      "role": "title",
+      "family": "Kards Header Local",
+      "file": "fonts/HeaderFont.ttf"
+    },
+    {
+      "role": "body",
+      "family": "Kards Description Local",
+      "file": "fonts/DescriptionFont.ttf"
+    },
+    {
+      "role": "utility",
+      "family": "Kards Utility Local",
+      "file": "fonts/ROBOTO-BOLDCONDENSED.ttf"
+    }
+  ]
+}

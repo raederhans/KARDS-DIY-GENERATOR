@@ -90,3 +90,55 @@
 - A later repository initialization pass is adding the root `README.md`, renaming the local default branch from `master` to `main`, and publishing the project to GitHub.
 - Historical notes above still mention `master` because that was the branch name when the research and Stage 1 implementation work happened.
 - Future implementation work should branch from `main` after the GitHub initialization commit is pushed.
+
+## 2026-07-03 Stage 2 Private Asset Calibration Start
+
+- Created isolated worktree `C:\Users\raede\Documents\KARDS-private-asset-harness` on branch `codex/kards-private-asset-harness` from `main` commit `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`.
+- Current project remains private on GitHub; Stage 2 still avoids committing official KARDS image/font files.
+- Re-read `lessons learned.md`; the key rule is to separate official-asset rights from geometry and keep official-derived files outside the default build.
+- Loaded `research-before-fix` and `frontend-skill`.
+- Frontend thesis for this stage: keep the app as a compact work surface, not a landing page; add precise local calibration controls only in the Project panel.
+- Read-only subagent review results:
+  - Code hotspot review confirmed `src/canvas/layout.ts`, `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, and renderer tests are the main integration surface.
+  - Risk review confirmed official assets may be used locally for personal validation but must not enter git/default build.
+  - Asset research confirmed the local KARDS install is a traditional `.pak` path with manifest-level visibility, but this machine does not currently expose `UnrealPak.exe`, FModel, repak, or umodel commands.
+- Local KARDS install evidence:
+  - Main package: `C:\Program Files (x86)\Steam\steamapps\common\KARDS\kards\Content\Paks\kards-Windows.pak`.
+  - No `.utoc`/`.ucas` containers found in the KARDS `Paks` directory during this pass.
+  - `Manifest_UFSFiles_Win64.txt` lists card materials, fonts, faction icon texture structures, card blueprints, and candidate artwork paths.
+- Implemented Stage 2 code:
+  - Added `src/canvas/renderAssets.ts` for typed renderer asset slots and specificity-based local asset selection.
+  - Extended `renderCard` with optional `RenderCardOptions` while preserving the default call path.
+  - Added `src/assetPack.ts` to load a user-selected local folder containing `kards-asset-pack.json`, image files, and optional fonts through browser File/FontFace APIs.
+  - Added `src/visualDiff.ts` to compare the current 500x702 canvas against a user-selected reference card image.
+  - Added Project panel controls for loading local asset packs and comparing a PNG reference image.
+  - Added `docs/active/kards-style-replication/asset-pack-manifest.example.json` as a manifest example with no official assets.
+- Current validation snapshot:
+  - Initial `npm run typecheck` failed in the new worktree because `node_modules` was absent and `tsc` was not found.
+  - Ran `npm ci`; completed successfully with 0 vulnerabilities.
+  - `npm run typecheck`: passed after dependency install.
+  - `npm run test`: passed, 6 test files and 32 tests.
+  - `npm run build`: passed, Vite production build generated `dist/`.
+  - HTTP smoke on temporary Vite dev server `http://127.0.0.1:5174/`: passed with HTTP 200 and root marker present.
+  - Temporary dev server listener was stopped and port 5174 was confirmed clear.
+- Added one lesson: browser-based private asset calibration should use a user-selected manifest folder rather than hard-coding a game install path or reading Unreal pak files directly.
+- Pending:
+  - Re-run validation after final review fixes.
+  - Complete integration closeout.
+
+## 2026-07-03 Stage 2 Review Fixes
+
+- Independent final review found no critical or high severity blockers.
+- Accepted all review findings:
+  - Added a confirmation gate and `Export Private PNG` label when exporting while a local asset pack is loaded.
+  - Added asset-pack request id and mounted-state guards so stale async loads dispose their resources instead of overwriting newer selections.
+  - Added `src/assetPack.test.ts` covering manifest loading, missing-file warnings, object URL cleanup, and FontFace cleanup.
+  - Added visual diff input validation for zero-size dimensions and short RGBA arrays.
+- Targeted review-fix validation:
+  - `npx vitest run src/assetPack.test.ts src/visualDiff.test.ts src/canvas/cardRenderer.test.ts`: passed, 3 files and 18 tests.
+- Final pre-integration validation:
+  - `npm run typecheck`: passed.
+  - `npm run test`: passed, 7 files and 36 tests.
+  - `npm run build`: passed.
+  - HTTP smoke on temporary Vite dev server `http://127.0.0.1:5174/`: passed with HTTP 200 and root marker present.
+  - Temporary dev server parent and child listener were stopped; port 5174 was confirmed clear.

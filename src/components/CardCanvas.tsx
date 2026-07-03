@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CARD_HEIGHT, CARD_WIDTH, isPointInsideArtwork, renderCard } from "../canvas/cardRenderer";
+import type { RenderCardOptions } from "../canvas/renderAssets";
 import type { CardSpec } from "../types";
 
 type CardCanvasProps = {
@@ -7,6 +8,7 @@ type CardCanvasProps = {
   artworkImage: HTMLImageElement | null;
   onCropChange: (crop: CardSpec["artwork"]["crop"]) => void;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  renderOptions?: RenderCardOptions;
 };
 
 type DragState = {
@@ -17,15 +19,15 @@ type DragState = {
   cropY: number;
 };
 
-export function CardCanvas({ card, artworkImage, onCropChange, canvasRef }: CardCanvasProps) {
+export function CardCanvas({ card, artworkImage, onCropChange, canvasRef, renderOptions }: CardCanvasProps) {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (canvasRef.current) {
-      renderCard(canvasRef.current, card, artworkImage);
+      renderCard(canvasRef.current, card, artworkImage, renderOptions);
     }
-  }, [artworkImage, canvasRef, card]);
+  }, [artworkImage, canvasRef, card, renderOptions]);
 
   function getCanvasPoint(event: React.PointerEvent<HTMLCanvasElement> | React.WheelEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CARD } from "../cardModel";
 import type { CardSpec } from "../types";
 import { CARD_HEIGHT, CARD_WIDTH, createWrappedTextLines, getFittedFontSize, renderCard, truncateToWidth } from "./cardRenderer";
+import { createStaticAssetResolver } from "./renderAssets";
 
 function createMeasureContext() {
   return {
@@ -139,6 +140,23 @@ describe("card renderer output", () => {
       .filter((y) => y >= 585 && y < 675);
     expect(lowerBodyTextYs.length).toBeGreaterThan(0);
     expect(Math.max(...lowerBodyTextYs)).toBeLessThanOrEqual(650);
+  });
+
+  it("draws local asset-pack layers without replacing dynamic text values", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const localImage = { width: 20, height: 20 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([
+      { slot: "frame", image: localImage },
+      { slot: "cost-board", image: localImage },
+      { slot: "nation-mark", nationId: DEFAULT_CARD.nation, image: localImage },
+      { slot: "type-icon", kind: DEFAULT_CARD.kind, image: localImage },
+    ]);
+
+    renderCard(canvas, DEFAULT_CARD, null, { assets, disablePrintWear: true });
+
+    expect(calls.drawImage).toContainEqual([localImage, 0, 0, CARD_WIDTH, CARD_HEIGHT]);
+    expect(calls.drawImage).toContainEqual([localImage, 12, 13, 86, 86]);
+    expect(calls.fillText.some(([text]) => text === String(DEFAULT_CARD.costs.deployment))).toBe(true);
   });
 });
 

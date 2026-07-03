@@ -1,5 +1,47 @@
 # Worktree Registry
 
+## KARDS private asset calibration Stage 2
+
+- Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness`
+- Thread/task: KARDS official-style private asset-pack calibration and pixel reference validation
+- Base branch/base commit: `main`, `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`
+- Current branch/HEAD: `codex/kards-private-asset-harness`, initially at `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`
+- Task goal: allow personal local official-asset calibration through a user-selected asset pack and reference-PNG pixel diff, without committing or bundling official KARDS assets
+- Status: ready-for-integration
+- Main changed files:
+  - `src/canvas/renderAssets.ts`
+  - `src/canvas/cardRenderer.ts`
+  - `src/components/CardCanvas.tsx`
+  - `src/components/ProjectPanel.tsx`
+  - `src/App.tsx`
+  - `src/assetPack.ts`
+  - `src/visualDiff.ts`
+  - `src/canvas/cardRenderer.test.ts`
+  - `src/canvas/renderAssets.test.ts`
+  - `src/assetPack.test.ts`
+  - `src/visualDiff.test.ts`
+  - `src/styles.css`
+  - `docs/active/kards-style-replication/asset-pack-manifest.example.json`
+  - `docs/active/kards-style-replication/plan.md`
+  - `docs/active/kards-style-replication/context.md`
+  - `docs/active/_worktree_registry.md`
+  - `lessons learned.md`
+- Shared hotspot files touched: Canvas renderer, renderer options API, Project panel controls, app state, visual validation path, active task docs
+- Validation run so far:
+  - `npm ci`: passed, 0 vulnerabilities
+  - `npm run typecheck`: passed
+  - `npm run test`: passed, 7 files and 36 tests
+  - `npm run build`: passed
+  - HTTP smoke at `http://127.0.0.1:5174/`: passed, temporary listener stopped
+- Tests not run yet:
+  - Final re-run after cleanup edits
+  - Browser smoke not yet run for the new Project controls
+- Potential overlap with other worktrees:
+  - Direct file overlap with future renderer/layout/UI work: `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/App.tsx`
+  - No other KARDS feature worktree was present when this branch was created
+- Recommended integration order: integrate this private calibration infrastructure before any exact extracted-material atlas work, because later official slices need these slots and diff metrics
+- Next action: commit this branch, merge to `main`, push, and clean the worktree if checks stay green
+
 ## KARDS GitHub initialization
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
