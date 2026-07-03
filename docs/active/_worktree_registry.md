@@ -2,10 +2,10 @@
 
 ## KARDS private asset calibration Stage 2
 
-- Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness`
+- Worktree name/path: private asset harness, `C:\Users\raede\Documents\KARDS-private-asset-harness` (removed after integration)
 - Thread/task: KARDS official-style private asset-pack calibration and pixel reference validation
 - Base branch/base commit: `main`, `956271ca8fd9d037dac9172a8d02ac4f9ba8a97d`
-- Current branch/HEAD: merged into `main` at `460294a0f3aa45c661e59e41ccc1e24ca2b94625`
+- Current branch/HEAD: merged into `main`; closeout pushed at `9018579`
 - Task goal: allow personal local official-asset calibration through a user-selected asset pack and reference-PNG pixel diff, without committing or bundling official KARDS assets
 - Status: integrated
 - Main changed files:
@@ -33,6 +33,8 @@
   - `npm run test`: passed, 7 files and 36 tests
   - `npm run build`: passed
   - HTTP smoke at `http://127.0.0.1:5174/`: passed, temporary listener stopped
+  - `git push`: passed, `main` pushed to `origin`
+  - `git worktree remove C:\Users\raede\Documents\KARDS-private-asset-harness`: passed
 - Tests not run yet:
   - Final re-run after cleanup edits
   - Browser smoke not yet run for the new Project controls
@@ -40,7 +42,7 @@
   - Direct file overlap with future renderer/layout/UI work: `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/App.tsx`
   - No other KARDS feature worktree was present when this branch was created
 - Recommended integration order: integrate this private calibration infrastructure before any exact extracted-material atlas work, because later official slices need these slots and diff metrics
-- Next action: push `main` and remove the integrated private asset harness worktree after final verification
+- Next action: create a private local asset pack from exported KARDS material slices, then use the new loader and PNG diff to calibrate exact visual layers
 
 ## KARDS GitHub initialization
 

@@ -8,6 +8,7 @@
 - Current branch/HEAD: merged into `main` at `460294a0f3aa45c661e59e41ccc1e24ca2b94625`
 - Task goal: support personal local official-material validation through a user-selected asset pack and reference-PNG pixel metrics while keeping official assets out of git and default builds
 - Status: integrated
+- Cleanup status: integrated worktree removed after push; feature commit remains recoverable at `460294a0f3aa45c661e59e41ccc1e24ca2b94625`
 - Shared hotspot files touched: `src/canvas/cardRenderer.ts`, `src/components/CardCanvas.tsx`, `src/components/ProjectPanel.tsx`, `src/App.tsx`, renderer tests, active docs
 - Tests run:
   - `npm ci`: passed, 0 vulnerabilities

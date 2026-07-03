@@ -155,6 +155,12 @@
   - `npm run test`: passed, 7 files and 36 tests.
   - `npm run build`: passed.
 - Pending after this note:
-  - Commit this closeout note.
-  - Push `main`.
-  - Remove the integrated Stage 2 worktree.
+  - Commit this cleanup closeout note.
+
+## 2026-07-03 Stage 2 Push And Cleanup
+
+- Pushed `main` to `origin`: `956271c..9018579`.
+- Removed integrated worktree `C:\Users\raede\Documents\KARDS-private-asset-harness`.
+- Retained recovery pointers in git history and registry:
+  - Feature commit: `460294a0f3aa45c661e59e41ccc1e24ca2b94625`.
+  - Integration closeout commit: `9018579`.
