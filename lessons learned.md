@@ -6,3 +6,4 @@
 - Browser-based private asset calibration should not hard-code a game install path or read Unreal pak files directly; use a user-selected manifest folder of already-exported images/fonts and keep it out of git.
 - Private official-asset generators need output ownership guards: default to `.runtime`, write a marker file, and refuse to clean generated subfolders when the marker is missing.
 - Element-slot visual smoke must state its scope plainly: a 37/37 crop match proves slot geometry and asset identity, not full-card typography, print wear, or complete visual equivalence.
+- Coverage reports must keep source status separate from variable coverage: synthetic/layout-only samples can prove renderer stress cases, but must not be counted as extracted official pixel assets.

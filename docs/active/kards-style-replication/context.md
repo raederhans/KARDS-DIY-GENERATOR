@@ -378,3 +378,48 @@
 - Removed integrated worktree `C:\Users\raede\Documents\KARDS-visual-smoke-calibration`.
 - Deleted merged local branch `codex/kards-visual-smoke-calibration`.
 - Recovery pointer: `81d7f8b`.
+
+## 2026-07-03 Stage 5 Card-Face/View Element Extraction Start
+
+- Created isolated worktree `C:\Users\raede\Documents\KARDS-card-face-elements-stage5` on branch `codex/kards-card-face-elements-stage5` from `main` commit `87c136d`.
+- Re-read `frontend-skill`, `ultrawork`, `lessons learned.md`, active replication docs, and the worktree registry.
+- `ultrawork` reference file `references/agent-tiers.md` was missing locally, so Stage 5 continues with direct-tool ownership plus bounded read-only subagent lanes.
+- Current first-principles boundary:
+  - the user wants all remaining card-face and inspect/view-state elements;
+  - official-derived assets may be generated only for private local validation under `.runtime`;
+  - gameplay/combat/match effects are excluded for this stage.
+- Local KARDS install still exposes manifest text files at `C:\Program Files (x86)\Steam\steamapps\common\KARDS`, including `Manifest_UFSFiles_Win64.txt`.
+- Existing private Stage 3 pack remains available at `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-official-coverage-pack`.
+- Stage 5 acceptance targets:
+  - every extracted element class has source evidence, coordinates or source path, output path, dimensions, and a renderer-readiness conclusion;
+  - official-derived files stay out of git;
+  - any renderer-connected element has deterministic manifest filters and automated validation.
+
+## 2026-07-03 Stage 5 Output And Validation
+
+- Extended `tools/kards_private_calibration.py` with `--profile stage5`; the default profile remains Stage 3.
+- Generated private Stage 5 output at `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage5-card-face-elements`.
+- Output summary:
+  - official samples: 23,
+  - synthetic HQ samples: 3,
+  - required axes: 98,
+  - covered axes: 98,
+  - missing axes: 0,
+  - renderer-ready manifest images: 37,
+  - stage5 reference crops: 425,
+  - local manifest candidates: 539.
+- Sample expansion beyond Stage 3 includes `b29_superfortress`, `maus`, `jet_prototype`, `gordon_highlanders`, `heroes_of_the_soviet_union`, `front_formation`, `641st_rifles`, and `554th_rifle_regiment`.
+- The Stage 5 manifest deliberately keeps only clean renderer-ready slots: `nation-mark`, `type-icon`, `rarity-pip`, and `set-mark`.
+- Full-card, frame, board, cost/stat, title, keyword, body, print-wear, and inspect/view crops are recorded as `reference-only`.
+- `view-glow` and `zoom-shadow` are recorded as `indexed-only-unextracted`; they need pak extraction or official inspect-view captures before they can become pixel assets.
+- Reviewer fix: HQ element definitions are now `synthetic-layout-only`; HQ layout and defense-number coverage remains via 3 local synthetic samples, but the report no longer claims any official HQ reference crop.
+- Validation performed:
+  - `py -3 -m py_compile tools\kards_private_calibration.py`: passed.
+  - Stage 5 generation command: passed, 98/98 coverage.
+  - `npm run smoke:visual:kards -- --pack "C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage5-card-face-elements" --output "C:\Users\raede\Documents\KARDS\.runtime\kards-visual-smoke-calibration\stage5-card-face-elements" --port 5179`: passed, 37/37 elements.
+  - Default Stage 3 generation without `--profile`: passed, 15 samples, 37/37 coverage, 37 manifest images.
+  - Stage 3 default regression smoke on `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-default-regression-pack`: passed, 37/37 elements.
+  - `npm test`: passed, 7 files and 38 tests.
+  - `npm run build`: passed.
+  - Ports 5179 and 5180 were confirmed clear after smoke.
+- Setup note: the first Stage 5 smoke attempt failed because the new worktree lacked `node_modules` and `vite` was not found; `npm ci` passed with 0 vulnerabilities, then the smoke rerun passed.

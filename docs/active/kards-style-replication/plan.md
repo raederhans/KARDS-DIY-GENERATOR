@@ -127,3 +127,38 @@ The user does not need a generic WWII card generator. The target is a local stat
 - No full-card visual equivalence claim yet.
 - No pak/UI-atlas extraction in this stage.
 - No README edits.
+
+## Stage 5 Card-Face And View Element Extraction
+
+- [x] Create an isolated worktree from current `main` for card-face/view element extraction.
+- [x] Re-check lessons learned, active task docs, Stage 3/4 private outputs, and current renderer asset boundaries.
+- [x] Build a bounded taxonomy for static card-face elements, variable-bearing elements, and card inspect/view-state effects.
+- [x] Extend the private extraction pipeline so feasible elements are copied/cropped into `.runtime` with coordinates, source card, variable filters, and rights notes.
+- [x] Keep official-derived files out of git, `src`, `public`, and default `dist`.
+- [x] Add or extend manifest slots only for elements that the renderer can resolve deterministically.
+- [x] Add calibration/report checks for every extracted element class, including dimensions, source rect, and coverage status.
+- [x] Run typecheck, tests, build, and visual smoke or equivalent artifact validation.
+- [ ] Complete independent review, commit, merge, push, and worktree cleanup.
+
+## Stage 5 Extraction Boundary
+
+- Included: static card-face materials, boards, bars, frames, text/number-bearing surfaces, print/view overlays, and card inspect/view presentation effects that are visible on the card or its enlarged view.
+- Excluded: in-match combat effects, hit animations, deployment animations, board VFX, projectile/impact effects, and gameplay-only state animations.
+- If an element cannot be cleanly isolated from full-card renders, keep it as a measured reference crop first and do not wire it into the renderer until the source and semantics are clear.
+
+## Stage 5 Output Snapshot
+
+- Private output: `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage5-card-face-elements`
+- Official samples: 23; synthetic HQ layout samples: 3.
+- Coverage: 98/98 required axes, missing 0.
+- Renderer-ready manifest images: 37, limited to nation marks, type icons, rarity pips, and set marks.
+- Reference crops: 425 full-card/board/text/number/view-treatment crops under `references/stage5-elements`.
+- Local KARDS manifest candidates: 539 indexed candidates from the pak manifest; `view-glow` and `zoom-shadow` remain indexed-only until clean pak extraction or official inspect-view capture is available.
+- HQ is covered as local synthetic layout/defense-number samples only; no official HQ reference crop is claimed because the CraftSoul official card-image route has no HQ card type.
+- Validation: Python compile passed; Stage5 generation passed; Stage5 visual smoke passed 37/37; default Stage3 generation and smoke passed 37/37; `npm test` passed 38/38; `npm run build` passed; smoke ports 5179 and 5180 confirmed released.
+
+## Stage 5 Visual Thesis
+
+- Visual thesis: treat the official card as a layered print object, where each material slice has a measured slot and a clear rule for when it appears.
+- Content plan: no new landing UI; preserve the current editor and expand only the private calibration assets/reporting path until renderer-ready slots are proved.
+- Interaction thesis: later viewer polish should feel like a quiet inspection loupe, not a battle animation surface.

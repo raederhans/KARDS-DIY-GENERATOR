@@ -1,5 +1,76 @@
 # KARDS Style Replication Task Notes
 
+## Stage 5 Current Worktree
+
+- Worktree name/path: card-face elements Stage 5, `C:\Users\raede\Documents\KARDS-card-face-elements-stage5`
+- Thread/task: KARDS remaining card-face, variable-element, and inspect/view-effect extraction
+- Base branch/base commit: `main`, `87c136d`
+- Current branch/HEAD: `codex/kards-card-face-elements-stage5`, ready for integration and not yet committed
+- Task goal: extract and calibrate the remaining card-face and card-view/inspect-state elements while excluding in-match gameplay effects and keeping official-derived assets private under `.runtime`
+- Status: ready-for-integration
+- Shared hotspot files touched: private extraction tooling and active docs; renderer slot schema, renderer implementation, and visual smoke tooling were not changed
+- Tests run so far:
+  - Initial `git status --short --branch`: clean on `main`
+  - `git worktree list --porcelain`: only main existed before Stage 5 worktree creation
+  - Stage 5 worktree creation: passed from `87c136d`
+  - `py -3 -m py_compile tools\kards_private_calibration.py`: passed
+  - Stage 5 generation command: passed, selected 23 official samples and 3 synthetic HQ samples, covered 98/98 axes, generated 37 manifest images and 425 reference crops
+  - Reviewer fix verification: HQ reference crop count is 0 and HQ definitions are `synthetic-layout-only`, so no official HQ crop is claimed
+  - Default Stage 3 generation without `--profile`: passed, 15 samples, 37/37 coverage, 37 manifest images
+  - Stage 3 default regression visual smoke: passed, 37/37 elements
+  - `npm ci`: passed after the first smoke attempt exposed missing `node_modules`
+  - Stage 5 visual smoke on pack `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage5-card-face-elements`: passed, 37/37 elements
+  - `npm test`: passed, 7 files and 38 tests
+  - `npm run build`: passed
+  - Port 5179 check after smoke: clear
+  - Independent review: first pass found the HQ coverage overclaim and missing Stage3 regression; second pass confirmed both issues closed and approved integration
+- Tests not run yet:
+  - none before commit/integration
+- Potential overlap with other worktrees:
+  - Direct overlap with renderer/layout/smoke work touching `src/canvas/cardRenderer.ts`, `src/canvas/renderAssets.ts`, or `tools/kards_browser_visual_smoke.mjs`
+  - No other active KARDS feature worktree existed before Stage 5 was created
+- Recommended integration order:
+  - Integrate after Stage 4 visual-smoke calibration and before full-card typography/view polish
+
+## Stage 5 Delivery Package Draft
+
+1. Changed this phase:
+   - Added `--profile stage5` to the private calibration tool while keeping Stage 3 as the default profile.
+   - Generated a private Stage 5 element pack with official card-face/reference crops, variable coverage metadata, synthetic HQ layout samples, and local KARDS manifest candidate indexing.
+   - Kept the browser-loadable `kards-asset-pack.json` limited to clean renderer-ready icon slots.
+   - Marked full-card, board, text, number, print-wear, and inspect/view surfaces as `reference-only`; marked `view-glow` and `zoom-shadow` as `indexed-only-unextracted`.
+   - Marked HQ definitions as `synthetic-layout-only` so the report covers HQ layout variables without claiming official HQ pixel extraction.
+   - Documented output, validation, and integration state.
+2. Files touched:
+   - Core files: none.
+   - Test files: none.
+   - Tooling files: `tools/kards_private_calibration.py`.
+   - Docs: `docs/active/kards-style-replication/plan.md`, `context.md`, `task.md`, `docs/active/_worktree_registry.md`.
+   - Lessons: `lessons learned.md`.
+   - Temporary/private files: `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage5-card-face-elements/**` and `C:\Users\raede\Documents\KARDS\.runtime\kards-visual-smoke-calibration\stage5-card-face-elements/**`, gitignored.
+3. Diff summary:
+   - Production app behavior is unchanged.
+   - The private generator gained a Stage 5 profile for broader element/variable coverage reports.
+   - Active docs now record the Stage 5 output and validation evidence.
+4. Commit status:
+   - Not committed yet.
+5. Base divergence:
+   - Branch was created from current `main` at `87c136d`; remote drift must be checked before integration.
+6. Potential conflicts:
+   - Low direct product-code conflict risk because no renderer files changed.
+   - Moderate documentation/tooling conflict risk with any branch also changing `tools/kards_private_calibration.py` or active replication docs.
+7. Validation:
+   - Python compile, Stage 5 generation, Stage 5 visual smoke, default Stage 3 regression generation/smoke, full unit tests, and production build passed.
+8. Unverified risks:
+   - `view-glow` and `zoom-shadow` are indexed but not pixel-extracted because pak extraction is still not available in this stage.
+   - HQ uses local synthetic layout coverage only; official HQ card-face pixels remain unavailable in this data route.
+   - Full-card/text/number/board crops remain measurement references only; they are not clean reusable renderer assets.
+   - Browser-side folder loading still cannot enforce absolute `.runtime` read paths; write-side extraction guards stay strict.
+9. Recommended next step:
+   - Complete independent review, then commit and integrate if review finds no blocker.
+10. Integration recommendation:
+   - Fast-forward merge is preferred if `main` remains at or fast-forwards cleanly from `87c136d`; no cherry-pick is needed.
+
 ## Stage 4 Integrated Worktree
 
 - Worktree name/path: visual smoke calibration, `C:\Users\raede\Documents\KARDS-visual-smoke-calibration` (removed after integration)
