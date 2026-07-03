@@ -1,5 +1,52 @@
 # Worktree Registry
 
+## KARDS multi-source clean extraction Stage 6
+
+- Worktree name/path: multi-source clean extraction, `C:\Users\raede\Documents\KARDS-multisource-clean-extraction`
+- Thread/task: extract and calibrate all feasible card-face, font, package-mark, variable, and inspect/view elements from multiple sources
+- Base branch/base commit: `main`, `36e3d4e`
+- Current branch/HEAD: `codex/kards-multisource-clean-extraction`, `36e3d4e`
+- Task goal: turn Stage 5's reference inventory into a stricter multi-source extraction report, promoting only deterministic clean outputs to renderer-ready status while retaining official-derived assets privately under `.runtime`
+- Status: ready-for-integration
+- Main changed files:
+  - `tools/kards_multisource_extraction.py`
+  - `tools/kards_browser_visual_smoke.mjs`
+  - `docs/active/kards-style-replication/plan.md`
+  - `docs/active/kards-style-replication/context.md`
+  - `docs/active/kards-style-replication/task.md`
+  - `docs/active/_worktree_registry.md`
+- Shared hotspot files touched: active task docs and visual smoke tooling; renderer schema and renderer implementation were not changed
+- Validation run so far:
+  - Initial main status check: clean
+  - `git fetch --prune origin`: passed
+  - `git worktree add -b codex/kards-multisource-clean-extraction C:\Users\raede\Documents\KARDS-multisource-clean-extraction main`: passed
+  - `git worktree list --porcelain`: only main plus Stage 6 worktree
+  - `py -3 -m py_compile tools\kards_multisource_extraction.py`: passed
+  - `node --check tools\kards_browser_visual_smoke.mjs`: passed
+  - Stage6 generation: passed, extracted/cataloged 283 files, wrote 37 smoke-safe manifest images, and indexed 26045 local pak candidates
+  - Stage6 artifact check: passed, required reports and 26 sample card JSON files present
+  - `npm ci`: passed, 0 vulnerabilities
+  - Stage6 visual smoke: passed, 37/37 elements, app smoke passed
+  - Port 5181 check after smoke: clear
+  - Independent code review requested fixes for private output path scope, manifest containment, and symlink cleanup safety
+  - Review fixes accepted and implemented
+  - Final `node --check tools\kards_browser_visual_smoke.mjs`: passed
+  - Final `py -3 -m py_compile tools\kards_multisource_extraction.py`: passed
+  - Final Stage6 generation: passed, 283 extracted/cataloged files, 37 manifest images, 26045 local pak indexed candidates
+  - Final safety guards: Python public-output guard passed, Python manifest-containment guard passed, JS public-output guard passed, JS manifest-containment guard passed
+  - Final Stage6 visual smoke on port 5181: passed, 37/37 elements, report generated at `2026-07-03T21:11:33.667Z`
+  - Final `npm test`: passed, 7 files and 38 tests
+  - Final `npm run build`: passed, including typecheck and Vite production build
+  - Final temp cleanup checks: `.runtime\tmp-malicious-pack`, `.runtime\tmp-malicious-smoke`, `public\.runtime`, and `tools\__pycache__` absent
+  - Final port 5181 and 5182 checks: clear
+- Tests not run yet:
+  - main-merge validation after integration
+- Potential overlap with other worktrees:
+  - No other active KARDS worktree exists at creation time
+  - Future overlap likely with `tools/kards_private_calibration.py` and active replication docs
+- Recommended integration order: integrate after Stage 5 and before full renderer typography/view-effect polish
+- Next action: commit, run integration check, merge to main if clean
+
 ## KARDS card-face/view element extraction Stage 5
 
 - Worktree name/path: card-face elements Stage 5, `C:\Users\raede\Documents\KARDS-card-face-elements-stage5` (removed after integration)

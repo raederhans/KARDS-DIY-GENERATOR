@@ -441,3 +441,85 @@
 - Removed integrated worktree `C:\Users\raede\Documents\KARDS-card-face-elements-stage5`.
 - Deleted merged local branch `codex/kards-card-face-elements-stage5`.
 - Recovery pointer: `4c90d36`.
+
+## 2026-07-03 Stage 6 Multi-Source Extraction Start
+
+- Created isolated worktree `C:\Users\raede\Documents\KARDS-multisource-clean-extraction` on branch `codex/kards-multisource-clean-extraction` from `main` commit `36e3d4e`.
+- Re-read `research-before-fix`, `ultrawork`, `lessons learned.md`, active replication docs, and the worktree registry.
+- `omx state write` succeeded for the active `ultrawork` mode at `.omx/state/ultrawork-state.json`.
+- Current first-principles boundary:
+  - The user wants every useful card-face and inspect/view element extracted, checked, calibrated, and processed from multiple sources.
+  - Official-derived assets are allowed for private local validation only and must remain under `.runtime`.
+  - Clean renderer assets require a deterministic source path and a repeatable extraction/copy rule; otherwise the asset remains reference-only or indexed-only.
+  - Stage 5 is the baseline: 37 renderer-ready icon slots, 425 reference crops, 539 local manifest candidates, and `view-glow`/`zoom-shadow` still indexed-only.
+- Stage 6 acceptance targets:
+  - Every source route has a recorded status and reason.
+  - Every extracted asset has source, dimensions, category, output path, and renderer-readiness.
+  - Font and view/inspect candidates are explicitly covered, even when they cannot yet be converted to renderer-ready files.
+  - No official-derived PNG/font/pak-extracted file enters git, `src`, `public`, or default `dist`.
+
+## 2026-07-03 Stage 6 Source Census
+
+- Local KARDS install evidence:
+  - `C:\Program Files (x86)\Steam\steamapps\common\KARDS\Manifest_UFSFiles_Win64.txt` exists and is about 3.5 MB.
+  - `C:\Program Files (x86)\Steam\steamapps\common\KARDS\kards\Content\Paks\kards-Windows.pak` exists and is 7,113,393,294 bytes.
+  - No `repak`, `UnrealPak`, `FModel`, `umodel`, or `UEViewer` command was available from PATH during this pass.
+  - Pak extraction is therefore classified as `indexed-only-no-extractor`, not as a failed pixel extraction.
+- Local reference repo evidence:
+  - `KardsGen\Material` contains 137 PNG/SVG/JPG material candidates; `frame.png` is 500x702, `kredit-board(12,13).png` is 86x86, and `extra-border(0,402).png` is 500x64.
+  - `KARDS-Assets` contains 620 files in the local clone; useful private references include 500x702 card backs and 500x701 HQ images.
+  - `kards-image-tool` is useful mainly for data/Canvas workflow reference and carries `data.json`, nation SVGs, and small UI/background assets.
+- Subagent/source review conclusions:
+  - Current renderer smoke support remains narrow: only `nation-mark`, `type-icon`, `rarity-pip`, and `set-mark` can be automatically pixel-smoked today.
+  - KARDS-Assets and KardsGen are useful for private validation but their material rights are not covered by the software MIT licenses.
+  - The local pak path can provide manifest counts and target names, but not PNG/font outputs without a real Unreal pak + asset exporter toolchain.
+
+## 2026-07-03 Stage 6 Output And Calibration
+
+- Added `tools/kards_multisource_extraction.py` as a separate private-output tool instead of further expanding the Stage3/5 card-image cropper.
+- Stage6 generation command used explicit source roots because the isolated worktree does not carry the main checkout's `.runtime` cache by default.
+- Generated private output:
+  - `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage6-multisource-clean-extraction`
+  - marker: `.kards-stage6-multisource-output`
+  - compatibility file for visual smoke: `calibration-report.json`
+  - reports: `stage6-multisource-report.json`, `stage6-source-inventory.json`, `stage6-private-assets-manifest.json`, `stage6-multisource-summary.md`
+- Output summary:
+  - extracted/cataloged files: 283
+  - current smoke-safe renderer manifest images: 37
+  - renderer manifest slots: `nation-mark`, `type-icon`, `rarity-pip`, `set-mark`
+  - Stage5 official crop clean slots copied: 37
+  - KardsGen material candidates/references copied: 139
+  - KARDS-Assets private references copied: 40 card backs and 46 HQ images
+  - CraftSoul/kards-image-tool references copied: 21
+  - Local KARDS pak indexed candidates: 26045
+- KardsGen slot-size calibration:
+  - exact current renderer slot size: `frame` 500x702, `cost-board` 86x86, `command-border` 500x64
+  - needs calibration/scaling before renderer wiring: `attack-board` 83x89 versus 82x82, `defense-board` 83x89 versus 82x82, `special-attack-board` 94x94 versus 96x82, `hq-defense-board` 166x179 versus 168x112
+  - these KardsGen candidates are recorded as `renderer-slot-candidate-unwired-needs-smoke`; they are not allowed into `kards-asset-pack.json` until slot-level visual smoke is implemented for those slots.
+- Updated `tools/kards_browser_visual_smoke.mjs` to accept the Stage6 marker while still requiring `kards-asset-pack.json` and `calibration-report.json`.
+- Stage6 visual smoke:
+  - command used pack `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage6-multisource-clean-extraction`
+  - output `C:\Users\raede\Documents\KARDS\.runtime\kards-visual-smoke-calibration\stage6-multisource-clean-extraction`
+  - result: 37/37 pass, 0 review, 0 fail
+  - slot counts: 11 nation marks, 7 type icons, 4 rarity pips, 15 set marks
+  - app smoke passed with canvas 500x702 and nonblank pixels
+  - port 5181 was clear afterward
+- Final validation after documentation updates:
+  - `node --check tools\kards_browser_visual_smoke.mjs`: passed
+  - `py -3 -m py_compile tools\kards_multisource_extraction.py`: passed
+  - Stage6 visual smoke on port 5181: passed, 37/37 elements, report generated at `2026-07-03T21:04:32.476Z`
+  - `npm test`: passed, 7 files and 38 tests
+  - `npm run build`: passed
+  - port 5181 was clear afterward
+- Independent review and final safety fixes:
+  - Code review requested changes because a nested `public\.runtime` or `dist\.runtime` path could still satisfy the old `.runtime` guard.
+  - Fixed private-output guards so `public`, `dist`, and `src` are rejected even if `.runtime` appears later in the path.
+  - Fixed manifest path handling so Stage5/Stage6 image entries must be relative paths that resolve inside the source pack.
+  - Fixed output cleanup so symlinks/junctions are unlinked instead of recursively followed.
+  - Renamed KardsGen readiness from a potentially misleading loadable wording to `renderer-slot-candidate-unwired-needs-smoke`.
+  - Final safety checks passed: Python public-output guard, Python manifest containment, JS public-output guard, and JS manifest containment.
+  - Final Stage6 generation passed after those fixes with 283 extracted/cataloged files, 37 manifest images, and 26045 local pak indexed candidates.
+  - Final Stage6 visual smoke passed on port 5181: 37/37 elements, report generated at `2026-07-03T21:11:33.667Z`.
+  - Final `npm test` passed, 7 files and 38 tests.
+  - Final `npm run build` passed.
+  - Temporary negative-check folders and `tools\__pycache__` were removed; ports 5181 and 5182 were clear.

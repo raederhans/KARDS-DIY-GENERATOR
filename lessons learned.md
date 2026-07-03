@@ -7,3 +7,4 @@
 - Private official-asset generators need output ownership guards: default to `.runtime`, write a marker file, and refuse to clean generated subfolders when the marker is missing.
 - Element-slot visual smoke must state its scope plainly: a 37/37 crop match proves slot geometry and asset identity, not full-card typography, print wear, or complete visual equivalence.
 - Coverage reports must keep source status separate from variable coverage: synthetic/layout-only samples can prove renderer stress cases, but must not be counted as extracted official pixel assets.
+- Private official-asset tools must reject `public`, `dist`, and `src` output paths even when `.runtime` appears below them; gitignore is not enough to prevent static bundling or accidental publication.

@@ -1,5 +1,87 @@
 # KARDS Style Replication Task Notes
 
+## Stage 6 Current Worktree
+
+- Worktree name/path: multi-source clean extraction, `C:\Users\raede\Documents\KARDS-multisource-clean-extraction`
+- Thread/task: KARDS multi-source element, font, and view-effect extraction/calibration
+- Base branch/base commit: `main`, `36e3d4e`
+- Current branch/HEAD: `codex/kards-multisource-clean-extraction`, `36e3d4e`
+- Task goal: extract, classify, and calibrate all feasible card-face and inspect/view elements from local KARDS files, prior private packs, and external reference repositories while keeping official-derived artifacts private under `.runtime`
+- Status: ready-for-integration
+- Shared hotspot files expected:
+  - actual: `tools/kards_multisource_extraction.py`, `tools/kards_browser_visual_smoke.mjs`, active docs
+  - renderer asset schema and renderer implementation were not changed
+- Tests run so far:
+  - Initial `git status --short --branch` on main: clean
+  - `git fetch --prune origin`: passed
+  - `git worktree add -b codex/kards-multisource-clean-extraction C:\Users\raede\Documents\KARDS-multisource-clean-extraction main`: passed
+  - `git worktree list --porcelain`: main plus Stage 6 worktree only
+  - `py -3 -m py_compile tools\kards_multisource_extraction.py`: passed
+  - `node --check tools\kards_browser_visual_smoke.mjs`: passed
+  - Stage6 generation command with explicit source paths: passed, extracted/cataloged 283 files and indexed 26045 local pak candidates
+  - Stage6 artifact check: passed, manifest images 37, sample JSON files 26, required reports present
+  - `npm ci`: passed, 0 vulnerabilities
+  - Stage6 visual smoke on port 5181: passed, 37/37 elements, app smoke passed
+  - Port 5181 check after smoke: clear
+  - Independent code review: requested changes for `.runtime` guard scope, manifest path containment, and symlink cleanup safety
+  - Accepted review fixes:
+    - private output and visual-smoke output now reject `public`, `dist`, and `src` path segments even when `.runtime` appears below them
+    - Stage5/Stage6 manifest file paths must be relative and stay inside the source pack
+    - output cleanup unlinks symlinks/junctions instead of recursively following them
+    - KardsGen board/frame readiness wording is now `renderer-slot-candidate-unwired-needs-smoke`
+  - Final `node --check tools\kards_browser_visual_smoke.mjs`: passed
+  - Final `py -3 -m py_compile tools\kards_multisource_extraction.py`: passed
+  - Final Stage6 generation: passed, 283 extracted/cataloged files, 37 manifest images, 26045 local pak indexed candidates
+  - Final safety guards: Python public-output guard passed, Python manifest-containment guard passed, JS public-output guard passed, JS manifest-containment guard passed
+  - Final Stage6 visual smoke on port 5181: passed, 37/37 elements, report generated at `2026-07-03T21:11:33.667Z`
+  - Final `npm test`: passed, 7 files and 38 tests
+  - Final `npm run build`: passed, including typecheck and Vite production build
+  - Final temp cleanup checks: `.runtime\tmp-malicious-pack`, `.runtime\tmp-malicious-smoke`, `public\.runtime`, and `tools\__pycache__` absent
+  - Final port 5181 and 5182 checks: clear
+- Tests not run yet:
+  - Main-merge validation after integration
+- Potential overlap with other worktrees:
+  - No other active KARDS worktree exists at creation time.
+  - Direct overlap risk with future private calibration branches touching `tools/kards_private_calibration.py` or active replication docs.
+- Recommended integration order:
+  - Integrate after Stage 5 and before renderer-level full-card typography/view polish.
+
+## Stage 6 Delivery Package Draft
+
+1. Changed this phase:
+   - Added a dedicated multi-source private extraction tool with output ownership guards.
+   - Generated a Stage6 private pack/report from Stage5 clean slots, KardsGen materials, KARDS-Assets card backs/HQ images, CraftSoul references, and local KARDS pak manifest indexing.
+   - Kept `kards-asset-pack.json` limited to the 37 current smoke-safe renderer slots.
+   - Added Stage6 marker support to the browser visual smoke while preserving the requirement for explicit manifest and calibration report files.
+   - Recorded dimensions and renderer-readiness for candidate frame/board/HQ/font/pak/view sources.
+2. Files touched:
+   - Core files: none.
+   - Test files: none.
+   - Tooling files: `tools/kards_multisource_extraction.py`, `tools/kards_browser_visual_smoke.mjs`.
+   - Docs: `docs/active/kards-style-replication/plan.md`, `context.md`, `task.md`, `docs/active/_worktree_registry.md`.
+   - Temporary/private files: `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage6-multisource-clean-extraction/**` and `C:\Users\raede\Documents\KARDS\.runtime\kards-visual-smoke-calibration\stage6-multisource-clean-extraction/**`, gitignored.
+3. Diff summary:
+   - Production app behavior is unchanged.
+   - New tooling creates a private multi-source report and smoke-compatible asset pack without committing official-derived files.
+   - The smoke script now accepts either the Stage3/5 private calibration marker or the Stage6 multi-source marker.
+4. Commit status:
+   - Ready to commit on `codex/kards-multisource-clean-extraction`; integration has not run yet.
+5. Base divergence:
+   - Branch was created from current `main` at `36e3d4e`.
+6. Potential conflicts:
+   - Low direct conflict risk at start because no other active KARDS worktree exists.
+7. Validation:
+   - Python compile, Node syntax check, Stage6 generation, artifact presence check, safety guard negative checks, dependency install, Stage6 visual smoke, full unit tests, and production build passed.
+8. Unverified risks:
+   - Pak extraction remains indexed-only because no local Unreal pak/asset exporter command is available in this session.
+   - KardsGen frame/board candidates are `renderer-slot-candidate-unwired-needs-smoke`; attack/defense/special/HQ board candidates also do not exactly match current renderer slot sizes and need calibration or scaling before wiring.
+   - KARDS-Assets card backs/HQ images and KardsGen material assets remain private validation references; they are not public distributable assets.
+   - Full-card typography, print wear, and complete visual equivalence are still outside the Stage6 smoke scope.
+9. Recommended next step:
+   - Run full verification and independent review, then integrate if clean.
+10. Integration recommendation:
+   - Merge this branch after a normal integration check; no cherry-pick is needed unless main drifts.
+
 ## Stage 5 Integrated Worktree
 
 - Worktree name/path: card-face elements Stage 5, `C:\Users\raede\Documents\KARDS-card-face-elements-stage5` (removed after integration)

@@ -15,6 +15,7 @@ const PASS_CHANGED_PIXEL_RATIO = 0.001;
 const DEFAULT_PACK = path.resolve(".runtime/kards-private-assets/stage3-official-coverage-pack");
 const DEFAULT_OUTPUT = path.resolve(".runtime/kards-visual-smoke-calibration/latest");
 const PIXEL_AUDIT_TOOL = path.resolve("tools/kards_artifact_pixel_audit.py");
+const FORBIDDEN_OUTPUT_SEGMENTS = new Set(["public", "dist", "src"]);
 
 main().catch((error) => {
   console.error(error instanceof Error ? error.stack || error.message : String(error));
@@ -109,10 +110,16 @@ Official-derived output should stay under .runtime and out of git.`);
 }
 
 async function assertPrivatePack(packRoot) {
-  const marker = path.join(packRoot, ".kards-private-calibration-output");
+  const markers = [
+    path.join(packRoot, ".kards-private-calibration-output"),
+    path.join(packRoot, ".kards-stage6-multisource-output"),
+  ];
   const manifest = path.join(packRoot, "kards-asset-pack.json");
   const report = path.join(packRoot, "calibration-report.json");
-  for (const requiredPath of [marker, manifest, report]) {
+  if (!markers.some((marker) => existsSync(marker))) {
+    throw new Error(`Missing private pack marker: ${markers.join(" or ")}`);
+  }
+  for (const requiredPath of [manifest, report]) {
     if (!existsSync(requiredPath)) {
       throw new Error(`Missing private pack file: ${requiredPath}`);
     }
@@ -121,7 +128,12 @@ async function assertPrivatePack(packRoot) {
 
 async function prepareOutput(outputRoot) {
   const resolved = path.resolve(outputRoot);
-  if (!resolved.toLowerCase().split(path.sep).includes(".runtime")) {
+  const lowerParts = resolved.toLowerCase().split(path.sep);
+  const forbiddenPart = lowerParts.find((part) => FORBIDDEN_OUTPUT_SEGMENTS.has(part));
+  if (forbiddenPart) {
+    throw new Error(`Refusing to write visual smoke artifacts under ${forbiddenPart}: ${resolved}`);
+  }
+  if (!lowerParts.includes(".runtime")) {
     throw new Error(`Refusing to write visual smoke artifacts outside .runtime: ${resolved}`);
   }
   const markerPath = path.join(outputRoot, ".kards-visual-smoke-output");
@@ -152,7 +164,7 @@ async function buildElementInputs(packRoot, manifest, calibrationReport) {
     manifest.images.map(async (entry, index) => {
       const sample = findSampleForEntry(samples, entry);
       const sampleCardPath = path.join(packRoot, "samples", `${sample.id}.card.json`);
-      const referencePath = path.join(packRoot, entry.file);
+      const referencePath = resolvePackFile(packRoot, entry.file);
       if (!existsSync(referencePath)) {
         throw new Error(`Missing reference element image: ${referencePath}`);
       }
@@ -171,6 +183,25 @@ async function buildElementInputs(packRoot, manifest, calibrationReport) {
       };
     }),
   );
+}
+
+function resolvePackFile(packRoot, manifestPath) {
+  if (typeof manifestPath !== "string" || manifestPath.length === 0) {
+    throw new Error("Asset manifest contains an empty file path.");
+  }
+  if (path.isAbsolute(manifestPath)) {
+    throw new Error(`Asset manifest path must be relative: ${manifestPath}`);
+  }
+  const normalizedParts = manifestPath.replace(/\\/g, "/").split("/");
+  if (normalizedParts.some((part) => part === ".." || part === "")) {
+    throw new Error(`Asset manifest path must stay inside the private pack: ${manifestPath}`);
+  }
+  const resolved = path.resolve(packRoot, manifestPath);
+  const relative = path.relative(packRoot, resolved);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error(`Asset manifest path escapes the private pack: ${manifestPath}`);
+  }
+  return resolved;
 }
 
 function findSampleForEntry(samples, entry) {

@@ -162,3 +162,37 @@ The user does not need a generic WWII card generator. The target is a local stat
 - Visual thesis: treat the official card as a layered print object, where each material slice has a measured slot and a clear rule for when it appears.
 - Content plan: no new landing UI; preserve the current editor and expand only the private calibration assets/reporting path until renderer-ready slots are proved.
 - Interaction thesis: later viewer polish should feel like a quiet inspection loupe, not a battle animation surface.
+
+## Stage 6 Multi-Source Clean Extraction And Calibration
+
+- [x] Create an isolated worktree from current `main` for multi-source clean extraction.
+- [x] Re-check lessons learned, active docs, Stage 5 outputs, local KARDS install files, and external reference repos.
+- [x] Classify every source route as renderer-ready, reference-only, indexed-only, or synthetic-layout-only.
+- [x] Test local pak/tool extraction feasibility without committing or bundling official-derived files.
+- [x] Extract or copy every feasible clean card-face/view element into private `.runtime` outputs with source, dimensions, and rights notes.
+- [x] Record variable elements: fonts/text surfaces, number boards, card boards, frames, print overlays, view/inspect effects, package marks, nations, card types, rarities, and HQ layout-only cases.
+- [x] Keep the public renderer manifest limited to deterministic clean assets; keep uncertain assets as references until the source is proved.
+- [x] Run targeted artifact checks and any visual smoke that matches the extracted asset class.
+- [ ] Complete independent review, commit, merge, push, and worktree cleanup.
+
+## Stage 6 Extraction Boundary
+
+- Included: local KARDS install manifests/pak candidates, Stage 5 private reports, KARDS-Assets static assets, KardsGen material assets, CraftSoul/kards-image-tool data/image routes, fonts if extractable, and card inspect/view-state surfaces.
+- Excluded: battle VFX, board effects, projectiles, hit/deploy animations, account/gameplay automation, and any official asset bundled into `src`, `public`, or default `dist`.
+- Rule: a source can help visual measurement even when it cannot become a clean renderer asset. The report must keep those categories separate.
+
+## Stage 6 Output Snapshot
+
+- Private output: `C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage6-multisource-clean-extraction`
+- Visual smoke output: `C:\Users\raede\Documents\KARDS\.runtime\kards-visual-smoke-calibration\stage6-multisource-clean-extraction`
+- Extracted/cataloged private files: 283.
+- Smoke-safe renderer manifest images: 37, still limited to `nation-mark`, `type-icon`, `rarity-pip`, and `set-mark`.
+- Multi-source reference/candidate files:
+  - Stage5 official crop clean slots: 37.
+  - KardsGen material candidates/references: 139 total, including 7 renderer-slot frame/board candidates that remain unwired.
+  - KARDS-Assets private references: 40 sampled card backs and 46 HQ images.
+  - CraftSoul/kards-image-tool references: 21 static/data reference files.
+  - Local KARDS pak manifest candidates: 26045 indexed paths.
+- KardsGen exact slot-size matches: `frame`, `cost-board`, and `command-border`; attack/defense/special/HQ boards need calibration or scaling before renderer wiring. None of these KardsGen candidates may enter `kards-asset-pack.json` until their slot-level smoke exists.
+- Local pak status: `indexed-only-no-extractor`; no `repak`, `UnrealPak`, `FModel`, `umodel`, or `UEViewer` command was available in the current session.
+- Stage6 visual smoke result: 37/37 pass, 0 review, 0 fail; app smoke canvas was `500x702` and nonblank.
