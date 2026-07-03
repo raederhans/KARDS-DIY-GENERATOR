@@ -2,12 +2,12 @@
 
 ## KARDS visual smoke calibration Stage 4
 
-- Worktree name/path: visual smoke calibration, `C:\Users\raede\Documents\KARDS-visual-smoke-calibration`
+- Worktree name/path: visual smoke calibration, `C:\Users\raede\Documents\KARDS-visual-smoke-calibration` (removed after integration)
 - Thread/task: KARDS Stage 4 browser visual smoke and per-element pixel calibration
 - Base branch/base commit: `main`, `f4681f6`
-- Current branch/HEAD: `codex/kards-visual-smoke-calibration`, ready-for-integration and not yet committed
+- Current branch/HEAD: merged into `main` at `81d7f8b`; local branch deleted after merge
 - Task goal: verify the private Stage 3 pack through a reproducible browser smoke, compare every unique manifest element by pixels, calibrate renderer placement, and keep official-derived artifacts in `.runtime`
-- Status: ready-for-integration
+- Status: integrated
 - Main changed files:
   - `package.json`
   - `package-lock.json`
@@ -35,14 +35,23 @@
   - Independent architecture review: `WATCH`, no integration blocker; element-slot scope must stay explicit
   - Independent verifier: approved after reviewing report artifacts, git status, docs, and official-asset boundary
   - Final scoped visual smoke report generated at `2026-07-03T19:34:37.958Z`; scope says it validates asset slot geometry and crop identity, not full-card typography or full-card equivalence
+  - Fast-forward merge into `main`: passed, `f4681f6..81d7f8b`
+  - Merge-result dependency refresh: `npm ci` was blocked by an existing Vite/esbuild listener on port 5173; `npm install` passed, installed Playwright, and left no tracked file changes
+  - Merge-result `npm run typecheck`: passed
+  - Merge-result `npm run test`: passed, 7 files and 38 tests
+  - Merge-result `npm run build`: passed
+  - Merge-result `npm run smoke:visual:kards -- --pack "C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-official-coverage-pack" --output "C:\Users\raede\Documents\KARDS\.runtime\kards-visual-smoke-calibration\latest" --port 5178`: passed, 37/37 elements; report generated at `2026-07-03T19:37:31.299Z`
+  - `git push origin main`: passed, `main` pushed to `origin`
+  - `git worktree remove C:\Users\raede\Documents\KARDS-visual-smoke-calibration`: passed
+  - `git branch -d codex/kards-visual-smoke-calibration`: passed
 - Tests not run yet:
-  - merge-result validation on `main`
+  - no remaining Stage 4 tests before the next typography/atlas stage
 - Potential overlap with other worktrees:
   - Direct overlap with future renderer/layout work touching `src/canvas/cardRenderer.ts` or `src/canvas/cardRenderer.test.ts`
   - Direct overlap with package dependency work touching `package.json` or `package-lock.json`
-  - `git worktree list` currently shows only main and this Stage 4 worktree
+  - `git worktree list` now shows only the main checkout for active Stage 4 work
 - Recommended integration order: integrate after Stage 3 private pack generation and before full-card typography/atlas extraction
-- Next action: commit this ready-for-integration package, merge to `main`, run merge-result validation, push, and remove the worktree if validation stays clean
+- Next action: start the next stage only if full-card typography, print wear, or cleaner pak/UI-atlas extraction is required
 
 ## KARDS source asset calibration Stage 3
 

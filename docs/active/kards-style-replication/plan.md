@@ -113,7 +113,7 @@ The user does not need a generic WWII card generator. The target is a local stat
 - [x] Run the Stage 3 private pack through the smoke: 37/37 element slots pass with `maxDelta=0` and `changedRatio=0`.
 - [x] Complete final typecheck/test/build validation and visual smoke re-run.
 - [x] Complete independent review and fix accepted findings.
-- [ ] Commit, integration, push, and worktree cleanup.
+- [x] Commit, integration, push, and worktree cleanup.
 
 ## Stage 4 Probe Boundary
 

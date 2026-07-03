@@ -358,5 +358,23 @@
 - Independent verifier approved the stage after checking the final report, generated artifact paths, no official assets in git, and the ready-for-integration documentation state.
 - Final anti-slop cleanup review found no masking fallback slop in the scoped changes. The retry/catch paths in the smoke script are limited to dev-server startup, process cleanup, CLI output, or artifact parsing boundaries and remain grounded by tests or failure propagation.
 - Pending:
-  - Commit this ready-for-integration package.
-  - Merge to `main`, run merge-result validation, push, and remove the visual-smoke worktree if validation stays green.
+  - No Stage 4 implementation work remains.
+
+## 2026-07-03 Stage 4 Integration Closeout
+
+- Committed Stage 4 on branch `codex/kards-visual-smoke-calibration` as `81d7f8b`.
+- Main was clean and up to date with `origin/main` before integration.
+- `git worktree list` showed only main and the Stage 4 visual-smoke worktree before merge; changed-file overlap analysis found no competing ready worktree.
+- Fast-forward merged `codex/kards-visual-smoke-calibration` into `main`: `f4681f6..81d7f8b`.
+- Merge-result validation on `main`:
+  - `npm ci` initially failed because an existing Vite/esbuild listener on port 5173 held `node_modules\@esbuild\win32-x64\esbuild.exe`.
+  - `npm install`: passed, installed Playwright, found 0 vulnerabilities, and left no tracked file changes.
+  - `npm run typecheck`: passed.
+  - `npm run test`: passed, 7 files and 38 tests.
+  - `npm run build`: passed.
+  - `npm run smoke:visual:kards -- --pack "C:\Users\raede\Documents\KARDS\.runtime\kards-private-assets\stage3-official-coverage-pack" --output "C:\Users\raede\Documents\KARDS\.runtime\kards-visual-smoke-calibration\latest" --port 5178`: passed, 37/37 elements.
+  - Final merge-result visual smoke report generated at `2026-07-03T19:37:31.299Z`; port 5178 was confirmed clear afterward.
+- Pushed `main` to `origin`: `f4681f6..81d7f8b`.
+- Removed integrated worktree `C:\Users\raede\Documents\KARDS-visual-smoke-calibration`.
+- Deleted merged local branch `codex/kards-visual-smoke-calibration`.
+- Recovery pointer: `81d7f8b`.

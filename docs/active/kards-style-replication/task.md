@@ -1,13 +1,14 @@
 # KARDS Style Replication Task Notes
 
-## Stage 4 Current Worktree
+## Stage 4 Integrated Worktree
 
-- Worktree name/path: visual smoke calibration, `C:\Users\raede\Documents\KARDS-visual-smoke-calibration`
+- Worktree name/path: visual smoke calibration, `C:\Users\raede\Documents\KARDS-visual-smoke-calibration` (removed after integration)
 - Thread/task: KARDS Stage 4 browser visual smoke and per-element pixel calibration
 - Base branch/base commit: `main`, `f4681f6`
-- Current branch/HEAD: `codex/kards-visual-smoke-calibration`, ready-for-integration and currently uncommitted
+- Current branch/HEAD: merged into `main` at `81d7f8b`; local branch deleted after merge
 - Task goal: run a reproducible browser smoke against the private Stage 3 pack, compare every unique manifest element by pixels, calibrate renderer issues, and extract reusable private visual artifacts under `.runtime`
-- Status: ready-for-integration
+- Status: integrated
+- Cleanup status: integrated worktree removed after push; feature commit remains recoverable at `81d7f8b`
 - Shared hotspot files touched: `src/canvas/cardRenderer.ts`, renderer tests, package scripts/dependencies, active docs, visual smoke tooling
 - Tests run so far:
   - `npm ci`: passed, 0 vulnerabilities
@@ -23,11 +24,20 @@
   - Independent architecture review: `WATCH`, no blocker; element-slot scope must stay explicit
   - Independent verifier: approved the report/artifact/git-boundary evidence
   - Anti-slop cleanup review: no masking fallback slop found in the scoped changes
+  - Fast-forward merge into `main`: passed, `f4681f6..81d7f8b`
+  - Merge-result dependency refresh: `npm ci` was blocked by an existing Vite/esbuild listener on port 5173; `npm install` passed and left no tracked file changes
+  - Merge-result `npm run typecheck`: passed
+  - Merge-result `npm run test`: passed, 7 files and 38 tests
+  - Merge-result `npm run build`: passed
+  - Merge-result visual smoke: passed, 37/37 elements, report generated at `2026-07-03T19:37:31.299Z`
+  - `git push origin main`: passed
+  - `git worktree remove C:\Users\raede\Documents\KARDS-visual-smoke-calibration`: passed
+  - `git branch -d codex/kards-visual-smoke-calibration`: passed
 - Tests not run yet:
-  - Merge-result validation on `main`
+  - No remaining Stage 4 tests before the next typography/atlas stage
 - Potential overlap with other worktrees:
   - Direct overlap with any branch touching `src/canvas/cardRenderer.ts`, renderer tests, or package dependency files
-  - `git worktree list` currently shows main and this Stage 4 worktree only
+  - No active Stage 4 worktree remains
 - Recommended integration order:
   - Integrate after Stage 3 private pack generation and before full-card typography/atlas extraction
 
@@ -50,9 +60,9 @@
    - New smoke tooling is explicit and private-output guarded.
    - Official-derived images remain outside git.
 4. Commit status:
-   - Not committed yet; final validation and review are complete.
+   - Committed as `81d7f8b`, fast-forward merged into `main`, pushed to `origin/main`, and cleaned up.
 5. Base divergence:
-   - Branch was created from `main` at `f4681f6`; current main drift still needs final integration check.
+   - Branch was created from `main` at `f4681f6`; main had no remote drift before the fast-forward merge.
 6. Potential conflicts:
    - Moderate direct conflict risk with renderer/layout work and package dependency changes.
 7. Validation:
@@ -65,9 +75,9 @@
    - The private pack is still full-card-crop derived; cleaner atlas extraction may be needed for broader materials.
    - Browser-side asset-pack reading cannot reliably enforce absolute `.runtime` paths; write-side private artifact guards are enforced.
 9. Recommended next step:
-   - Commit the ready-for-integration package, then merge to `main` if the integration pre-check stays clean.
+   - Start the next precision stage only if full-card typography, print wear, or cleaner pak/UI-atlas extraction is required.
 10. Integration recommendation:
-   - Rebase or fast-forward merge after final checks; do not cherry-pick only the renderer fix because the smoke tooling is the verification surface for the calibration.
+   - Integrated by normal fast-forward merge into `main`; no cherry-pick was needed.
 
 ## Stage 3 Current Worktree
 
