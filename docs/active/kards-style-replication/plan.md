@@ -28,9 +28,29 @@ The user does not need a generic WWII card generator. The target is a local stat
 - [x] Produce an implementation-ready replication spec and risk notes.
 - [x] Run a final review pass before reporting.
 
+## Stage 1 Precision Geometry Implementation
+
+- [x] Create a fixed 500x702 layout table from the KardsGen/official-style evidence.
+- [x] Split layout templates into unit, command, and HQ card faces.
+- [x] Replace the rough decorative renderer with a template-driven Canvas draw order.
+- [x] Keep official asset files out of the default app; use programmatic placeholder surfaces only.
+- [x] Move artwork hit testing to the active template rect so upload dragging matches the visible card area.
+- [x] Add focused unit tests for fixed coordinates, render size, and artwork cover behavior.
+- [x] Run typecheck, tests, and production build.
+- [x] Complete independent code/architecture review and fix accepted findings.
+- [x] Run a focused browser smoke on the live Vite app.
+- [x] Complete final integration closeout.
+
 ## Non-Goals For This Research Pass
 
 - No gameplay, deck legality, account, automation, or cheating features.
 - No README edits.
 - No bundled official asset pack in production code during research.
 - No broad redesign until the official structure is pinned down.
+
+## Stage 1 Non-Goals
+
+- No official KARDS images, fonts, logos, or extracted assets are bundled.
+- No asset-pack import UI is added in this stage.
+- No card rules parser, automation, deck validation, account, or game feature is added.
+- No README edits.

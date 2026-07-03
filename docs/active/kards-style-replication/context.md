@@ -50,3 +50,37 @@
 - KardsGen: https://github.com/Lasereyes5/KardsGen
 - CraftSoul/kards-image-tool: https://github.com/CraftSoul/kards-image-tool
 - KARDS-Assets: https://github.com/Gary-nope/KARDS-Assets
+
+## 2026-07-03 Stage 1 Implementation
+
+- Created branch `codex/kards-precision-layout` from `master` commit `b9254b9e18699d6a98213336ceba58d53588c7d8`.
+- Added `src/canvas/layout.ts` as the single source of truth for the fixed 500x702 card-face geometry.
+- Unit cards now use the KardsGen-style main artwork rect `12,99,476,426`, title/name bar `98,13,390,86`, cost board `12,13,86,86`, nation mark centered near `450,52`, stat boards around the official row, and footer rarity/set anchors.
+- Orders and countermeasures now use the taller command artwork rect `12,13,476,476`, command type mark around `222,448`, and text/title area below the art.
+- HQ cards now share the command artwork area but use a separate HQ defense board around `166,343,168,112` and do not draw deployment/operation cost.
+- Replaced the previous generic card renderer flow with template-driven draw steps: base mat, artwork, name/extra border, cost, nation, frame, rarity, set, stats/type, text, print wear.
+- Updated `CardCanvas` artwork drag hit testing to call `getArtworkRect(card.kind)`, so crop dragging follows the current visual template instead of the old one-size rect.
+- Updated nation presets toward the KardsGen/official evidence palette and added France, Italy, Poland, Finland, and Neutral as selectable countries.
+- Added focused Vitest coverage for the fixed geometry and render behavior.
+
+## 2026-07-03 Review Fixes
+
+- Independent code review found one P1 issue: keyword cards could draw a fourth body line into the rarity/footer area because body text was painted after rarity.
+- Fixed by adding `bodyBottomY` to the template text geometry and computing the allowed body line count from that bottom boundary.
+- Independent review also found that `extraBorder.height` was ignored by `drawExtraBorder`; fixed the renderer to use the layout table height directly.
+- Added `isPointInsideArtwork(kind, x, y)` in the layout module and used it from `CardCanvas`, so artwork hit testing has the same single source of truth as rendering.
+- Added regression tests for body/footer separation, lower border height, blank keyword lines, and kind-specific artwork hit zones.
+
+## 2026-07-03 Validation Snapshot
+
+- `npm run typecheck`: passed.
+- `npm run test`: passed, 4 test files and 25 tests.
+- `npm run build`: passed, Vite production build generated `dist/`.
+- Browser smoke on existing Vite server `http://127.0.0.1:5173/?smoke=stage1`: passed.
+  - Canvas size: `500x702`.
+  - Canvas was nonblank: `350765` non-transparent pixels, `350999` non-white pixels.
+  - PNG export path alive: `canvas.toDataURL("image/png")` length `122990`.
+  - Console errors/warnings: none.
+  - Network requests: 22/22 returned 200.
+  - Screenshot evidence: `.runtime/qa/stage1-precision-layout-isolated.png`.
+- Pending before final closeout: commit and integration decision.

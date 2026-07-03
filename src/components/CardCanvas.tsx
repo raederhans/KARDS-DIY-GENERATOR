@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ART_RECT, CARD_HEIGHT, CARD_WIDTH, renderCard } from "../canvas/cardRenderer";
+import { CARD_HEIGHT, CARD_WIDTH, isPointInsideArtwork, renderCard } from "../canvas/cardRenderer";
 import type { CardSpec } from "../types";
 
 type CardCanvasProps = {
@@ -40,12 +40,7 @@ export function CardCanvas({ card, artworkImage, onCropChange, canvasRef }: Card
   }
 
   function isInsideArtwork(x: number, y: number): boolean {
-    return (
-      x >= ART_RECT.x &&
-      x <= ART_RECT.x + ART_RECT.width &&
-      y >= ART_RECT.y &&
-      y <= ART_RECT.y + ART_RECT.height
-    );
+    return isPointInsideArtwork(card.kind, x, y);
   }
 
   function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
