@@ -23,3 +23,5 @@
 - Thin-line card-foot set marks need per-set preservation rules instead of one global threshold; otherwise fixing detailed icons can reintroduce background texture into already-clean marks.
 - Rarity foot marks are not one-size-fits-all: keep standard/limited as single repeated pips, but crop elite/special as natural-size subject groups so elite wings and silver-pip gloss are preserved without stretching.
 - Asset-backed canvas layers should not return before shared overlay details are drawn; otherwise official slot assets can silently skip seams, masks, or separators that fallback rendering still shows.
+- Vercel CLI deploys should have a project `.vercelignore` before the first production upload; mirror secret ignores such as `.env*` there, because `.gitignore` alone is not the deploy upload boundary.
+- Vercel GitHub auto-link can fail even when local `gh` auth works; a missing Vercel GitHub Login Connection blocks push-triggered Vercel integration but does not block authenticated CLI production deploys.

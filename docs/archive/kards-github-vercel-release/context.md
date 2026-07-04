@@ -49,6 +49,25 @@
 - First deploy uploaded about `728.4MB`, which is too large for this static app. Root cause: no `.vercelignore` existed before first CLI deploy, so local non-deploy inputs were included in upload scanning.
 - Added `.vercelignore` to exclude `node_modules`, `dist`, `.runtime`, docs, tools, coverage, local logs, Python caches, and source test files from future Vercel CLI uploads.
 
+## Final Deployment and Release
+
+- Final deploy command: `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects`.
+- Final deploy after `.vercelignore`: uploaded `122B`, downloaded `65` deployment files, restored build cache, ran `npm run build`, and reached `READY`.
+- Final deployment ID: `dpl_3E8LRgypgPGvg9rRUwqcNk7LQtJs`.
+- Stable production alias: `https://kards-card-forge.vercel.app`.
+- Authenticated Vercel connector read confirmed deployment state `READY`, framework `vite`, target `production`, and source `cli`.
+- Remote browser smoke on the stable alias passed:
+  - Page title: `KARDS Card Forge 卡牌工坊`
+  - Canvas: `500x702`, nonblank
+  - PNG export: `自定义坦克.png`, nonzero bytes
+- GitHub release: `v0.1.0`.
+- GitHub release URL: `https://github.com/raederhans/KARDS/releases/tag/v0.1.0`.
+- Release asset: `kards-card-forge-v0.1.0-dist.zip`, size `218393`, SHA256 digest reported by GitHub as `2658f4eb6d2915631842b541b3c08d2d24913cef56df42776d0dd2fa79d85ee1`.
+- GitHub release anonymous access returns `404` because the repo is private. This is expected for a private repository, not a failed release.
+- Independent read-only reviewers found no blocking issues. Accepted follow-up fixes:
+  - Add `.env*` to `.vercelignore`.
+  - Close out this active task documentation and archive it.
+
 ## Live Process Ownership
 
 - No long-running live process is active at task start.

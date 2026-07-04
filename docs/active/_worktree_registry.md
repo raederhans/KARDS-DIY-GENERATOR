@@ -7,7 +7,7 @@
 - Base branch/base commit: `main`, `0e00503f6c63668c93880d32688239ba279b06e9`
 - Current branch/HEAD: `main`, release commit recorded after validation
 - Task goal: make the current KARDS Card Forge publish-ready, push the verified state to GitHub, create the first GitHub release, deploy the same project to Vercel, and verify the deployed app loads
-- Status: in-progress
+- Status: integrated
 - Main changed files:
   - Core files: `index.html`, `src/App.tsx`, `src/components/ProjectPanel.tsx`, `src/i18n.ts`
   - Test files: `src/i18n.test.ts`
@@ -28,13 +28,20 @@
   - `npx vercel link --yes --project kards-card-forge --scope qiushiyu2003-2073s-projects`: created Vercel project `kards-card-forge`
   - First `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects`: passed, deployment `dpl_CHkAZRDiYXkW9eqaXrBbJ24kFVu6`, stable alias `https://kards-card-forge.vercel.app`
   - HTTP probe for `https://kards-card-forge.vercel.app`: returned `200`
+  - Final `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects` after `.vercelignore`: passed, uploaded `122B`, deployment `dpl_3E8LRgypgPGvg9rRUwqcNk7LQtJs`, stable alias `https://kards-card-forge.vercel.app`
+  - Vercel authenticated deployment read via connector: `READY`, framework `vite`, target `production`, source `cli`
+  - Remote browser smoke on `https://kards-card-forge.vercel.app`: passed, title matched, Canvas rendered nonblank at `500x702`, and PNG export produced `自定义坦克.png` with nonzero bytes
+  - `gh release create v0.1.0`: passed, release URL `https://github.com/raederhans/KARDS/releases/tag/v0.1.0`
+  - `gh release view v0.1.0`: passed, not draft, not prerelease, asset `kards-card-forge-v0.1.0-dist.zip` uploaded
+  - Independent read-only reviews: no blocking findings; `.env*` Vercel ignore and final docs closeout accepted as follow-up fixes
 - Tests not run:
-  - Final post-`.vercelignore` deployed URL smoke is pending
+  - GitHub release anonymous public access was not expected to work because the repository is private
+  - Vercel GitHub auto-link remains unverified because the Vercel account needs a GitHub Login Connection
 - Potential overlap with other worktrees:
   - None detected; `git worktree list --porcelain` showed only this checkout
   - Future overlap risk with app shell, i18n text, project panel controls, gitignore/vercelignore, or release/deploy docs
-- Recommended integration order: commit directly on `main`, push to `origin/main`, create release tag from that commit, then deploy that same commit to Vercel
-- Next action: push, create GitHub release, redeploy production with the clean ignore set, and run remote smoke
+- Recommended integration order: integrated on `main`; use future small commits for GitHub Login Connection automation or repository visibility changes
+- Next action: no code integration remains; optional follow-up is enabling Vercel GitHub Login Connection if push-triggered deployments are desired
 
 ## KARDS card-pack set mark editor and crop cleanup
 

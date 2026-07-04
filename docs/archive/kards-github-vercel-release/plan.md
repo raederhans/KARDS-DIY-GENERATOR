@@ -19,10 +19,10 @@ Ship the current KARDS Card Forge as a verified GitHub release and a working Ver
 - [x] Polish public UI copy and release metadata.
 - [x] Run targeted tests, full tests, typecheck, and production build.
 - [x] Create Vercel project and identify deployment constraints.
-- [ ] Commit and push release-ready changes to GitHub.
-- [ ] Create a GitHub release with notes and build artifact.
-- [ ] Deploy to Vercel and verify the live URL.
-- [ ] Record delivery package and closeout risks.
+- [x] Commit and push release-ready changes to GitHub.
+- [x] Create a GitHub release with notes and build artifact.
+- [x] Deploy to Vercel and verify the live URL.
+- [x] Record delivery package and closeout risks.
 
 ## Verification
 
@@ -32,3 +32,11 @@ Ship the current KARDS Card Forge as a verified GitHub release and a working Ver
 - Static production bundle scan for private `.runtime` paths.
 - HTTP or deployment probe for the final Vercel URL.
 - Remote browser smoke for page load, canvas render, and PNG export.
+
+## Closeout
+
+- GitHub release: `v0.1.0`
+- Release URL: `https://github.com/raederhans/KARDS/releases/tag/v0.1.0`
+- Vercel URL: `https://kards-card-forge.vercel.app`
+- Final verified deployment: `dpl_3E8LRgypgPGvg9rRUwqcNk7LQtJs`
+- Remaining non-code risk: Vercel GitHub auto-link is not active until the Vercel account adds a GitHub Login Connection.
