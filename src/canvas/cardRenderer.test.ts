@@ -213,25 +213,46 @@ describe("card renderer output", () => {
     const boardImage = { width: 84, height: 82 } as CanvasImageSource;
     const tankGlyph = { width: 84, height: 78 } as CanvasImageSource;
     const fighterGlyph = { width: 84, height: 78 } as CanvasImageSource;
+    const bomberGlyph = { width: 84, height: 78 } as CanvasImageSource;
+    const artilleryGlyph = { width: 84, height: 78 } as CanvasImageSource;
     const assets = createStaticAssetResolver([
       { slot: "type-icon-board", template: "unit", image: boardImage },
       { slot: "type-icon-glyph", kind: "tank", image: tankGlyph },
       { slot: "type-icon-glyph", kind: "fighter", image: fighterGlyph },
+      { slot: "type-icon-glyph", kind: "bomber", image: bomberGlyph },
+      { slot: "type-icon-glyph", kind: "artillery", image: artilleryGlyph },
     ]);
 
     renderCard(canvas, DEFAULT_CARD, null, { assets, disablePrintWear: true });
     renderCard(canvas, { ...DEFAULT_CARD, kind: "fighter" }, null, { assets, disablePrintWear: true });
+    renderCard(canvas, { ...DEFAULT_CARD, kind: "bomber" }, null, { assets, disablePrintWear: true });
+    renderCard(canvas, { ...DEFAULT_CARD, kind: "artillery" }, null, { assets, disablePrintWear: true });
 
     const boardDraws = calls.drawImage.filter(([image]) => image === boardImage);
-    const tankGlyphDraws = calls.drawImageStyles.filter((call) => call.image === tankGlyph);
-    const fighterGlyphDraws = calls.drawImageStyles.filter((call) => call.image === fighterGlyph);
+    const tankGlyphDraw = calls.drawImageStyles.find((call) => call.image === tankGlyph);
+    const fighterGlyphDraw = calls.drawImageStyles.find((call) => call.image === fighterGlyph);
+    const bomberGlyphDraw = calls.drawImageStyles.find((call) => call.image === bomberGlyph);
+    const artilleryGlyphDraw = calls.drawImageStyles.find((call) => call.image === artilleryGlyph);
 
-    expect(boardDraws).toHaveLength(2);
-    expect(tankGlyphDraws).toHaveLength(1);
-    expect(fighterGlyphDraws).toHaveLength(1);
+    expect(boardDraws).toHaveLength(4);
+    expect(tankGlyphDraw?.centerY).toBe(507);
+    expect(fighterGlyphDraw?.centerY).toBe(510);
+    expect(bomberGlyphDraw?.centerX).toBe(251);
+    expect(bomberGlyphDraw?.centerY).toBe(507);
+    expect(artilleryGlyphDraw?.centerX).toBe(253);
+    expect(artilleryGlyphDraw?.centerY).toBe(504);
+    expect(artilleryGlyphDraw?.width).toBeGreaterThan(Number(tankGlyphDraw?.width));
     expect(calls.drawImage.findIndex(([image]) => image === boardImage)).toBeLessThan(
       calls.drawImage.findIndex(([image]) => image === tankGlyph),
     );
+  });
+
+  it("uses a darker official-matched inner board tone for type icons", () => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, DEFAULT_CARD, null, { disablePrintWear: true });
+
+    expect(calls.fills.some((call) => call.fillStyle === "#41433d")).toBe(true);
   });
 
   it("keeps HQ defense board art below generated HQ text and values", () => {
@@ -302,6 +323,7 @@ function createFakeCanvas() {
     fillTextStyles: Array<{ text: unknown; font: string; fillStyle: string; scaleX: number }>;
     drawImageStyles: Array<{ image: unknown; centerX: number; centerY: number; width: number; height: number; rotation: number; clipDepth: number }>;
     operations: Array<{ kind: "drawImage" | "fillText"; value: unknown }>;
+    fills: Array<{ fillStyle: unknown }>;
   } = {
     clearRect: [],
     drawImage: [],
@@ -310,6 +332,7 @@ function createFakeCanvas() {
     fillTextStyles: [],
     drawImageStyles: [],
     operations: [],
+    fills: [],
   };
 
   const gradient = { addColorStop() {} };
@@ -346,7 +369,9 @@ function createFakeCanvas() {
     clip() {
       transform = { ...transform, clipDepth: transform.clipDepth + 1 };
     },
-    fill() {},
+    fill() {
+      calls.fills.push({ fillStyle });
+    },
     stroke() {},
     rect() {},
     moveTo() {},

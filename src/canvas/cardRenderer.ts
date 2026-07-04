@@ -32,9 +32,16 @@ const LIGHT = "#cfd5c2";
 const PAPER = "#d8d2bd";
 const TYPE_ICON_PAPER = PAPER;
 const TYPE_ICON_PAPER_RGB = { r: 216, g: 210, b: 189 };
+const TYPE_ICON_BOARD_DARK = "#41433d";
 const ACTIVATED = "#ce8a31";
 const CJK_RE = /[\u3400-\u9fff\uf900-\ufaff]/;
 const TYPE_ICON_GLYPH_CACHE = new WeakMap<object, CanvasImageSource>();
+const TYPE_ICON_GLYPH_PLACEMENT: Partial<Record<CardKind, { offsetX?: number; offsetY?: number; scale?: number }>> = {
+  tank: { offsetY: -7 },
+  fighter: { offsetY: -4 },
+  bomber: { offsetX: 1, offsetY: -7 },
+  artillery: { offsetX: 3, offsetY: -10, scale: 1.08 },
+};
 
 type TextMeasureContext = Pick<CanvasRenderingContext2D, "font" | "measureText">;
 
@@ -444,7 +451,7 @@ function drawTypeIcon(
   ctx.save();
   const rect = layout.typeIcon;
   drawTypeIconBoard(ctx, rect, options, assetContext);
-  if (drawTypeIconGlyphAsset(ctx, options, rect, assetContext)) {
+  if (drawTypeIconGlyphAsset(ctx, options, rect, kind, assetContext)) {
     ctx.restore();
     return;
   }
@@ -727,7 +734,7 @@ function drawTypeIconBoard(
   ctx.fillStyle = TYPE_ICON_PAPER;
   roundRect(ctx, rect.x, rect.y, rect.width, rect.height, 9);
   ctx.fill();
-  ctx.fillStyle = DARK;
+  ctx.fillStyle = TYPE_ICON_BOARD_DARK;
   roundRect(ctx, rect.x + border, rect.y + border, rect.width - border * 2, rect.height - border * 2, 5);
   ctx.fill();
 }
@@ -736,6 +743,7 @@ function drawTypeIconGlyphAsset(
   ctx: CanvasRenderingContext2D,
   options: RenderCardOptions,
   rect: Rect,
+  kind: CardKind,
   assetContext: CardRenderAssetContext,
 ): boolean {
   const glyphLayer = options.assets?.resolveImage("type-icon-glyph", assetContext);
@@ -756,6 +764,12 @@ function drawTypeIconGlyphAsset(
   const sourceHeight = Math.max(1, sourceSize.height - sourceInsetY * 2);
   const glyphInsetX = Math.round(rect.width * 0.18);
   const glyphInsetY = Math.round(rect.height * 0.18);
+  const placement = TYPE_ICON_GLYPH_PLACEMENT[kind] ?? {};
+  const glyphScale = placement.scale ?? 1;
+  const glyphWidth = (rect.width - glyphInsetX * 2) * glyphScale;
+  const glyphHeight = (rect.height - glyphInsetY * 2) * glyphScale;
+  const glyphX = rect.x + (rect.width - glyphWidth) / 2 + (placement.offsetX ?? 0);
+  const glyphY = rect.y + (rect.height - glyphHeight) / 2 + (placement.offsetY ?? 0);
 
   ctx.save();
   roundRect(ctx, rect.x + 4, rect.y + 4, rect.width - 8, rect.height - 8, 7);
@@ -766,10 +780,10 @@ function drawTypeIconGlyphAsset(
     sourceInsetY,
     sourceWidth,
     sourceHeight,
-    rect.x + glyphInsetX,
-    rect.y + glyphInsetY,
-    rect.width - glyphInsetX * 2,
-    rect.height - glyphInsetY * 2,
+    glyphX,
+    glyphY,
+    glyphWidth,
+    glyphHeight,
   );
   ctx.restore();
   return true;

@@ -1,5 +1,34 @@
 # Worktree Registry
 
+## KARDS type icon placement tuning
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: tune split type-icon board color and per-kind glyph placement against official-derived reference crops
+- Base branch/base commit: `main`, `8f99dc5`
+- Current branch/HEAD: `main`, closeout commit to be recorded in git history after validation
+- Task goal: keep the type-icon bottom board fixed while matching the official darker board tone and centering or nudging tank/fighter/bomber/artillery glyphs independently
+- Status: ready-for-integration on main checkout; no separate worktree merge required
+- Main changed files:
+  - Core files: `src/canvas/cardRenderer.ts`
+  - Test files: `src/canvas/cardRenderer.test.ts`
+  - Docs files: `docs/active/kards-style-replication/context.md`, `docs/active/_worktree_registry.md`, `lessons learned.md`
+- Shared hotspot files touched: Canvas renderer, renderer tests, active style-replication docs
+- Validation run:
+  - `git worktree list --porcelain`: only main checkout
+  - Private official-derived type-icon crop measurement under `.runtime`: completed; dark board average near `#3f403a`
+  - Playwright smoke on `http://127.0.0.1:5173/`: passed for `tank`, `fighter`, `bomber`, and `artillery`; screenshots saved under `.runtime/qa/type-icon-placement/`
+  - Independent code-review subagent: no blocking findings
+  - `npx vitest run src/canvas/cardRenderer.test.ts src/canvas/renderAssets.test.ts`: passed, 2 files and 22 tests
+  - `npm test`: passed, 8 files and 51 tests
+  - `npm run build`: passed, including typecheck and Vite production build
+- Tests not run:
+  - No full transformed-presentation visual-smoke rebaseline; this pass uses targeted browser screenshots and unit assertions for the requested icon types
+- Potential overlap with other worktrees:
+  - None detected; `git worktree list --porcelain` showed only the main checkout
+  - Future overlap risk with renderer/layout/font extraction branches and visual-smoke rebaseline work
+- Recommended integration order: commit this tune after the layer split commit and before any future type-icon asset-pack extraction/rebaseline, because it defines the current presentation target
+- Next action: run final review, then commit and push main
+
 ## KARDS type icon layer split
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

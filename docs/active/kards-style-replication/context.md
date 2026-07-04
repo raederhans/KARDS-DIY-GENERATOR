@@ -789,3 +789,31 @@
 - Boundary:
   - No official-derived image/font assets were copied into `src`, `public`, or `dist`.
   - This pass fixes layer semantics and local color treatment; it does not perform a new transformed-presentation visual-smoke rebaseline, and the old raw slot-identity smoke should not be used to validate overlapping board/glyph split slots.
+
+## 2026-07-04 Stage 8 Type Icon Placement Tuning
+
+- User review found the split layers were correct, but the visible board/glyph calibration still needed per-unit alignment:
+  - the bottom board needed to read slightly darker against the official reference;
+  - tank and bomber glyphs needed their visual centers aligned with the unchanged board;
+  - fighter needed a small upward move;
+  - artillery needed an upward move plus a slight size increase.
+- Local measurement:
+  - Measured the private Stage 6 official-derived type icon crops under `.runtime/kards-private-assets/stage6-multisource-clean-extraction/images/stage5-clean/type-icon`.
+  - Dark board pixels averaged around `#3f403a`, so the renderer now uses a darker dedicated type-icon board color instead of the general text `DARK`.
+  - Bright glyph centers in the cropped source showed tank/bomber/artillery were visually low inside the slot, matching the user review.
+- Implemented correction:
+  - Added `TYPE_ICON_BOARD_DARK` for the inner type-icon board.
+  - Added per-kind glyph placement for `tank`, `fighter`, `bomber`, and `artillery`.
+  - Kept the board rect fixed while shifting/scaling only the glyph draw layer.
+  - Artillery now gets a modest scale increase and upward adjustment; bomber gets a tiny right correction plus upward adjustment.
+- Runtime evidence:
+  - Playwright smoke on `http://127.0.0.1:5173/` switched through `tank`, `fighter`, `bomber`, and `artillery`.
+  - Screenshots saved under `.runtime/qa/type-icon-placement/`.
+  - Each generated canvas remained `500x702` and nonblank.
+- Validation:
+  - Independent code-review subagent found no blocking issues after the placement/color tune.
+  - `npx vitest run src/canvas/cardRenderer.test.ts src/canvas/renderAssets.test.ts`: passed, 2 files and 22 tests.
+  - `npm test`: passed, 8 files and 51 tests.
+  - `npm run build`: passed, including typecheck and Vite production build.
+- Boundary:
+  - This pass is a presentation tune of the split renderer; no official-derived files were copied into source or public assets.
