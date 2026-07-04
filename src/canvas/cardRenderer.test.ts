@@ -398,6 +398,44 @@ describe("card renderer output", () => {
     expect(pipDraws[1].centerY).toBeLessThan(pipDraws[2].centerY);
   });
 
+  it("scales elite and special rarity assets without changing their slot center", () => {
+    const eliteCanvas = createFakeCanvas();
+    const specialCanvas = createFakeCanvas();
+    const eliteImage = { width: 30, height: 18 } as CanvasImageSource;
+    const specialImage = { width: 12, height: 16 } as CanvasImageSource;
+
+    renderCard(eliteCanvas.canvas, { ...DEFAULT_CARD, rarity: "elite" }, null, {
+      assets: createStaticAssetResolver([{ slot: "rarity-pip", rarityId: "elite", image: eliteImage }]),
+      disablePrintWear: true,
+    });
+    renderCard(specialCanvas.canvas, { ...DEFAULT_CARD, rarity: "special" }, null, {
+      assets: createStaticAssetResolver([{ slot: "rarity-pip", rarityId: "special", image: specialImage }]),
+      disablePrintWear: true,
+    });
+
+    const eliteDraw = eliteCanvas.calls.drawImageStyles.find((call) => call.image === eliteImage);
+    const specialDraws = specialCanvas.calls.drawImageStyles.filter((call) => call.image === specialImage);
+
+    expect(eliteDraw).toMatchObject({ centerX: 250, centerY: 685, width: 30, height: 18, rotation: 0 });
+    expect(specialDraws).toHaveLength(2);
+    expect(specialDraws.map((call) => call.width)).toEqual([12, 12]);
+    expect(specialDraws.map((call) => call.height)).toEqual([16, 16]);
+    expect(specialDraws.map((call) => call.rotation)).toEqual([-0.06, 0.06]);
+    expect((specialDraws[0].centerX + specialDraws[1].centerX) / 2).toBe(250);
+  });
+
+  it("keeps a fallback shine and side wings for elite rarity when no asset is available", () => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, { ...DEFAULT_CARD, rarity: "elite" }, null, { disablePrintWear: true });
+
+    const rarityPaths = calls.paths.filter((path) =>
+      path.points.some((point) => "x" in point && Math.abs(point.x) <= 20),
+    );
+    expect(rarityPaths.length).toBeGreaterThanOrEqual(4);
+    expect(calls.strokeRect).toContainEqual([222, 675, 56, 20]);
+  });
+
   it("draws local asset-pack layers without replacing dynamic text values", () => {
     const { canvas, calls } = createFakeCanvas();
     const localImage = { width: 20, height: 20 } as CanvasImageSource;
