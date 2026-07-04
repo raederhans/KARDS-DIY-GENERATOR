@@ -28,8 +28,8 @@
   - `npx vercel link --yes --project kards-card-forge --scope qiushiyu2003-2073s-projects`: created Vercel project `kards-card-forge`
   - First `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects`: passed, deployment `dpl_CHkAZRDiYXkW9eqaXrBbJ24kFVu6`, stable alias `https://kards-card-forge.vercel.app`
   - HTTP probe for `https://kards-card-forge.vercel.app`: returned `200`
-  - Final `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects` after `.vercelignore`: passed, uploaded `122B`, deployment `dpl_3E8LRgypgPGvg9rRUwqcNk7LQtJs`, stable alias `https://kards-card-forge.vercel.app`
-  - Vercel authenticated deployment read via connector: `READY`, framework `vite`, target `production`, source `cli`
+  - Post-`.vercelignore` Vercel production deploys passed with small uploads and stable alias `https://kards-card-forge.vercel.app`
+  - Vercel authenticated deployment read via connector: latest checked deployment was `READY`, framework `vite`, target `production`, source `cli`
   - Remote browser smoke on `https://kards-card-forge.vercel.app`: passed, title matched, Canvas rendered nonblank at `500x702`, and PNG export produced `自定义坦克.png` with nonzero bytes
   - `gh release create v0.1.0`: passed, release URL `https://github.com/raederhans/KARDS/releases/tag/v0.1.0`
   - `gh release view v0.1.0`: passed, not draft, not prerelease, asset `kards-card-forge-v0.1.0-dist.zip` uploaded

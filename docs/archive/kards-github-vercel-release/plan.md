@@ -38,5 +38,5 @@ Ship the current KARDS Card Forge as a verified GitHub release and a working Ver
 - GitHub release: `v0.1.0`
 - Release URL: `https://github.com/raederhans/KARDS/releases/tag/v0.1.0`
 - Vercel URL: `https://kards-card-forge.vercel.app`
-- Final verified deployment: `dpl_3E8LRgypgPGvg9rRUwqcNk7LQtJs`
+- Final verified production alias: `https://kards-card-forge.vercel.app`
 - Remaining non-code risk: Vercel GitHub auto-link is not active until the Vercel account adds a GitHub Login Connection.

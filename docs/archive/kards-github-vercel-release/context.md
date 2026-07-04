@@ -52,10 +52,9 @@
 ## Final Deployment and Release
 
 - Final deploy command: `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects`.
-- Final deploy after `.vercelignore`: uploaded `122B`, downloaded `65` deployment files, restored build cache, ran `npm run build`, and reached `READY`.
-- Final deployment ID: `dpl_3E8LRgypgPGvg9rRUwqcNk7LQtJs`.
+- Post-`.vercelignore` production deploys used small uploads, downloaded `65` deployment files, restored build cache, ran `npm run build`, and reached `READY`.
 - Stable production alias: `https://kards-card-forge.vercel.app`.
-- Authenticated Vercel connector read confirmed deployment state `READY`, framework `vite`, target `production`, and source `cli`.
+- Authenticated Vercel connector read confirmed the latest checked deployment state `READY`, framework `vite`, target `production`, and source `cli`.
 - Remote browser smoke on the stable alias passed:
   - Page title: `KARDS Card Forge 卡牌工坊`
   - Canvas: `500x702`, nonblank

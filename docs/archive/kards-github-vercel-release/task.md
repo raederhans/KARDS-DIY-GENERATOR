@@ -50,8 +50,8 @@
 - `npx vercel link --yes --project kards-card-forge --scope qiushiyu2003-2073s-projects`: created the Vercel project.
 - First `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects`: passed and aliased `https://kards-card-forge.vercel.app`.
 - `Invoke-WebRequest -UseBasicParsing https://kards-card-forge.vercel.app`: returned HTTP `200`.
-- Final `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects`: passed after `.vercelignore`, uploaded `122B`, deployment `dpl_3E8LRgypgPGvg9rRUwqcNk7LQtJs`.
-- Vercel connector `_get_deployment`: confirmed deployment `READY`, project `kards-card-forge`, framework `vite`, target `production`.
+- Final `npx vercel deploy --prod --yes --scope qiushiyu2003-2073s-projects`: passed after `.vercelignore`, with small uploads and stable alias `https://kards-card-forge.vercel.app`.
+- Vercel connector `_get_deployment`: confirmed latest checked deployment `READY`, project `kards-card-forge`, framework `vite`, target `production`.
 - Remote browser smoke: passed title, nonblank `500x702` Canvas, and PNG export.
 - `gh release create v0.1.0`: passed.
 - `gh release view v0.1.0`: confirmed release is not draft/prerelease and includes `kards-card-forge-v0.1.0-dist.zip`.
