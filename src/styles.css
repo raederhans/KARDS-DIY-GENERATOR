@@ -325,11 +325,40 @@ input[type="range"] {
 }
 
 .crop-grid {
-  padding: 12px;
-  margin-bottom: 16px;
+  padding: 9px 10px 8px;
+  margin-bottom: 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.02);
+}
+
+.crop-grid .crop-control {
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.crop-grid .crop-control:last-child {
+  margin-bottom: 0;
+}
+
+.crop-control-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.crop-value-input {
+  width: 76px;
+  height: 28px;
+  padding: 0 7px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.crop-control input[type="range"] {
+  height: 22px;
 }
 
 .select-grid {

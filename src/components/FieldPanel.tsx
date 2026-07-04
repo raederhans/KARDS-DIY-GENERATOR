@@ -232,13 +232,24 @@ export function FieldPanel({
   }
 
   function updateCrop(key: keyof CardSpec["artwork"]["crop"], value: string) {
+    if (value === "") {
+      return;
+    }
+
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+      return;
+    }
+
+    const bounds = key === "scale" ? { min: 0.6, max: 3 } : { min: -300, max: 300 };
+    const adjustedValue = key !== "scale" && Math.abs(numericValue) <= 4 ? 0 : numericValue;
     onCardChange((currentCard) => ({
       ...currentCard,
       artwork: {
         ...currentCard.artwork,
         crop: {
           ...currentCard.artwork.crop,
-          [key]: Number(value),
+          [key]: clamp(adjustedValue, bounds.min, bounds.max),
         },
       },
     }));
@@ -282,8 +293,20 @@ export function FieldPanel({
       </label>
 
       <div className="crop-grid">
-        <label>
-          <span>{text.artX}</span>
+        <label className="crop-control">
+          <span className="crop-control-header">
+            <span>{text.artX}</span>
+            <input
+              className="crop-value-input"
+              name="artwork-crop-x-value"
+              type="number"
+              min="-300"
+              max="300"
+              step="1"
+              value={card.artwork.crop.x}
+              onChange={(event) => updateCrop("x", event.target.value)}
+            />
+          </span>
           <input
             name="artwork-crop-x"
             type="range"
@@ -293,8 +316,20 @@ export function FieldPanel({
             onChange={(event) => updateCrop("x", event.target.value)}
           />
         </label>
-        <label>
-          <span>{text.artY}</span>
+        <label className="crop-control">
+          <span className="crop-control-header">
+            <span>{text.artY}</span>
+            <input
+              className="crop-value-input"
+              name="artwork-crop-y-value"
+              type="number"
+              min="-300"
+              max="300"
+              step="1"
+              value={card.artwork.crop.y}
+              onChange={(event) => updateCrop("y", event.target.value)}
+            />
+          </span>
           <input
             name="artwork-crop-y"
             type="range"
@@ -304,8 +339,20 @@ export function FieldPanel({
             onChange={(event) => updateCrop("y", event.target.value)}
           />
         </label>
-        <label>
-          <span>{text.zoom}</span>
+        <label className="crop-control">
+          <span className="crop-control-header">
+            <span>{text.zoom}</span>
+            <input
+              className="crop-value-input"
+              name="artwork-crop-scale-value"
+              type="number"
+              min="0.6"
+              max="3"
+              step="0.05"
+              value={card.artwork.crop.scale}
+              onChange={(event) => updateCrop("scale", event.target.value)}
+            />
+          </span>
           <input
             name="artwork-crop-scale"
             type="range"
