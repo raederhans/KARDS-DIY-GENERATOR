@@ -55,6 +55,12 @@ describe("normalizeCardSpec", () => {
     expect(card.keywordLine).toBe("GUARD, BLITZ, SHOCK, FURY");
   });
 
+  it("preserves cards with no visible rarity mark", () => {
+    const card = normalizeCardSpec({ rarity: "none" });
+
+    expect(card.rarity).toBe("none");
+  });
+
   it("migrates old comma-separated keyword lines into structured keywords", () => {
     const card = normalizeCardSpec({
       keywordLine: "BECOMESVETERAN:641ST RIFLES VET, ONLYSPAWNABLE, BLITZ, GUARD",

@@ -387,22 +387,22 @@ describe("card renderer output", () => {
 
   it("draws limited rarity pips with a subtle fan perspective", () => {
     const { canvas, calls } = createFakeCanvas();
-    const localImage = { width: 8, height: 13 } as CanvasImageSource;
-    const assets = createStaticAssetResolver([{ slot: "rarity-pip", rarityId: "limited", image: localImage }]);
 
-    renderCard(canvas, { ...DEFAULT_CARD, rarity: "limited" }, null, { assets, disablePrintWear: true });
+    renderCard(canvas, { ...DEFAULT_CARD, rarity: "limited" }, null, { disablePrintWear: true });
 
-    const pipDraws = calls.drawImageStyles.filter((call) => call.image === localImage);
-    expect(pipDraws.map((call) => call.rotation)).toEqual([-0.08, 0, 0.08]);
-    expect(pipDraws[1].centerY).toBeLessThan(pipDraws[0].centerY);
-    expect(pipDraws[1].centerY).toBeLessThan(pipDraws[2].centerY);
+    const pipPaths = calls.paths.filter((path) =>
+      path.points.some((point) => "x" in point && point.x >= -4 && point.x <= 4),
+    );
+    const pipRotations = calls.fills.filter((fill) => fill.fillStyle === "#b08745").map((fill) => fill.rotation);
+    expect(pipPaths.length).toBeGreaterThanOrEqual(3);
+    expect(pipRotations).toEqual([-0.08, 0, 0.08]);
   });
 
-  it("scales elite and special rarity assets without changing their slot center", () => {
+  it("draws complete rarity mark assets into the official rarity slot", () => {
     const eliteCanvas = createFakeCanvas();
     const specialCanvas = createFakeCanvas();
-    const eliteImage = { width: 30, height: 18 } as CanvasImageSource;
-    const specialImage = { width: 12, height: 16 } as CanvasImageSource;
+    const eliteImage = { width: 56, height: 20 } as CanvasImageSource;
+    const specialImage = { width: 56, height: 20 } as CanvasImageSource;
 
     renderCard(eliteCanvas.canvas, { ...DEFAULT_CARD, rarity: "elite" }, null, {
       assets: createStaticAssetResolver([{ slot: "rarity-pip", rarityId: "elite", image: eliteImage }]),
@@ -416,24 +416,20 @@ describe("card renderer output", () => {
     const eliteDraw = eliteCanvas.calls.drawImageStyles.find((call) => call.image === eliteImage);
     const specialDraws = specialCanvas.calls.drawImageStyles.filter((call) => call.image === specialImage);
 
-    expect(eliteDraw).toMatchObject({ centerX: 250, centerY: 685, width: 30, height: 18, rotation: 0 });
-    expect(specialDraws).toHaveLength(2);
-    expect(specialDraws.map((call) => call.width)).toEqual([12, 12]);
-    expect(specialDraws.map((call) => call.height)).toEqual([16, 16]);
-    expect(specialDraws.map((call) => call.rotation)).toEqual([-0.06, 0.06]);
-    expect((specialDraws[0].centerX + specialDraws[1].centerX) / 2).toBe(250);
+    expect(eliteDraw).toMatchObject({ centerX: 250, centerY: 685, width: 56, height: 20, rotation: 0 });
+    expect(specialDraws).toHaveLength(1);
+    expect(specialDraws[0]).toMatchObject({ centerX: 250, centerY: 685, width: 56, height: 20, rotation: 0 });
   });
 
-  it("keeps a fallback shine and side wings for elite rarity when no asset is available", () => {
+  it("does not draw rarity marks when rarity is none", () => {
     const { canvas, calls } = createFakeCanvas();
+    const rarityImage = { width: 56, height: 20 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([{ slot: "rarity-pip", rarityId: "none", image: rarityImage }]);
 
-    renderCard(canvas, { ...DEFAULT_CARD, rarity: "elite" }, null, { disablePrintWear: true });
+    renderCard(canvas, { ...DEFAULT_CARD, rarity: "none" }, null, { assets, disablePrintWear: true });
 
-    const rarityPaths = calls.paths.filter((path) =>
-      path.points.some((point) => "x" in point && Math.abs(point.x) <= 20),
-    );
-    expect(rarityPaths.length).toBeGreaterThanOrEqual(4);
-    expect(calls.strokeRect).toContainEqual([222, 675, 56, 20]);
+    expect(calls.drawImageStyles.some((call) => call.image === rarityImage)).toBe(false);
+    expect(calls.strokeRect).not.toContainEqual([222, 675, 56, 20]);
   });
 
   it("draws local asset-pack layers without replacing dynamic text values", () => {
@@ -469,7 +465,7 @@ function createFakeCanvas() {
     fillTextStyles: Array<{ text: unknown; font: string; fillStyle: string; scaleX: number; scaleY: number }>;
     drawImageStyles: Array<{ image: unknown; centerX: number; centerY: number; width: number; height: number; rotation: number; clipDepth: number }>;
     operations: Array<{ kind: "drawImage" | "fillText"; value: unknown }>;
-    fills: Array<{ fillStyle: unknown }>;
+    fills: Array<{ fillStyle: unknown; rotation: number }>;
     paths: Array<{ fillStyle: unknown; points: CanvasPathPoint[] }>;
   } = {
     clearRect: [],
@@ -523,7 +519,7 @@ function createFakeCanvas() {
       transform = { ...transform, clipDepth: transform.clipDepth + 1 };
     },
     fill() {
-      calls.fills.push({ fillStyle });
+      calls.fills.push({ fillStyle, rotation: transform.rotation });
       if (currentPath.length > 0) {
         calls.paths.push({ fillStyle, points: currentPath });
       }

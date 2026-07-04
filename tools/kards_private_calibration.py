@@ -31,6 +31,7 @@ NATION_MIN_SUBJECT_OPAQUE_RATIO = 0.14
 SET_MARK_BACKGROUND_DISTANCE_THRESHOLD = 42
 SET_MARK_SUBJECT_DISTANCE_THRESHOLD = 32
 SET_MARK_MIN_SUBJECT_PIXEL_COUNT = 24
+RARITY_MARK_BACKGROUND_DISTANCE_THRESHOLD = 18
 DETAILED_SET_MARK_SUBJECT_DISTANCE_THRESHOLD = 16
 DETAILED_SET_MARK_IDS = {
     "legions",
@@ -918,12 +919,8 @@ def write_stage5_reference_elements(
             continue
         if element_id == "special-attack-board" and card["type"] not in SPECIAL_ATTACK_KINDS:
             continue
-        rect = (
-            rarity_pip_rect(layout_for_kind(card["type"])["rarity"], rarity_to_id(card["rarity"]))
-            if element_id == "rarity-pip"
-            else json_rect_to_tuple(definition["rect"])
-        )
-        cropped = crop(image, rect)
+        rect = json_rect_to_tuple(definition["rect"])
+        cropped = extract_rarity_mark_subject(image, rect) if element_id == "rarity-pip" else crop(image, rect)
         file_path = target_dir / f"{element_id}.png"
         save_png(cropped, file_path)
         entries.append(
@@ -1244,7 +1241,7 @@ def add_manifest_images(
         manifest_seen,
         slot="rarity-pip",
         file_path=Path("images") / "rarity" / f"{rarity_id}-pip.png",
-        crop_image=crop(image, rarity_pip_rect(layout["rarity"], rarity_id)),
+        crop_image=extract_rarity_mark_subject(image, layout["rarity"]),
         filters={"rarityId": rarity_id},
     )
     add_manifest_crop(
@@ -1290,7 +1287,7 @@ def write_calibration_slices(
         if name == "rarity":
             continue
         save_png(crop(image, rect), target_dir / f"{name}.png")
-    save_png(crop(image, rarity_pip_rect(layout["rarity"], rarity_to_id(card["rarity"]))), target_dir / "rarity-pip.png")
+    save_png(extract_rarity_mark_subject(image, layout["rarity"]), target_dir / "rarity-pip.png")
 
 
 def write_sample_card(output_dir: Path, card: dict[str, Any], artwork_path: Path, language: str) -> None:
@@ -1371,6 +1368,29 @@ def extract_set_mark_subject(
 
     protected = protected_set_mark_subject_pixels(mark, palette, set_id)
     transparent = collect_connected_background_pixels(mark, palette, SET_MARK_BACKGROUND_DISTANCE_THRESHOLD, protected)
+    if not transparent:
+        return mark
+
+    output = mark.copy()
+    output_pixels = output.load()
+    for x, y in transparent:
+        red, green, blue, _alpha = output_pixels[x, y]
+        output_pixels[x, y] = (red, green, blue, 0)
+    return output
+
+
+def extract_rarity_mark_subject(image: Image.Image, rect: tuple[int, int, int, int]) -> Image.Image:
+    mark = crop(image, rect).convert("RGBA")
+    palette = sample_set_mark_background_palette(mark)
+    if not palette:
+        return mark
+
+    transparent = collect_connected_background_pixels(
+        mark,
+        palette,
+        RARITY_MARK_BACKGROUND_DISTANCE_THRESHOLD,
+        protected=set(),
+    )
     if not transparent:
         return mark
 
@@ -1558,16 +1578,6 @@ def sample_nation_mark_background_palette(
 
 def color_distance_sq(left: tuple[int, int, int], right: tuple[int, int, int]) -> int:
     return sum((left[channel] - right[channel]) ** 2 for channel in range(3))
-
-
-def rarity_pip_rect(rarity_rect: tuple[int, int, int, int], rarity_id: str) -> tuple[int, int, int, int]:
-    pip_count = {"elite": 1, "special": 2, "limited": 3}.get(rarity_id, 4)
-    pip_width = 9
-    gap = 4
-    x, y, width, height = rarity_rect
-    total_width = pip_count * pip_width + (pip_count - 1) * gap
-    start_x = x + (width - total_width) / 2
-    return (round(start_x), y + 4, pip_width, height - 8)
 
 
 def layout_for_kind(kind: str) -> dict[str, tuple[int, int, int, int]]:

@@ -444,18 +444,9 @@ async function runBrowserSmoke({ appUrl, manifest, elements, outputRoot }) {
             return { x: layout.setAnchor.x - 28, y: layout.setAnchor.y - 26, width: 28, height: 28 };
           }
           if (slot === "rarity-pip" && layout.rarity) {
-            return rarityPipRect(layout.rarity, rarityId);
+            return copyRect(layout.rarity);
           }
           throw new Error(`Unsupported slot for smoke: ${slot}`);
-        }
-
-        function rarityPipRect(rarityRect, rarityId) {
-          const pipCount = rarityId === "elite" ? 1 : rarityId === "special" ? 2 : rarityId === "limited" ? 3 : 4;
-          const pipWidth = 9;
-          const gap = 4;
-          const totalWidth = pipCount * pipWidth + (pipCount - 1) * gap;
-          const startX = rarityRect.x + (rarityRect.width - totalWidth) / 2;
-          return { x: Math.round(startX), y: rarityRect.y + 4, width: pipWidth, height: rarityRect.height - 8 };
         }
 
         function copyRect(rect) {

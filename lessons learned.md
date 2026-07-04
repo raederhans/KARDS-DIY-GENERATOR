@@ -21,3 +21,4 @@
 - Card-face keywords should use structured ids for editing and regenerate display/export strings from those ids; otherwise localization, duplicate prevention, and canvas text fitting become coupled to stale freeform text.
 - Small card-foot set marks should sample background from their own corners, not the broader card neighborhood; nearby printed texture can otherwise be mistaken for background and erase pale icon subjects.
 - Thin-line card-foot set marks need per-set preservation rules instead of one global threshold; otherwise fixing detailed icons can reintroduce background texture into already-clean marks.
+- Rarity foot marks are complete grouped marks, not reusable single pips; crop and render the full rarity slot so elite wings and multi-pip gloss are preserved.

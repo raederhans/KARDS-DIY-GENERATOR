@@ -337,37 +337,34 @@ function drawRarity(
     return;
   }
 
+  if (rarityId === "none") {
+    return;
+  }
+
   ctx.save();
+  if (drawAsset(ctx, options, "rarity-pip", layout.rarity, assetContext)) {
+    ctx.restore();
+    return;
+  }
+
   const pipCount = getRarityPipCount(rarityId);
-  const pipLayout = getRarityPipLayout(rarityId);
-  const totalWidth = pipCount * pipLayout.width + (pipCount - 1) * pipLayout.gap;
+  const pipWidth = 8;
+  const pipHeight = 13;
+  const gap = 4;
+  const totalWidth = pipCount * pipWidth + (pipCount - 1) * gap;
   const startX = Math.round(layout.rarity.x + (layout.rarity.width - totalWidth) / 2);
   ctx.fillStyle = color;
-  let usedPipAsset = false;
   for (let i = 0; i < pipCount; i += 1) {
     const centerOffset = i - (pipCount - 1) / 2;
-    const centerX = startX + i * (pipLayout.width + pipLayout.gap) + pipLayout.width / 2;
-    const centerY = layout.rarity.y + pipLayout.centerY + Math.abs(centerOffset) * pipLayout.fanYOffset;
-    const rotation = centerOffset * pipLayout.rotationStep;
-    const pipRect = {
-      x: -pipLayout.width / 2,
-      y: -pipLayout.height / 2,
-      width: pipLayout.width,
-      height: pipLayout.height,
-    };
+    const centerX = startX + i * (pipWidth + gap) + pipWidth / 2;
+    const centerY = layout.rarity.y + 9 + Math.abs(centerOffset) * 1.1;
+    const rotation = centerOffset * 0.08;
+    const pipRect = { x: -pipWidth / 2, y: -pipHeight / 2, width: pipWidth, height: pipHeight };
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(rotation);
-    const hasPipAsset = drawAsset(ctx, options, "rarity-pip", pipRect, assetContext);
-    usedPipAsset = hasPipAsset || usedPipAsset;
-    if (!hasPipAsset) {
-      drawRarityPipShape(ctx, pipRect, rarityId);
-    }
+    drawRarityPipShape(ctx, pipRect);
     ctx.restore();
-  }
-  if (!usedPipAsset) {
-    ctx.strokeStyle = "rgba(79, 81, 76, 0.35)";
-    ctx.strokeRect(layout.rarity.x, layout.rarity.y, layout.rarity.width, layout.rarity.height);
   }
   ctx.restore();
 }
@@ -779,11 +776,7 @@ function fillScaledText(ctx: CanvasRenderingContext2D, text: string, x: number, 
   ctx.restore();
 }
 
-function drawRarityPipShape(ctx: CanvasRenderingContext2D, rect: Rect, rarityId: string): void {
-  if (rarityId === "elite") {
-    drawEliteRarityWings(ctx, rect);
-  }
-
+function drawRarityPipShape(ctx: CanvasRenderingContext2D, rect: Rect): void {
   ctx.beginPath();
   ctx.moveTo(rect.x + 1, rect.y);
   ctx.lineTo(rect.x + rect.width - 1, rect.y);
@@ -791,51 +784,6 @@ function drawRarityPipShape(ctx: CanvasRenderingContext2D, rect: Rect, rarityId:
   ctx.lineTo(rect.x, rect.y + rect.height);
   ctx.closePath();
   ctx.fill();
-
-  if (rarityId === "elite" || rarityId === "special") {
-    drawRarityPipGloss(ctx, rect);
-  }
-}
-
-function drawEliteRarityWings(ctx: CanvasRenderingContext2D, rect: Rect): void {
-  const wingWidth = Math.max(5, rect.width * 0.22);
-  const wingInset = Math.max(1, rect.width * 0.04);
-  const top = rect.y + rect.height * 0.36;
-  const mid = rect.y + rect.height * 0.56;
-  const bottom = rect.y + rect.height * 0.75;
-
-  ctx.save();
-  ctx.globalAlpha = 0.78;
-  ctx.beginPath();
-  ctx.moveTo(rect.x + wingInset, top);
-  ctx.lineTo(rect.x - wingWidth, mid);
-  ctx.lineTo(rect.x + wingInset, bottom);
-  ctx.lineTo(rect.x + wingWidth * 0.42, mid + 1);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(rect.x + rect.width - wingInset, top);
-  ctx.lineTo(rect.x + rect.width + wingWidth, mid);
-  ctx.lineTo(rect.x + rect.width - wingInset, bottom);
-  ctx.lineTo(rect.x + rect.width - wingWidth * 0.42, mid + 1);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawRarityPipGloss(ctx: CanvasRenderingContext2D, rect: Rect): void {
-  ctx.save();
-  ctx.globalAlpha = 0.38;
-  ctx.fillStyle = "rgba(255, 255, 238, 0.88)";
-  ctx.beginPath();
-  ctx.moveTo(rect.x + rect.width * 0.23, rect.y + rect.height * 0.2);
-  ctx.lineTo(rect.x + rect.width * 0.74, rect.y + rect.height * 0.14);
-  ctx.lineTo(rect.x + rect.width * 0.57, rect.y + rect.height * 0.42);
-  ctx.lineTo(rect.x + rect.width * 0.28, rect.y + rect.height * 0.48);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
 }
 
 function drawTypeIconBoard(
@@ -1022,6 +970,8 @@ function resolveTypeGlyph(kind: CardKind, defaultSymbol: string): string {
 
 function getRarityPipCount(rarityId: string): number {
   switch (rarityId) {
+    case "none":
+      return 0;
     case "elite":
       return 1;
     case "special":
@@ -1030,17 +980,6 @@ function getRarityPipCount(rarityId: string): number {
       return 3;
     default:
       return 4;
-  }
-}
-
-function getRarityPipLayout(rarityId: string): { width: number; height: number; gap: number; centerY: number; fanYOffset: number; rotationStep: number } {
-  switch (rarityId) {
-    case "elite":
-      return { width: 30, height: 18, gap: 0, centerY: 10, fanYOffset: 0, rotationStep: 0 };
-    case "special":
-      return { width: 12, height: 16, gap: 4, centerY: 10, fanYOffset: 0.9, rotationStep: 0.12 };
-    default:
-      return { width: 8, height: 13, gap: 4, centerY: 9, fanYOffset: 1.1, rotationStep: 0.08 };
   }
 }
 

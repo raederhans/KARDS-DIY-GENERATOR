@@ -214,6 +214,7 @@ const PRESET_LABELS: Record<Language, Record<string, Record<string, string>>> = 
       custom: "自定义",
     },
     rarity: {
+      none: "0 / 无",
       standard: "标准",
       limited: "限定",
       special: "特殊",

@@ -117,6 +117,7 @@ export const NATIONS: NationPreset[] = [
 ];
 
 export const RARITIES: RarityPreset[] = [
+  { id: "none", label: "0", color: "transparent" },
   { id: "standard", label: "Standard", color: "#9a8d72" },
   { id: "limited", label: "Limited", color: "#b08745" },
   { id: "special", label: "Special", color: "#b94a3d" },
