@@ -590,20 +590,38 @@ function drawStatBoard(
 }
 
 function drawStatBoardFallbackPath(ctx: CanvasRenderingContext2D, rect: Rect, shape: StatBoardShape): void {
+  const left = rect.x + 6;
+  const right = rect.x + rect.width - 6;
+  const centerX = rect.x + rect.width / 2;
+  const top = rect.y + 4;
+  const bottom = rect.y + rect.height - 4;
+  const upperShoulderY = rect.y + 18;
+  const lowerShoulderY = rect.y + rect.height - 18;
+  const radius = 6;
+
   if (shape === "inverted-shield") {
-    ctx.moveTo(rect.x + 6, rect.y + rect.height - 4);
-    ctx.lineTo(rect.x + rect.width - 6, rect.y + rect.height - 4);
-    ctx.lineTo(rect.x + rect.width - 6, rect.y + 18);
-    ctx.lineTo(rect.x + rect.width / 2, rect.y + 4);
-    ctx.lineTo(rect.x + 6, rect.y + 18);
+    ctx.moveTo(centerX, top);
+    ctx.lineTo(right - radius, upperShoulderY - radius);
+    ctx.quadraticCurveTo(right, upperShoulderY, right, upperShoulderY + radius);
+    ctx.lineTo(right, bottom - radius);
+    ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+    ctx.lineTo(left + radius, bottom);
+    ctx.quadraticCurveTo(left, bottom, left, bottom - radius);
+    ctx.lineTo(left, upperShoulderY + radius);
+    ctx.quadraticCurveTo(left, upperShoulderY, left + radius, upperShoulderY - radius);
     return;
   }
 
-  ctx.moveTo(rect.x + 6, rect.y + 4);
-  ctx.lineTo(rect.x + rect.width - 6, rect.y + 4);
-  ctx.lineTo(rect.x + rect.width - 6, rect.y + rect.height - 18);
-  ctx.lineTo(rect.x + rect.width / 2, rect.y + rect.height - 4);
-  ctx.lineTo(rect.x + 6, rect.y + rect.height - 18);
+  ctx.moveTo(left + radius, top);
+  ctx.lineTo(right - radius, top);
+  ctx.quadraticCurveTo(right, top, right, top + radius);
+  ctx.lineTo(right, lowerShoulderY - radius);
+  ctx.quadraticCurveTo(right, lowerShoulderY, right - radius, lowerShoulderY + radius);
+  ctx.lineTo(centerX, bottom);
+  ctx.lineTo(left + radius, lowerShoulderY + radius);
+  ctx.quadraticCurveTo(left, lowerShoulderY, left, lowerShoulderY - radius);
+  ctx.lineTo(left, top + radius);
+  ctx.quadraticCurveTo(left, top, left + radius, top);
 }
 
 function drawPrintWear(ctx: CanvasRenderingContext2D): void {

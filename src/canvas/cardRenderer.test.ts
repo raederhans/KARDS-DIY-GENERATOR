@@ -279,21 +279,23 @@ describe("card renderer output", () => {
     expect(calls.fills.some((call) => call.fillStyle === "#41433d")).toBe(true);
   });
 
-  it("keeps the attack fallback board inverted while defense keeps the normal shield point", () => {
+  it("keeps rounded attack and defense fallback boards pointed in opposite directions", () => {
     const { canvas, calls } = createFakeCanvas();
 
     renderCard(canvas, DEFAULT_CARD, null, { disablePrintWear: true });
 
     const attackBoardPath = calls.paths.find((path) =>
-      path.points.some((point) => point.kind === "lineTo" && point.x === 129 && point.y === 472),
+      path.points.some((point) => point.kind === "moveTo" && point.x === 129 && point.y === 472),
     );
     const defenseBoardPath = calls.paths.find((path) =>
       path.points.some((point) => point.kind === "lineTo" && point.x === 371 && point.y === 551),
     );
 
-    expect(attackBoardPath?.points).toContainEqual({ kind: "lineTo", x: 129, y: 472 });
+    expect(attackBoardPath?.points).toContainEqual({ kind: "moveTo", x: 129, y: 472 });
     expect(attackBoardPath?.points).not.toContainEqual({ kind: "lineTo", x: 129, y: 546 });
+    expect(attackBoardPath?.points.some((point) => point.kind === "quadraticCurveTo")).toBe(true);
     expect(defenseBoardPath?.points).toContainEqual({ kind: "lineTo", x: 371, y: 551 });
+    expect(defenseBoardPath?.points.some((point) => point.kind === "quadraticCurveTo")).toBe(true);
   });
 
   it("keeps HQ defense board art below generated HQ text and values", () => {
@@ -355,6 +357,10 @@ describe("card renderer output", () => {
   });
 });
 
+type CanvasPathPoint =
+  | { kind: "moveTo" | "lineTo"; x: number; y: number }
+  | { kind: "quadraticCurveTo"; cpx: number; cpy: number; x: number; y: number };
+
 function createFakeCanvas() {
   const calls: {
     clearRect: Array<[number, number, number, number]>;
@@ -365,7 +371,7 @@ function createFakeCanvas() {
     drawImageStyles: Array<{ image: unknown; centerX: number; centerY: number; width: number; height: number; rotation: number; clipDepth: number }>;
     operations: Array<{ kind: "drawImage" | "fillText"; value: unknown }>;
     fills: Array<{ fillStyle: unknown }>;
-    paths: Array<{ fillStyle: unknown; points: Array<{ kind: "moveTo" | "lineTo"; x: number; y: number }> }>;
+    paths: Array<{ fillStyle: unknown; points: CanvasPathPoint[] }>;
   } = {
     clearRect: [],
     drawImage: [],
@@ -383,7 +389,7 @@ function createFakeCanvas() {
   let fillStyle = "";
   let transform = { x: 0, y: 0, scaleX: 1, rotation: 0, clipDepth: 0 };
   const transformStack: Array<typeof transform> = [];
-  let currentPath: Array<{ kind: "moveTo" | "lineTo"; x: number; y: number }> = [];
+  let currentPath: CanvasPathPoint[] = [];
   const ctx = {
     get fillStyle() {
       return fillStyle;
@@ -428,6 +434,9 @@ function createFakeCanvas() {
     },
     lineTo(x: number, y: number) {
       currentPath.push({ kind: "lineTo", x, y });
+    },
+    quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
+      currentPath.push({ kind: "quadraticCurveTo", cpx, cpy, x, y });
     },
     arcTo() {},
     translate(x: number, y: number) {
