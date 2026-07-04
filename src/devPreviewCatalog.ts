@@ -6,7 +6,7 @@ const REFERENCE_ROOT = "/.runtime/kards-private-assets/stage5-card-face-elements
 const HQ_REFERENCE_ROOT = `${PRIVATE_PREVIEW_ROOT}/references/kards-assets/hq2`;
 
 export const DEV_PREVIEW_ASSET_PACK_URL =
-  "/.runtime/kards-private-assets/stage6-cardface-preview/kards-asset-pack.json";
+  `${PRIVATE_PREVIEW_ROOT}/kards-asset-pack.json`;
 
 export type DevPreviewSample = {
   id: string;

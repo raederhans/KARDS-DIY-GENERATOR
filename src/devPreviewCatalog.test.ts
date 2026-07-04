@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CARD } from "./cardModel";
 import {
+  DEV_PREVIEW_ASSET_PACK_URL,
   DEV_PREVIEW_HQ_SAMPLE,
   DEV_PREVIEW_SET_SAMPLES,
   getDefaultDevPreviewSample,
@@ -13,6 +14,12 @@ import { applyCardUpdate, shouldApplyDevPreviewSampleResult } from "./devPreview
 import { SETS } from "./presets";
 
 describe("dev preview sample catalog", () => {
+  it("loads the renderer-ready Stage6 multisource asset pack", () => {
+    expect(DEV_PREVIEW_ASSET_PACK_URL).toBe(
+      "/.runtime/kards-private-assets/stage6-multisource-clean-extraction/kards-asset-pack.json",
+    );
+  });
+
   it("covers every implemented official set with a reference sample", () => {
     const sampleSets = new Set(DEV_PREVIEW_SET_SAMPLES.map((sample) => sample.set));
     const implementedOfficialSets = SETS.filter((set) => set.id !== "custom");

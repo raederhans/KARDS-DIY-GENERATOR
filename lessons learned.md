@@ -17,3 +17,4 @@
 - Extracted nation marks should remove source-card background with subject-protection masks, not color threshold alone; similar emblem and background tones can otherwise erase rings, crosses, or star edges.
 - UI language switches should keep raw error messages or codes in state and localize at render time; storing translated strings makes existing or late async errors stick in the old language.
 - Fixed canvas-editor layouts need explicit scroll ownership: keep the preview and header stable while assigning independent scroll containers to side panels.
+- Dev preview asset-pack URLs must stay aligned with the current renderer-ready private pack; otherwise valid card keys can appear broken because the renderer falls back to text abbreviations after stale asset loads fail.

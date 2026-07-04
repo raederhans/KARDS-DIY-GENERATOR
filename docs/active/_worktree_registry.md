@@ -1,5 +1,34 @@
 # Worktree Registry
 
+## KARDS dev preview renderer asset-pack URL repair
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: repair dev preview key-to-asset mapping after localization follow-up
+- Base branch/base commit: `main`, `d9fe577`
+- Current branch/HEAD: `main`, asset-pack URL repair commit recorded after validation
+- Task goal: make nation and unit-type selectors resolve the processed Stage6 private icons again instead of falling through to text abbreviations
+- Status: integrated on main checkout; no separate worktree merge required
+- Main changed files:
+  - Core files: `src/devPreviewCatalog.ts`
+  - Test files: `src/devPreviewCatalog.test.ts`
+  - Docs files: `docs/active/_worktree_registry.md`, `docs/active/kards-style-replication/context.md`, `docs/active/kards-style-replication/task.md`, `lessons learned.md`
+- Shared hotspot files touched: dev-only private preview asset-pack entrypoint and catalog tests
+- Validation run:
+  - Manifest audit: current Stage6 multisource pack has 91 images, 65 nation marks, 7 type icons, and 0 missing files
+  - HTTP probe for `http://127.0.0.1:5173/.runtime/kards-private-assets/stage6-multisource-clean-extraction/kards-asset-pack.json`: passed, status 200
+  - Browser probe on `http://127.0.0.1:5173/`: requested the new Stage6 multisource pack once, requested the old `stage6-cardface-preview` pack zero times, with no request failures or console warnings/errors
+  - `npm test -- --run src/devPreviewCatalog.test.ts src/canvas/renderAssets.test.ts src/assetPack.test.ts`: passed, 3 files and 15 tests
+  - `npm test -- --run`: passed, 10 files and 60 tests
+  - `npm run build`: passed, including typecheck and Vite production build
+  - `git diff --check`: passed with Windows LF-to-CRLF warnings only
+- Tests not run:
+  - No broad perceptual rebaseline for every nation/kind card combination; this pass verifies that the editor loads the correct renderer-ready asset pack and resolver keys can match it
+- Potential overlap with other worktrees:
+  - None detected in the main checkout
+  - Future overlap risk with dev preview catalog, private asset-pack generation, or `.runtime` Stage6 output shape changes
+- Recommended integration order: commit directly on `main`; this is a narrow dev-preview entrypoint correction after the localization shell commit
+- Next action: push to `origin/main`; future icon color/placement tuning should start from the corrected Stage6 multisource pack
+
 ## KARDS UI localization and fixed preview shell
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

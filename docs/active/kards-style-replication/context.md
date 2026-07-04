@@ -869,3 +869,25 @@
   - HTTP probe for `http://127.0.0.1:5173/`: passed, status 200.
 - Boundary:
   - This pass changes editor chrome and localization only; it does not change card rendering geometry, official-derived assets, or export image dimensions.
+
+## 2026-07-04 Dev Preview Asset-Pack URL Repair
+
+- User review found that after the localization pass, changing Nation or Type showed only text abbreviations in the card's icon areas instead of the processed country/type icons.
+- Finding:
+  - The field values were still internal ids, so localization did not change the saved card keys.
+  - `src/devPreviewCatalog.ts` pointed samples and references at `.runtime/kards-private-assets/stage6-multisource-clean-extraction`, but `DEV_PREVIEW_ASSET_PACK_URL` still loaded the older `.runtime/kards-private-assets/stage6-cardface-preview/kards-asset-pack.json`.
+  - The old pack had stale missing paths and generic nation/type entries, so valid card keys fell through to renderer text fallback glyphs.
+- Implemented correction:
+  - `DEV_PREVIEW_ASSET_PACK_URL` now uses the same Stage6 multisource root as the current private samples and references.
+  - `src/devPreviewCatalog.test.ts` now locks the renderer-ready Stage6 multisource manifest URL.
+- Runtime evidence:
+  - Manifest audit confirmed the current pack has 91 images, including 65 `nation-mark` entries, 7 `type-icon` entries, and 0 missing files.
+  - HTTP probe on the active 5173 server returned the current pack with Japan tank nation-mark and tank type-icon entries present.
+  - Browser probe confirmed the app requested the new Stage6 multisource pack once, requested the old `stage6-cardface-preview` pack zero times, and produced no request failures or console warnings/errors.
+- Validation:
+  - `npm test -- --run src/devPreviewCatalog.test.ts src/canvas/renderAssets.test.ts src/assetPack.test.ts`: passed, 3 files and 15 tests.
+  - `npm test -- --run`: passed, 10 files and 60 tests.
+  - `npm run build`: passed, including typecheck and Vite production build.
+- Boundary:
+  - No official-derived image files were moved into source, public, or dist.
+  - This fixes the dev preview asset-pack entrypoint; it does not regenerate or recolor the private Stage6 assets.

@@ -798,3 +798,37 @@
    - Commit and push this UI integration bundle to `origin/main`.
 10. Integration recommendation:
    - Commit directly on `main`; no separate worktree merge or cherry-pick is needed.
+
+## 2026-07-04 Follow-Up Delivery: Dev Preview Asset-Pack URL Repair
+
+1. Changed this follow-up:
+   - Repointed the dev private preview renderer pack URL from the older Stage6 cardface preview pack to the current Stage6 multisource extraction pack.
+   - Added a catalog regression test so the renderer-ready private manifest URL cannot silently drift back to the stale pack.
+   - Confirmed the current manifest contains the processed nation/type icon entries needed by the existing resolver keys.
+2. Files touched:
+   - Core files: `src/devPreviewCatalog.ts`.
+   - Test files: `src/devPreviewCatalog.test.ts`.
+   - Docs: `docs/active/_worktree_registry.md`, `context.md`, `task.md`.
+   - Lessons: `lessons learned.md`.
+3. Diff summary:
+   - The card editor now loads `.runtime/kards-private-assets/stage6-multisource-clean-extraction/kards-asset-pack.json` in dev mode.
+   - No card schema, localization values, renderer geometry, or production asset bundling changed.
+4. Commit status:
+   - Committed directly on `main` after validation.
+5. Base divergence:
+   - Follow-up started from `main` commit `d9fe577`; no separate implementation worktree was used.
+6. Potential conflicts:
+   - Low direct conflict risk; future changes to `src/devPreviewCatalog.ts` or Stage6 output location should update this test at the same time.
+7. Validation:
+   - Manifest audit passed: 91 images, 65 nation marks, 7 type icons, 0 missing files.
+   - HTTP probe on `http://127.0.0.1:5173/.runtime/kards-private-assets/stage6-multisource-clean-extraction/kards-asset-pack.json` passed with status 200 and confirmed Japan tank plus tank type-icon entries.
+   - Browser probe on `http://127.0.0.1:5173/` requested the new pack once, the old pack zero times, and reported no request failures or console warnings/errors.
+   - `npm test -- --run src/devPreviewCatalog.test.ts src/canvas/renderAssets.test.ts src/assetPack.test.ts`: passed, 3 files and 15 tests.
+   - `npm test -- --run`: passed, 10 files and 60 tests.
+   - `npm run build`: passed, including typecheck and Vite production build.
+8. Unverified risks:
+   - No all-combination visual review was run for every nation and kind; the fix proves the current page loads the correct asset source and that the manifest has matching keys.
+9. Recommended next step:
+   - Judge any remaining icon appearance problems from the corrected Stage6 multisource pack, not from text fallback output.
+10. Integration recommendation:
+   - Commit and push directly on `main`; no merge or cherry-pick is needed.
