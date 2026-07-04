@@ -1,5 +1,6 @@
 import { getKind, getNation, getRarity, getSet } from "../presets";
 import type { CardKind, CardSpec } from "../types";
+import { translateKeywordLabel } from "../i18n";
 import { getKeywordPreset, resolveCardKeywordIds } from "../keywords";
 import {
   CARD_HEIGHT,
@@ -104,7 +105,7 @@ export function renderCard(
   drawSet(ctx, layout, set.mark, options, assetContext, fonts);
   drawValues(ctx, layout, card, options, assetContext, fonts);
   drawTypeIcon(ctx, layout, card.kind, kind.symbol, options, assetContext, fonts);
-  drawText(ctx, layout, card, fonts);
+  drawText(ctx, layout, card, fonts, options);
   if (!options.disablePrintWear) {
     drawPrintWear(ctx);
   }
@@ -460,9 +461,13 @@ function drawText(
   layout: CardFaceLayout,
   card: CardSpec,
   fonts: ResolvedRenderFonts,
+  options: RenderCardOptions,
 ): void {
   const keywordLabels = resolveCardKeywordIds(card)
-    .map((keywordId) => getKeywordPreset(keywordId)?.label)
+    .map((keywordId) => {
+      const preset = getKeywordPreset(keywordId);
+      return preset ? translateKeywordLabel(options.language ?? "en", keywordId, preset.label) : undefined;
+    })
     .filter(Boolean) as string[];
 
   ctx.save();

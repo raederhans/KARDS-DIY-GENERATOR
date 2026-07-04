@@ -156,6 +156,17 @@ describe("card renderer output", () => {
     expect(keywordCall?.[2]).toBe(580);
   });
 
+  it("renders selected keywords in the requested language", () => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, { ...DEFAULT_CARD, keywords: ["fury", "heavyArmor3", "bond", "salvage"] }, null, {
+      language: "zh",
+    });
+
+    expect(calls.fillText.some(([text]) => text === "奋战, 重甲 3, 协力, 收缴")).toBe(true);
+    expect(calls.fillText.some(([text]) => text === "Fury, Heavy Armor 3, Bond, Salvage")).toBe(false);
+  });
+
   it("shrinks dense four-keyword rows with comma separators to stay inside the official text band", () => {
     const { canvas, calls } = createFakeCanvas();
 

@@ -31,6 +31,10 @@ describe("i18n", () => {
     expect(translatePresetLabel("en", "kind", "tank", "Tank")).toBe("Tank");
     expect(translatePresetLabel("zh", "kind", "future-kind", "Future Kind")).toBe("Future Kind");
     expect(translateKeywordLabel("zh", "blitz", "Blitz")).toBe("闪击");
+    expect(translateKeywordLabel("zh", "fury", "Fury")).toBe("奋战");
+    expect(translateKeywordLabel("zh", "heavyArmor3", "Heavy Armor 3")).toBe("重甲 3");
+    expect(translateKeywordLabel("zh", "bond", "Bond")).toBe("协力");
+    expect(translateKeywordLabel("zh", "salvage", "Salvage")).toBe("收缴");
     expect(translateKeywordLabel("en", "blitz", "Blitz")).toBe("Blitz");
   });
 

@@ -1,4 +1,5 @@
 import type { CardKind, CardSpec } from "../types";
+import type { Language } from "../i18n";
 import type { CardTemplate } from "./layout";
 
 export const CARD_RENDER_ASSET_SLOTS = [
@@ -66,6 +67,7 @@ export type RenderCardOptions = {
   assets?: CardRenderAssets | null;
   fonts?: CardRenderFontSet;
   disablePrintWear?: boolean;
+  language?: Language;
 };
 
 const SLOT_SET = new Set<string>(CARD_RENDER_ASSET_SLOTS);

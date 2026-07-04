@@ -139,8 +139,9 @@ function App() {
     () => ({
       assets: assetPack,
       fonts: assetPack?.fonts,
+      language,
     }),
-    [assetPack],
+    [assetPack, language],
   );
   const referenceSample = useMemo(
     () =>
