@@ -279,6 +279,23 @@ describe("card renderer output", () => {
     expect(calls.fills.some((call) => call.fillStyle === "#41433d")).toBe(true);
   });
 
+  it("keeps the attack fallback board inverted while defense keeps the normal shield point", () => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, DEFAULT_CARD, null, { disablePrintWear: true });
+
+    const attackBoardPath = calls.paths.find((path) =>
+      path.points.some((point) => point.kind === "lineTo" && point.x === 129 && point.y === 472),
+    );
+    const defenseBoardPath = calls.paths.find((path) =>
+      path.points.some((point) => point.kind === "lineTo" && point.x === 371 && point.y === 551),
+    );
+
+    expect(attackBoardPath?.points).toContainEqual({ kind: "lineTo", x: 129, y: 472 });
+    expect(attackBoardPath?.points).not.toContainEqual({ kind: "lineTo", x: 129, y: 546 });
+    expect(defenseBoardPath?.points).toContainEqual({ kind: "lineTo", x: 371, y: 551 });
+  });
+
   it("keeps HQ defense board art below generated HQ text and values", () => {
     const { canvas, calls } = createFakeCanvas();
     const boardImage = { width: 168, height: 112 } as CanvasImageSource;
@@ -348,6 +365,7 @@ function createFakeCanvas() {
     drawImageStyles: Array<{ image: unknown; centerX: number; centerY: number; width: number; height: number; rotation: number; clipDepth: number }>;
     operations: Array<{ kind: "drawImage" | "fillText"; value: unknown }>;
     fills: Array<{ fillStyle: unknown }>;
+    paths: Array<{ fillStyle: unknown; points: Array<{ kind: "moveTo" | "lineTo"; x: number; y: number }> }>;
   } = {
     clearRect: [],
     drawImage: [],
@@ -357,6 +375,7 @@ function createFakeCanvas() {
     drawImageStyles: [],
     operations: [],
     fills: [],
+    paths: [],
   };
 
   const gradient = { addColorStop() {} };
@@ -364,6 +383,7 @@ function createFakeCanvas() {
   let fillStyle = "";
   let transform = { x: 0, y: 0, scaleX: 1, rotation: 0, clipDepth: 0 };
   const transformStack: Array<typeof transform> = [];
+  let currentPath: Array<{ kind: "moveTo" | "lineTo"; x: number; y: number }> = [];
   const ctx = {
     get fillStyle() {
       return fillStyle;
@@ -388,18 +408,27 @@ function createFakeCanvas() {
     restore() {
       transform = transformStack.pop() ?? { x: 0, y: 0, scaleX: 1, rotation: 0, clipDepth: 0 };
     },
-    beginPath() {},
+    beginPath() {
+      currentPath = [];
+    },
     closePath() {},
     clip() {
       transform = { ...transform, clipDepth: transform.clipDepth + 1 };
     },
     fill() {
       calls.fills.push({ fillStyle });
+      if (currentPath.length > 0) {
+        calls.paths.push({ fillStyle, points: currentPath });
+      }
     },
     stroke() {},
     rect() {},
-    moveTo() {},
-    lineTo() {},
+    moveTo(x: number, y: number) {
+      currentPath.push({ kind: "moveTo", x, y });
+    },
+    lineTo(x: number, y: number) {
+      currentPath.push({ kind: "lineTo", x, y });
+    },
     arcTo() {},
     translate(x: number, y: number) {
       transform = { ...transform, x: transform.x + x * transform.scaleX, y: transform.y + y };

@@ -46,6 +46,8 @@ const TYPE_ICON_GLYPH_PLACEMENT: Partial<Record<CardKind, { offsetX?: number; of
 
 type TextMeasureContext = Pick<CanvasRenderingContext2D, "font" | "measureText">;
 
+type StatBoardShape = "shield" | "inverted-shield";
+
 type ResolvedRenderFonts = Required<CardRenderFontSet>;
 
 export function renderCard(
@@ -431,6 +433,7 @@ function drawValues(
       assetContext,
       fonts,
       7,
+      "inverted-shield",
     );
   }
   drawStatBoard(ctx, layout.defenseBoard, card.stats.defense, "", 52, "defense-board", options, assetContext, fonts);
@@ -558,17 +561,14 @@ function drawStatBoard(
   assetContext: CardRenderAssetContext,
   fonts: ResolvedRenderFonts,
   valueYOffset = 2,
+  shape: StatBoardShape = "shield",
 ): void {
   ctx.save();
   const hasAsset = drawAsset(ctx, options, assetSlot, rect, assetContext);
   if (!hasAsset) {
     ctx.fillStyle = DARK;
     ctx.beginPath();
-    ctx.moveTo(rect.x + 6, rect.y + 4);
-    ctx.lineTo(rect.x + rect.width - 6, rect.y + 4);
-    ctx.lineTo(rect.x + rect.width - 6, rect.y + rect.height - 18);
-    ctx.lineTo(rect.x + rect.width / 2, rect.y + rect.height - 4);
-    ctx.lineTo(rect.x + 6, rect.y + rect.height - 18);
+    drawStatBoardFallbackPath(ctx, rect, shape);
     ctx.closePath();
     ctx.fill();
     ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
@@ -587,6 +587,23 @@ function drawStatBoard(
     fillScaledText(ctx, label, rect.x + rect.width / 2, rect.y + rect.height - 22, getTextScale(label, 1.08, 1.02));
   }
   ctx.restore();
+}
+
+function drawStatBoardFallbackPath(ctx: CanvasRenderingContext2D, rect: Rect, shape: StatBoardShape): void {
+  if (shape === "inverted-shield") {
+    ctx.moveTo(rect.x + 6, rect.y + rect.height - 4);
+    ctx.lineTo(rect.x + rect.width - 6, rect.y + rect.height - 4);
+    ctx.lineTo(rect.x + rect.width - 6, rect.y + 18);
+    ctx.lineTo(rect.x + rect.width / 2, rect.y + 4);
+    ctx.lineTo(rect.x + 6, rect.y + 18);
+    return;
+  }
+
+  ctx.moveTo(rect.x + 6, rect.y + 4);
+  ctx.lineTo(rect.x + rect.width - 6, rect.y + 4);
+  ctx.lineTo(rect.x + rect.width - 6, rect.y + rect.height - 18);
+  ctx.lineTo(rect.x + rect.width / 2, rect.y + rect.height - 4);
+  ctx.lineTo(rect.x + 6, rect.y + rect.height - 18);
 }
 
 function drawPrintWear(ctx: CanvasRenderingContext2D): void {
