@@ -849,3 +849,23 @@
 - Boundary:
   - Official-derived nation mark PNGs remain under `.runtime`; none were copied into source, public, or dist.
   - This pass fixes source identity and branch/template matching. It does not introduce a new public nation-mark atlas or a perceptual browser rebaseline for every nation/kind.
+
+## 2026-07-04 UI Localization And Fixed Preview Shell
+
+- User review moved from card-face asset fidelity to editor ergonomics:
+  - The editor should default to Chinese and keep user-facing controls readable for the current user.
+  - The header and center preview should not scroll with the page while tuning artwork crop/zoom, because a moving preview makes visual adjustment feel unstable.
+  - Left and right side panels may scroll independently; the left panel scrollbar should sit on the outside edge for visual symmetry.
+- Implemented correction:
+  - Added `src/i18n.ts` with English/Chinese UI text, preset-label localization, localized default cards, and runtime-message localization.
+  - Wired `App`, `FieldPanel`, `CardCanvas`, and `ProjectPanel` to consume localized text instead of hard-coded English UI strings.
+  - Updated `index.html` defaults to `zh-CN`, Chinese description, and bilingual title.
+  - Export filename generation now preserves readable Unicode card titles instead of collapsing Chinese titles to `custom-card`.
+  - CSS now fixes the app shell to the viewport, keeps the top header compact and stable, keeps the center preview stable, and gives side panels their own scroll containers.
+  - The left field-panel scrollbar is moved to the outside edge while child content remains left-to-right.
+- Validation:
+  - `npm test -- --run`: passed, 10 files and 59 tests.
+  - `npm run build`: passed, including typecheck and Vite production build.
+  - HTTP probe for `http://127.0.0.1:5173/`: passed, status 200.
+- Boundary:
+  - This pass changes editor chrome and localization only; it does not change card rendering geometry, official-derived assets, or export image dimensions.

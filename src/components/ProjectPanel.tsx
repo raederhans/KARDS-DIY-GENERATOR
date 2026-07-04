@@ -1,4 +1,5 @@
-import { DEFAULT_CARD, normalizeCardSpec } from "../cardModel";
+import { normalizeCardSpec } from "../cardModel";
+import { localizeAssetPackName, localizeRuntimeMessage, type Language, type UiText } from "../i18n";
 import type { CardSpec, CardUpdate } from "../types";
 import { MAX_PROJECT_FILE_BYTES } from "../limits";
 import { LOCAL_ASSET_PACK_MANIFEST } from "../assetPack";
@@ -6,6 +7,9 @@ import type { ImageDiffMetrics } from "../visualDiff";
 
 type ProjectPanelProps = {
   card: CardSpec;
+  language: Language;
+  text: UiText["projectPanel"];
+  defaultCard: CardSpec;
   onCardChange: (update: CardUpdate) => void;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   assetPackStatus: {
@@ -26,6 +30,9 @@ type ProjectPanelProps = {
 
 export function ProjectPanel({
   card,
+  language,
+  text,
+  defaultCard,
   onCardChange,
   canvasRef,
   assetPackStatus,
@@ -43,10 +50,7 @@ export function ProjectPanel({
     if (!canvas) {
       return;
     }
-    if (
-      assetPackStatus &&
-      !window.confirm("This PNG includes local asset-pack pixels. Keep the exported image private?")
-    ) {
+    if (assetPackStatus && !window.confirm(text.privatePngConfirm)) {
       return;
     }
 
@@ -70,7 +74,7 @@ export function ProjectPanel({
     }
 
     if (file.size > MAX_PROJECT_FILE_BYTES) {
-      window.alert("This card project is too large to open. Please choose a JSON file under 8 MB.");
+      window.alert(text.projectTooLarge);
       event.target.value = "";
       return;
     }
@@ -81,7 +85,7 @@ export function ProjectPanel({
         const parsed = JSON.parse(String(reader.result));
         onCardChange(normalizeCardSpec(parsed));
       } catch {
-        window.alert("This JSON file could not be opened as a card project.");
+        window.alert(text.jsonOpenFailed);
       }
     });
     reader.readAsText(file);
@@ -98,25 +102,25 @@ export function ProjectPanel({
   }
 
   return (
-    <aside className="panel project-panel" aria-label="Project and export controls">
+    <aside className="panel project-panel" aria-label={text.aria}>
       <div className="panel-heading">
-        <p>Project</p>
-        <span>Local only</span>
+        <p>{text.heading}</p>
+        <span>{text.scope}</span>
       </div>
 
       <div className="export-stack">
         <button type="button" className="primary-action" onClick={exportPng}>
-          {assetPackStatus ? "Export Private PNG" : "Export PNG"}
+          {assetPackStatus ? text.exportPrivatePng : text.exportPng}
         </button>
         <button type="button" onClick={exportJson}>
-          Save JSON
+          {text.saveJson}
         </button>
         <label className="file-button">
-          Open JSON
+          {text.openJson}
           <input name="project-json-import" type="file" accept="application/json,.json" onChange={importJson} />
         </label>
         <label className="file-button">
-          Load Assets
+          {text.loadAssets}
           <input
             name="local-asset-pack"
             type="file"
@@ -127,64 +131,62 @@ export function ProjectPanel({
           />
         </label>
         <label className="file-button">
-          Compare PNG
+          {text.comparePng}
           <input name="reference-card-image" type="file" accept="image/*" onChange={compareReference} />
         </label>
         {onSetSampleLoad && setSampleLabel ? (
           <button type="button" onClick={onSetSampleLoad}>
-            Load {setSampleLabel} Sample
+            {text.loadSetSample(setSampleLabel)}
           </button>
         ) : null}
         {onHqSampleLoad ? (
           <button type="button" onClick={onHqSampleLoad}>
-            Load HQ Sample
+            {text.loadHqSample}
           </button>
         ) : null}
-        <button type="button" className="danger-action" onClick={() => onCardChange(DEFAULT_CARD)}>
-          Reset Card
+        <button type="button" className="danger-action" onClick={() => onCardChange(defaultCard)}>
+          {text.resetCard}
         </button>
       </div>
 
       <div className="summary-list">
         <p>
-          <span>Output</span>
+          <span>{text.output}</span>
           <strong>500 x 702 PNG</strong>
         </p>
         <p>
-          <span>Artwork</span>
-          <strong>{card.artwork.source === "upload" ? "embedded in JSON" : "not embedded"}</strong>
+          <span>{text.artwork}</span>
+          <strong>{card.artwork.source === "upload" ? text.artworkEmbedded : text.artworkNotEmbedded}</strong>
         </p>
         <p>
-          <span>Scope</span>
-          <strong>card face only</strong>
+          <span>{text.cardScope}</span>
+          <strong>{text.cardFaceOnly}</strong>
         </p>
         <p>
-          <span>Assets</span>
-          <strong>{assetPackStatus ? "local pack loaded" : "placeholder"}</strong>
+          <span>{text.assets}</span>
+          <strong>{assetPackStatus ? text.assetsLoaded : text.assetsPlaceholder}</strong>
         </p>
       </div>
 
       <div className="asset-pack-status">
         <p>
-          <span>Manifest</span>
+          <span>{text.manifest}</span>
           <strong>{LOCAL_ASSET_PACK_MANIFEST}</strong>
         </p>
         {assetPackStatus ? (
           <>
             <p>
-              <span>{assetPackStatus.name}</span>
-              <strong>
-                {assetPackStatus.imageCount} images / {assetPackStatus.fontCount} fonts
-              </strong>
+              <span>{localizeAssetPackName(language, assetPackStatus.name)}</span>
+              <strong>{text.imageFontCounts(assetPackStatus.imageCount, assetPackStatus.fontCount)}</strong>
             </p>
             {assetPackStatus.warnings.slice(0, 2).map((warning) => (
               <p className="status-warning" key={warning}>
-                {warning}
+                {localizeRuntimeMessage(language, warning)}
               </p>
             ))}
           </>
         ) : null}
-        {assetPackError ? <p className="status-warning">{assetPackError}</p> : null}
+        {assetPackError ? <p className="status-warning">{localizeRuntimeMessage(language, assetPackError)}</p> : null}
       </div>
 
       <div className="diff-status">
@@ -199,17 +201,18 @@ export function ProjectPanel({
               <strong>{referenceDiff.rootMeanSquareError}</strong>
             </p>
             <p>
-              <span>Changed</span>
+              <span>{text.changed}</span>
               <strong>{formatPercent(referenceDiff.changedPixelRatio)}</strong>
             </p>
           </>
         ) : null}
-        {referenceDiffError ? <p className="status-warning">{referenceDiffError}</p> : null}
+        {referenceDiffError ? (
+          <p className="status-warning">{localizeRuntimeMessage(language, referenceDiffError)}</p>
+        ) : null}
       </div>
 
       <p className="disclaimer">
-        Unofficial non-commercial fan utility. It ships with original placeholder visuals only. Local asset packs and
-        reference images stay in this browser session and are not saved into card JSON.
+        {text.disclaimer}
       </p>
     </aside>
   );
@@ -224,8 +227,13 @@ function downloadBlob(blob: Blob, fileName: string): void {
   URL.revokeObjectURL(url);
 }
 
-function safeFileName(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "custom-card";
+export function safeFileName(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+    .replace(/(^-|-$)/g, "") || "custom-card";
 }
 
 function formatPercent(value: number): string {

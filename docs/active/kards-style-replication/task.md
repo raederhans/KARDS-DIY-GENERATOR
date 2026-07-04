@@ -763,3 +763,38 @@
    - Commit and push this source-separation fix, then judge any remaining color/placement issues from the corrected source identity rather than from mixed generic crops.
 10. Integration recommendation:
    - Commit directly on `main`; no separate worktree merge or cherry-pick is needed.
+
+## 2026-07-04 Follow-Up Delivery: UI Localization And Fixed Preview Shell
+
+1. Changed this follow-up:
+   - Added Chinese/English UI text routing and made Chinese the default document/UI language.
+   - Localized field, canvas, project, warning, and runtime asset-pack messages while preserving file names and unknown messages.
+   - Preserved readable Unicode titles in exported PNG/JSON file names.
+   - Fixed the editor shell so the compact top header and center preview stay stable while side panels scroll independently.
+   - Moved the left field-panel scrollbar to the outside edge for visual symmetry with the right project panel.
+2. Files touched:
+   - Core files: `index.html`, `src/App.tsx`, `src/i18n.ts`, `src/components/CardCanvas.tsx`, `src/components/FieldPanel.tsx`, `src/components/ProjectPanel.tsx`, `src/styles.css`.
+   - Test files: `src/i18n.test.ts`, `src/components/ProjectPanel.test.ts`.
+   - Docs: `docs/active/_worktree_registry.md`, `context.md`, `task.md`.
+   - Lessons: `lessons learned.md`.
+3. Diff summary:
+   - No card renderer geometry or asset extraction path changed.
+   - Editor chrome now owns scroll at the side-panel level instead of the page level.
+   - UI strings are centralized in `src/i18n.ts` instead of being scattered across components.
+4. Commit status:
+   - Committed directly on `main` after final validation.
+5. Base divergence:
+   - Work started from `main` commit `f09d37e`; `git worktree list --porcelain` showed only the main checkout.
+6. Potential conflicts:
+   - Direct overlap with future changes touching global app shell, localized UI copy, project export controls, or side-panel layout.
+7. Validation:
+   - `npm test -- --run`: passed, 10 files and 59 tests.
+   - `npm run build`: passed, including typecheck and Vite production build.
+   - HTTP probe for `http://127.0.0.1:5173/`: passed, status 200.
+8. Unverified risks:
+   - No full browser pixel regression suite was run for every viewport.
+   - Mobile keeps normal document scrolling by design; the fixed preview shell is a desktop/tablet editor behavior.
+9. Recommended next step:
+   - Commit and push this UI integration bundle to `origin/main`.
+10. Integration recommendation:
+   - Commit directly on `main`; no separate worktree merge or cherry-pick is needed.

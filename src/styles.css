@@ -1,5 +1,6 @@
 :root {
   color-scheme: dark;
+  --top-bar-height: 66px;
   --bg: #11110f;
   --panel: #191915;
   --panel-soft: #222016;
@@ -25,8 +26,10 @@
 html,
 body,
 #root {
+  height: 100%;
   min-height: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
 body {
@@ -59,18 +62,23 @@ button:hover,
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: var(--top-bar-height) minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .top-bar {
-  height: 78px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: var(--top-bar-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 0 28px;
+  gap: 18px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--line);
   background: rgba(17, 17, 14, 0.92);
 }
@@ -81,37 +89,53 @@ button:hover,
   gap: 14px;
 }
 
+.top-actions {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .brand-mark {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   margin: 0;
   border: 2px solid var(--accent);
   border-radius: 50%;
   color: var(--accent-strong);
-  font: 800 15px Georgia, serif;
+  font: 800 14px Georgia, serif;
 }
 
 .top-bar h1 {
   margin: 0;
-  font: 700 30px Georgia, "Times New Roman", serif;
+  font: 700 26px Georgia, "Times New Roman", serif;
   letter-spacing: 0;
 }
 
 .top-bar p {
   margin: 2px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .scope-pill {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
-  padding: 8px 13px;
-  font-size: 13px;
+  padding: 7px 12px;
+  font-size: 12px;
   white-space: nowrap;
+}
+
+.language-toggle {
+  min-width: 58px;
+  min-height: 32px;
+  padding: 0 13px;
+  border-color: var(--line-strong);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 800;
+  background: linear-gradient(180deg, #302b1d, #171712);
 }
 
 .scope-pill.is-warning {
@@ -122,11 +146,18 @@ button:hover,
 .workspace {
   display: grid;
   grid-template-columns: minmax(280px, 340px) minmax(440px, 1fr) minmax(250px, 320px);
-  min-height: calc(100vh - 78px);
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .panel {
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: 24px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
@@ -135,6 +166,11 @@ button:hover,
 
 .field-panel {
   border-right: 1px solid var(--line);
+  direction: rtl;
+}
+
+.field-panel > * {
+  direction: ltr;
 }
 
 .project-panel {
@@ -255,6 +291,9 @@ input[type="range"] {
 
 .canvas-stage {
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
   display: grid;
   justify-items: center;
   align-content: center;
@@ -278,7 +317,7 @@ input[type="range"] {
 
 .card-preview-frame {
   width: 100%;
-  max-width: 500px;
+  max-width: clamp(240px, calc((100dvh - var(--top-bar-height) - 96px) * 500 / 702), 500px);
   display: grid;
   justify-items: center;
   gap: 8px;
@@ -432,6 +471,7 @@ input[type="range"] {
 @media (max-width: 1120px) {
   .workspace {
     grid-template-columns: minmax(270px, 320px) 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(220px, 38vh);
   }
 
   .project-panel {
@@ -446,6 +486,20 @@ input[type="range"] {
 }
 
 @media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    height: auto;
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    grid-template-rows: auto auto;
+    overflow: visible;
+  }
+
   .top-bar {
     height: auto;
     align-items: flex-start;
@@ -453,8 +507,16 @@ input[type="range"] {
     flex-direction: column;
   }
 
+  .top-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    height: auto;
+    overflow: visible;
   }
 
   .field-panel,
@@ -464,6 +526,8 @@ input[type="range"] {
   }
 
   .canvas-stage {
+    height: auto;
+    overflow: visible;
     order: -1;
     padding: 20px 14px;
   }
@@ -473,6 +537,8 @@ input[type="range"] {
   }
 
   .panel {
+    height: auto;
+    overflow: visible;
     padding: 20px 18px;
   }
 

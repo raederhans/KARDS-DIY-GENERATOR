@@ -1,5 +1,32 @@
 # Worktree Registry
 
+## KARDS UI localization and fixed preview shell
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: integrate pending UI/i18n, fixed-preview shell, compact header, and side-panel scroll refinements
+- Base branch/base commit: `main`, `f09d37e`
+- Current branch/HEAD: `main`, UI integration closeout commit recorded after validation
+- Task goal: make the browser editor easier to adjust by defaulting to Chinese UI text, keeping header and preview stable while side panels scroll, and preserving readable export filenames for localized card titles
+- Status: integrated on main checkout; no separate worktree merge required
+- Main changed files:
+  - Core files: `index.html`, `src/App.tsx`, `src/i18n.ts`, `src/components/CardCanvas.tsx`, `src/components/FieldPanel.tsx`, `src/components/ProjectPanel.tsx`, `src/styles.css`
+  - Test files: `src/i18n.test.ts`, `src/components/ProjectPanel.test.ts`
+  - Docs files: `docs/active/_worktree_registry.md`, `docs/active/kards-style-replication/context.md`, `docs/active/kards-style-replication/task.md`, `lessons learned.md`
+- Shared hotspot files touched: app shell layout, localized UI copy, project export controls, global CSS
+- Validation run:
+  - `git worktree list --porcelain`: only main checkout
+  - Integration scan: no parallel worktree changed the same files; all pending edits live in the main checkout
+  - `npm test -- --run`: passed, 10 files and 59 tests
+  - `npm run build`: passed, including typecheck and Vite production build
+  - HTTP probe for `http://127.0.0.1:5173/`: passed, status 200
+- Tests not run:
+  - No browser pixel regression suite; a desktop screenshot was used during local QA for header/preview layout before cleanup
+- Potential overlap with other worktrees:
+  - None detected; only the main checkout exists
+  - Future overlap risk with global app shell, project panel, field panel, or i18n work
+- Recommended integration order: commit directly on `main` after validation; this bundles the pending UI/i18n edits with the fixed-preview shell so the editor chrome stays internally consistent
+- Next action: pushed to `origin/main`; continue with future UI tuning from this integrated baseline
+
 ## KARDS nation mark source separation
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

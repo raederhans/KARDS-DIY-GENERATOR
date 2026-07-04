@@ -1,4 +1,5 @@
 import { CARD_KINDS, NATIONS, RARITIES, SETS, getKind } from "../presets";
+import { translatePresetLabel, type Language, type UiText } from "../i18n";
 import type { CardSpec, CardUpdate } from "../types";
 import {
   BODY_MAX_LENGTH,
@@ -10,11 +11,13 @@ import {
 
 type FieldPanelProps = {
   card: CardSpec;
+  language: Language;
+  text: UiText["fieldPanel"];
   onCardChange: (update: CardUpdate) => void;
   setOptionLabels?: Partial<Record<string, string>>;
 };
 
-export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelProps) {
+export function FieldPanel({ card, language, text, onCardChange, setOptionLabels }: FieldPanelProps) {
   const kind = getKind(card.kind);
 
   function update(next: Partial<CardSpec>) {
@@ -61,7 +64,7 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
     }
 
     if (!isAllowedImageType(file.type) || file.size > MAX_IMAGE_FILE_BYTES) {
-      window.alert("Please choose a PNG, JPEG, or WebP image under 5 MB.");
+      window.alert(text.invalidArtwork);
       event.target.value = "";
       return;
     }
@@ -85,20 +88,20 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
   }
 
   return (
-    <aside className="panel field-panel" aria-label="Card fields">
+    <aside className="panel field-panel" aria-label={text.aria}>
       <div className="panel-heading">
-        <p>Fields</p>
-        <span>Single card</span>
+        <p>{text.heading}</p>
+        <span>{text.scope}</span>
       </div>
 
       <label className="field-block">
-        <span>Artwork</span>
+        <span>{text.artwork}</span>
         <input name="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleArtworkUpload} />
       </label>
 
       <div className="crop-grid">
         <label>
-          <span>Art X</span>
+          <span>{text.artX}</span>
           <input
             name="artwork-crop-x"
             type="range"
@@ -109,7 +112,7 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
           />
         </label>
         <label>
-          <span>Art Y</span>
+          <span>{text.artY}</span>
           <input
             name="artwork-crop-y"
             type="range"
@@ -120,7 +123,7 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
           />
         </label>
         <label>
-          <span>Zoom</span>
+          <span>{text.zoom}</span>
           <input
             name="artwork-crop-scale"
             type="range"
@@ -134,7 +137,7 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
       </div>
 
       <label className="field-block">
-        <span>Title</span>
+        <span>{text.title}</span>
         <input
           name="card-title"
           value={card.title}
@@ -144,7 +147,7 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
       </label>
 
       <label className="field-block">
-        <span>Keyword line</span>
+        <span>{text.keywordLine}</span>
         <input
           name="card-keyword-line"
           value={card.keywordLine ?? ""}
@@ -154,7 +157,7 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
       </label>
 
       <label className="field-block">
-        <span>Body</span>
+        <span>{text.body}</span>
         <textarea
           name="card-body"
           value={card.body}
@@ -166,18 +169,18 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
 
       <div className="select-grid">
         <label>
-          <span>Nation</span>
+          <span>{text.nation}</span>
           <select name="card-nation" value={card.nation} onChange={(event) => update({ nation: event.target.value })}>
             {NATIONS.map((nation) => (
               <option key={nation.id} value={nation.id}>
-                {nation.label}
+                {translatePresetLabel(language, "nation", nation.id, nation.label)}
               </option>
             ))}
           </select>
         </label>
 
         <label>
-          <span>Type</span>
+          <span>{text.type}</span>
           <select
             name="card-kind"
             value={card.kind}
@@ -185,29 +188,29 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
           >
             {CARD_KINDS.map((kindOption) => (
               <option key={kindOption.id} value={kindOption.id}>
-                {kindOption.label}
+                {translatePresetLabel(language, "kind", kindOption.id, kindOption.label)}
               </option>
             ))}
           </select>
         </label>
 
         <label>
-          <span>Rarity</span>
+          <span>{text.rarity}</span>
           <select name="card-rarity" value={card.rarity} onChange={(event) => update({ rarity: event.target.value })}>
             {RARITIES.map((rarity) => (
               <option key={rarity.id} value={rarity.id}>
-                {rarity.label}
+                {translatePresetLabel(language, "rarity", rarity.id, rarity.label)}
               </option>
             ))}
           </select>
         </label>
 
         <label className={setOptionLabels ? "set-select-label is-reference-sample" : undefined}>
-          <span>Set</span>
+          <span>{text.set}</span>
           <select name="card-set" value={card.set} onChange={(event) => update({ set: event.target.value })}>
             {SETS.map((set) => (
               <option key={set.id} value={set.id}>
-                {formatSetOptionLabel(set, setOptionLabels)}
+                {formatSetOptionLabel(set, language, setOptionLabels)}
               </option>
             ))}
           </select>
@@ -216,14 +219,14 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
 
       <div className="number-grid">
         <NumberField
-          label="Cost"
+          label={text.cost}
           name="card-deployment-cost"
           value={card.costs.deployment}
           onChange={(value) => updateCost("deployment", value)}
         />
         {kind.hasOperationCost ? (
           <NumberField
-            label="Op"
+            label={text.operation}
             name="card-operation-cost"
             value={card.costs.operation}
             onChange={(value) => updateCost("operation", value)}
@@ -232,13 +235,13 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
         {kind.hasStats ? (
           <>
             <NumberField
-              label="Attack"
+              label={text.attack}
               name="card-attack"
               value={card.stats.attack}
               onChange={(value) => updateStat("attack", value)}
             />
             <NumberField
-              label="Defense"
+              label={text.defense}
               name="card-defense"
               value={card.stats.defense}
               onChange={(value) => updateStat("defense", value)}
@@ -247,7 +250,7 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
         ) : null}
         {card.kind === "hq" ? (
           <NumberField
-            label="HQ defense"
+            label={text.hqDefense}
             name="card-hq-defense"
             value={card.stats.hqDefense}
             onChange={(value) => updateStat("hqDefense", value)}
@@ -258,9 +261,14 @@ export function FieldPanel({ card, onCardChange, setOptionLabels }: FieldPanelPr
   );
 }
 
-function formatSetOptionLabel(set: { id: string; label: string }, setOptionLabels?: Partial<Record<string, string>>) {
+function formatSetOptionLabel(
+  set: { id: string; label: string },
+  language: Language,
+  setOptionLabels?: Partial<Record<string, string>>,
+) {
   const sampleLabel = setOptionLabels?.[set.id];
-  return sampleLabel ? `${sampleLabel} (${set.label})` : set.label;
+  const setLabel = translatePresetLabel(language, "set", set.id, set.label);
+  return sampleLabel ? `${sampleLabel} (${setLabel})` : setLabel;
 }
 
 function NumberField({

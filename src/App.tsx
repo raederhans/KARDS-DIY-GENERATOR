@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_CARD, normalizeCardSpec } from "./cardModel";
+import { normalizeCardSpec } from "./cardModel";
 import { CardCanvas } from "./components/CardCanvas";
 import { FieldPanel } from "./components/FieldPanel";
 import { ProjectPanel } from "./components/ProjectPanel";
 import { loadAssetPackFromFiles, loadAssetPackFromUrl, type LoadedAssetPack } from "./assetPack";
 import { applyCardUpdate, shouldApplyDevPreviewSampleResult } from "./devPreviewState";
+import {
+  UI_TEXT,
+  getInitialLanguage,
+  getLocalizedDefaultCard,
+  getNextLanguage,
+  saveLanguage,
+  type Language,
+} from "./i18n";
 import { loadDraftCard, saveDraftCard } from "./storage";
 import type { CardSpec, CardUpdate } from "./types";
 import { compareCanvasToReferenceFile, type ImageDiffMetrics } from "./visualDiff";
@@ -14,7 +22,12 @@ type DevPreviewCatalogModule = typeof import("./devPreviewCatalog");
 type DevPreviewSample = import("./devPreviewCatalog").DevPreviewSample;
 
 function App() {
-  const [card, setCard] = useState<CardSpec>(() => loadDraftCard(window.localStorage, DEFAULT_CARD));
+  const [language, setLanguage] = useState<Language>(() => getInitialLanguage(window.localStorage));
+  const text = UI_TEXT[language];
+  const localizedDefaultCard = useMemo(() => getLocalizedDefaultCard(language), [language]);
+  const [card, setCard] = useState<CardSpec>(() =>
+    loadDraftCard(window.localStorage, getLocalizedDefaultCard(getInitialLanguage(window.localStorage))),
+  );
   const [artworkImage, setArtworkImage] = useState<HTMLImageElement | null>(null);
   const [assetPack, setAssetPack] = useState<LoadedAssetPack | null>(null);
   const [devPreviewCatalog, setDevPreviewCatalog] = useState<DevPreviewCatalogModule | null>(null);
@@ -30,6 +43,15 @@ function App() {
   const didLoadDevPreviewRef = useRef(false);
   const isDevPrivatePreviewEnabled =
     import.meta.env.DEV && new URLSearchParams(window.location.search).get("privatePack") !== "off";
+
+  useEffect(() => {
+    saveLanguage(window.localStorage, language);
+    document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+    document.title = text.documentTitle;
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", text.documentDescription);
+  }, [language, text.documentDescription, text.documentTitle]);
 
   useEffect(() => {
     setAutosavePaused(!saveDraftCard(window.localStorage, card));
@@ -88,7 +110,7 @@ function App() {
       })
       .catch(() => {
         if (!cancelled) {
-          setAssetPackError("Could not load the private preview catalog.");
+          setAssetPackError(UI_TEXT.en.errors.privatePreviewCatalog);
         }
       });
 
@@ -179,7 +201,9 @@ function App() {
       if (requestId !== assetPackRequestRef.current) {
         return;
       }
-      setAssetPackError(error instanceof Error ? error.message : "Could not load the local asset pack.");
+      setAssetPackError(
+        error instanceof Error ? error.message : UI_TEXT.en.errors.localAssetPack,
+      );
     }
   }
 
@@ -216,7 +240,9 @@ function App() {
       if (requestId !== assetPackRequestRef.current) {
         return;
       }
-      setAssetPackError(error instanceof Error ? error.message : "Could not load the private reference preview.");
+      setAssetPackError(
+        error instanceof Error ? error.message : UI_TEXT.en.errors.privateReferencePreview,
+      );
     }
   }
 
@@ -243,7 +269,7 @@ function App() {
 
     const response = await fetch(sample.cardUrl, { cache: "no-store" });
     if (!response.ok) {
-      throw new Error(`Could not load ${sample.cardUrl}.`);
+      throw new Error(UI_TEXT.en.errors.loadCardUrl(sample.cardUrl));
     }
     return normalizeCardSpec(await response.json());
   }
@@ -259,8 +285,14 @@ function App() {
       setReferenceDiff(await compareCanvasToReferenceFile(canvas, file));
     } catch (error) {
       setReferenceDiff(null);
-      setReferenceDiffError(error instanceof Error ? error.message : "Could not compare this reference image.");
+      setReferenceDiffError(
+        error instanceof Error ? error.message : UI_TEXT.en.errors.referenceCompare,
+      );
     }
+  }
+
+  function toggleLanguage() {
+    setLanguage((currentLanguage) => getNextLanguage(currentLanguage));
   }
 
   return (
@@ -270,18 +302,30 @@ function App() {
           <p className="brand-mark">CF</p>
           <div>
             <h1>Card Forge</h1>
-            <p>Static custom card-face generator</p>
+            <p>{text.appSubtitle}</p>
           </div>
         </div>
-        <span className={autosavePaused ? "scope-pill is-warning" : "scope-pill"}>
-          {autosavePaused ? "Save JSON to keep changes" : "No gameplay tools"}
-        </span>
+        <div className="top-actions">
+          <button type="button" className="language-toggle" aria-label={text.languageToggleAria} onClick={toggleLanguage}>
+            {text.languageToggle}
+          </button>
+          <span className={autosavePaused ? "scope-pill is-warning" : "scope-pill"}>
+            {autosavePaused ? text.autosavePaused : text.scopePill}
+          </span>
+        </div>
       </header>
 
       <div className="workspace">
-        <FieldPanel card={previewCard} onCardChange={updateCard} setOptionLabels={setOptionLabels} />
+        <FieldPanel
+          card={previewCard}
+          language={language}
+          text={text.fieldPanel}
+          onCardChange={updateCard}
+          setOptionLabels={setOptionLabels}
+        />
         <CardCanvas
           card={previewCard}
+          text={text.canvas}
           artworkImage={artworkImage}
           canvasRef={canvasRef}
           renderOptions={renderOptions}
@@ -299,6 +343,9 @@ function App() {
         />
         <ProjectPanel
           card={previewCard}
+          language={language}
+          text={text.projectPanel}
+          defaultCard={localizedDefaultCard}
           onCardChange={updateCard}
           canvasRef={canvasRef}
           assetPackStatus={
