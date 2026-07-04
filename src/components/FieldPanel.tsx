@@ -124,11 +124,6 @@ export function FieldPanel({
 
   return (
     <aside className="panel field-panel" aria-label={text.aria}>
-      <div className="panel-heading">
-        <p>{text.heading}</p>
-        <span>{text.scope}</span>
-      </div>
-
       <label className="field-block">
         <span>{text.artwork}</span>
         <input name="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleArtworkUpload} />
