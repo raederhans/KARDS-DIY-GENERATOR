@@ -24,6 +24,14 @@ export const KEYWORD_PRESETS: KeywordPreset[] = [
 ];
 
 const KEYWORD_BY_ID = new Map(KEYWORD_PRESETS.map((keyword) => [keyword.id, keyword]));
+const EXCLUSIVE_KEYWORD_GROUP_BY_ID = new Map([
+  ["heavyArmor1", "heavyArmor"],
+  ["heavyArmor2", "heavyArmor"],
+  ["heavyArmor3", "heavyArmor"],
+  ["intel1", "intel"],
+  ["intel2", "intel"],
+  ["intel3", "intel"],
+]);
 const KEYWORD_ALIASES = new Map(
   KEYWORD_PRESETS.flatMap((keyword) => [
     [normalizeKeywordToken(keyword.id), keyword.id],
@@ -72,6 +80,42 @@ export function formatKeywordLineFromIds(keywordIds: string[]): string {
     .join(", ");
 }
 
+export function canAddKeywordId(selectedKeywordIds: string[], keywordId: string): boolean {
+  const resolvedKeywordId = resolveKeywordId(keywordId);
+  if (!resolvedKeywordId) {
+    return false;
+  }
+
+  const normalizedKeywordIds = normalizeCardKeywords(selectedKeywordIds);
+  if (normalizedKeywordIds.length >= MAX_CARD_KEYWORDS || normalizedKeywordIds.includes(resolvedKeywordId)) {
+    return false;
+  }
+
+  const exclusiveGroup = EXCLUSIVE_KEYWORD_GROUP_BY_ID.get(resolvedKeywordId);
+  return !exclusiveGroup || !normalizedKeywordIds.some((selectedKeywordId) => EXCLUSIVE_KEYWORD_GROUP_BY_ID.get(selectedKeywordId) === exclusiveGroup);
+}
+
+export function reorderKeywordIds(keywordIds: string[], fromIndex: number, toIndex: number): string[] {
+  const normalizedKeywordIds = normalizeCardKeywords(keywordIds);
+  if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex) || normalizedKeywordIds.length < 2) {
+    return normalizedKeywordIds;
+  }
+
+  if (fromIndex < 0 || fromIndex >= normalizedKeywordIds.length) {
+    return normalizedKeywordIds;
+  }
+
+  const targetIndex = Math.max(0, Math.min(toIndex, normalizedKeywordIds.length - 1));
+  if (fromIndex === targetIndex) {
+    return normalizedKeywordIds;
+  }
+
+  const nextKeywordIds = [...normalizedKeywordIds];
+  const [movedKeywordId] = nextKeywordIds.splice(fromIndex, 1);
+  nextKeywordIds.splice(targetIndex, 0, movedKeywordId);
+  return nextKeywordIds;
+}
+
 function resolveKeywordId(value: unknown): string | undefined {
   if (typeof value !== "string") {
     return undefined;
@@ -85,7 +129,32 @@ function stripInternalKeywordPayload(value: string): string {
 }
 
 function dedupeKeywordIds(keywordIds: string[]): string[] {
-  return [...new Set(keywordIds)].slice(0, MAX_CARD_KEYWORDS);
+  const selectedKeywordIds: string[] = [];
+  const selectedKeywordSet = new Set<string>();
+  const selectedExclusiveGroups = new Set<string>();
+
+  for (const keywordId of keywordIds) {
+    if (selectedKeywordSet.has(keywordId)) {
+      continue;
+    }
+
+    const exclusiveGroup = EXCLUSIVE_KEYWORD_GROUP_BY_ID.get(keywordId);
+    if (exclusiveGroup && selectedExclusiveGroups.has(exclusiveGroup)) {
+      continue;
+    }
+
+    selectedKeywordIds.push(keywordId);
+    selectedKeywordSet.add(keywordId);
+    if (exclusiveGroup) {
+      selectedExclusiveGroups.add(exclusiveGroup);
+    }
+
+    if (selectedKeywordIds.length >= MAX_CARD_KEYWORDS) {
+      break;
+    }
+  }
+
+  return selectedKeywordIds;
 }
 
 function normalizeKeywordToken(value: string): string {

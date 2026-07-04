@@ -266,10 +266,16 @@ input[type="range"] {
 
 .keyword-chip-list {
   display: flex;
-  min-height: 34px;
+  position: relative;
+  min-height: 42px;
   flex-wrap: wrap;
   align-items: center;
+  align-content: center;
   gap: 7px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.14);
 }
 
 .keyword-chip {
@@ -280,9 +286,31 @@ input[type="range"] {
   padding: 0 9px;
   border-color: var(--line-strong);
   color: var(--accent-strong);
+  cursor: grab;
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
+  touch-action: pan-y;
+  user-select: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.keyword-chip.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-color: var(--accent);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.24);
+  cursor: grabbing;
+  transition: none;
+}
+
+.keyword-chip.is-shifting {
+  position: relative;
+  z-index: 1;
+  border-color: var(--accent);
 }
 
 .keyword-chip strong {

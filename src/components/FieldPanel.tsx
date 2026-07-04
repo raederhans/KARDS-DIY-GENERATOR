@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { CARD_KINDS, NATIONS, RARITIES, SETS, getKind } from "../presets";
 import { translateKeywordLabel, translatePresetLabel, type Language, type UiText } from "../i18n";
 import type { CardSpec, CardUpdate } from "../types";
@@ -7,7 +8,14 @@ import {
   MAX_IMAGE_FILE_BYTES,
   TITLE_MAX_LENGTH,
 } from "../limits";
-import { KEYWORD_PRESETS, MAX_CARD_KEYWORDS, formatKeywordLineFromIds, resolveCardKeywordIds } from "../keywords";
+import {
+  KEYWORD_PRESETS,
+  MAX_CARD_KEYWORDS,
+  canAddKeywordId,
+  formatKeywordLineFromIds,
+  reorderKeywordIds,
+  resolveCardKeywordIds,
+} from "../keywords";
 
 type FieldPanelProps = {
   card: CardSpec;
@@ -22,6 +30,22 @@ type FieldPanelProps = {
   onReferenceSampleSelect?: (sampleId: string) => void;
 };
 
+type KeywordDragState = {
+  keywordId: string;
+  pointerId: number;
+  startX: number;
+  startIndex: number;
+  targetIndex: number;
+  startCenterX: number;
+  otherChipCenters: number[];
+  draggedWidth: number;
+  gapX: number;
+  minDeltaX: number;
+  maxDeltaX: number;
+  deltaX: number;
+  didMove: boolean;
+};
+
 export function FieldPanel({
   card,
   language,
@@ -31,9 +55,11 @@ export function FieldPanel({
   selectedReferenceSampleId = "",
   onReferenceSampleSelect,
 }: FieldPanelProps) {
+  const [keywordDrag, setKeywordDrag] = useState<KeywordDragState | null>(null);
+  const suppressKeywordClickRef = useRef(false);
   const kind = getKind(card.kind);
   const selectedKeywordIds = resolveCardKeywordIds(card);
-  const availableKeywords = KEYWORD_PRESETS.filter((keyword) => !selectedKeywordIds.includes(keyword.id));
+  const availableKeywords = KEYWORD_PRESETS.filter((keyword) => canAddKeywordId(selectedKeywordIds, keyword.id));
 
   function update(next: Partial<CardSpec>) {
     onCardChange((currentCard) => ({ ...currentCard, ...next }));
@@ -68,7 +94,7 @@ export function FieldPanel({
   }
 
   function addKeyword(keywordId: string) {
-    if (!keywordId || selectedKeywordIds.includes(keywordId) || selectedKeywordIds.length >= MAX_CARD_KEYWORDS) {
+    if (!canAddKeywordId(selectedKeywordIds, keywordId)) {
       return;
     }
 
@@ -77,6 +103,132 @@ export function FieldPanel({
 
   function removeKeyword(keywordId: string) {
     updateKeywords(selectedKeywordIds.filter((selectedKeywordId) => selectedKeywordId !== keywordId));
+  }
+
+  function handleKeywordClick(keywordId: string) {
+    if (suppressKeywordClickRef.current) {
+      suppressKeywordClickRef.current = false;
+      return;
+    }
+
+    removeKeyword(keywordId);
+  }
+
+  function handleKeywordPointerDown(event: React.PointerEvent<HTMLButtonElement>, keywordId: string, startIndex: number) {
+    if (event.button !== 0 || selectedKeywordIds.length < 2) {
+      return;
+    }
+
+    const chip = event.currentTarget;
+    const chipList = chip.parentElement;
+    if (!chipList) {
+      return;
+    }
+
+    const chipRect = chip.getBoundingClientRect();
+    const chipListRect = chipList.getBoundingClientRect();
+    const chipListStyle = window.getComputedStyle(chipList);
+    const gapX = Number.parseFloat(chipListStyle.columnGap || chipListStyle.gap) || 0;
+    const otherChipCenters = Array.from(chipList.querySelectorAll<HTMLButtonElement>("[data-keyword-chip]"))
+      .map((keywordChip) => {
+        const rect = keywordChip.getBoundingClientRect();
+        return rect.left + rect.width / 2;
+      })
+      .filter((_, keywordIndex) => keywordIndex !== startIndex);
+
+    chip.setPointerCapture(event.pointerId);
+    setKeywordDrag({
+      keywordId,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startIndex,
+      targetIndex: startIndex,
+      startCenterX: chipRect.left + chipRect.width / 2,
+      otherChipCenters,
+      draggedWidth: chipRect.width,
+      gapX,
+      minDeltaX: chipListRect.left - chipRect.left,
+      maxDeltaX: chipListRect.right - chipRect.right,
+      deltaX: 0,
+      didMove: false,
+    });
+  }
+
+  function handleKeywordPointerMove(event: React.PointerEvent<HTMLButtonElement>, keywordId: string) {
+    setKeywordDrag((currentDrag) => {
+      if (!currentDrag || currentDrag.keywordId !== keywordId || currentDrag.pointerId !== event.pointerId) {
+        return currentDrag;
+      }
+
+      const deltaX = clamp(event.clientX - currentDrag.startX, currentDrag.minDeltaX, currentDrag.maxDeltaX);
+      const centerX = currentDrag.startCenterX + deltaX;
+      const targetIndex = resolveKeywordDropIndex(centerX, currentDrag.otherChipCenters);
+      return {
+        ...currentDrag,
+        deltaX,
+        targetIndex,
+        didMove: currentDrag.didMove || Math.abs(deltaX) > 6,
+      };
+    });
+  }
+
+  function handleKeywordPointerUp(event: React.PointerEvent<HTMLButtonElement>, keywordId: string) {
+    if (!keywordDrag || keywordDrag.keywordId !== keywordId || keywordDrag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    const completedDrag = keywordDrag;
+    setKeywordDrag(null);
+    if (!completedDrag.didMove) {
+      return;
+    }
+
+    suppressKeywordClickRef.current = true;
+    window.setTimeout(() => {
+      suppressKeywordClickRef.current = false;
+    }, 0);
+    const currentIndex = selectedKeywordIds.indexOf(completedDrag.keywordId);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    updateKeywords(reorderKeywordIds(selectedKeywordIds, currentIndex, completedDrag.targetIndex));
+  }
+
+  function handleKeywordPointerCancel(event: React.PointerEvent<HTMLButtonElement>, keywordId: string) {
+    if (!keywordDrag || keywordDrag.keywordId !== keywordId || keywordDrag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setKeywordDrag(null);
+  }
+
+  function getKeywordChipTransform(keywordId: string, index: number): string | undefined {
+    if (!keywordDrag) {
+      return undefined;
+    }
+
+    if (keywordDrag.keywordId === keywordId) {
+      return `translateX(${keywordDrag.deltaX}px)`;
+    }
+
+    const shiftX = keywordDrag.draggedWidth + keywordDrag.gapX;
+    if (keywordDrag.targetIndex > keywordDrag.startIndex && index > keywordDrag.startIndex && index <= keywordDrag.targetIndex) {
+      return `translateX(${-shiftX}px)`;
+    }
+
+    if (keywordDrag.targetIndex < keywordDrag.startIndex && index >= keywordDrag.targetIndex && index < keywordDrag.startIndex) {
+      return `translateX(${shiftX}px)`;
+    }
+
+    return undefined;
   }
 
   function updateCrop(key: keyof CardSpec["artwork"]["crop"], value: string) {
@@ -179,16 +331,25 @@ export function FieldPanel({
       <div className="field-block keyword-field">
         <span>{text.keywords}</span>
         <div className="keyword-chip-list">
-          {selectedKeywordIds.map((keywordId) => {
+          {selectedKeywordIds.map((keywordId, index) => {
             const keyword = KEYWORD_PRESETS.find((keywordOption) => keywordOption.id === keywordId);
             const label = keyword ? translateKeywordLabel(language, keyword.id, keyword.label) : keywordId;
+            const isDragging = keywordDrag?.keywordId === keywordId;
+            const chipTransform = getKeywordChipTransform(keywordId, index);
             return (
               <button
                 key={keywordId}
                 type="button"
-                className="keyword-chip"
+                className={`keyword-chip${isDragging ? " is-dragging" : ""}${chipTransform && !isDragging ? " is-shifting" : ""}`}
+                data-keyword-chip="true"
+                data-keyword-id={keywordId}
                 aria-label={text.removeKeyword(label)}
-                onClick={() => removeKeyword(keywordId)}
+                style={chipTransform ? { transform: chipTransform } : undefined}
+                onClick={() => handleKeywordClick(keywordId)}
+                onPointerDown={(event) => handleKeywordPointerDown(event, keywordId, index)}
+                onPointerMove={(event) => handleKeywordPointerMove(event, keywordId)}
+                onPointerUp={(event) => handleKeywordPointerUp(event, keywordId)}
+                onPointerCancel={(event) => handleKeywordPointerCancel(event, keywordId)}
               >
                 <span>{label}</span>
                 <strong aria-hidden="true">x</strong>
@@ -357,4 +518,12 @@ function NumberField({
       />
     </label>
   );
+}
+
+function resolveKeywordDropIndex(centerX: number, otherChipCenters: number[]): number {
+  return otherChipCenters.filter((chipCenter) => centerX > chipCenter).length;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
