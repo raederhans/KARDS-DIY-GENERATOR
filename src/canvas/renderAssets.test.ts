@@ -48,6 +48,53 @@ describe("card render asset resolver", () => {
     ).toBe(commandNationImage);
   });
 
+  it("reuses same-nation marks when a specific card kind is missing", () => {
+    const neutralUnitImage = { width: 1, height: 1 } as CanvasImageSource;
+    const neutralCommandImage = { width: 2, height: 2 } as CanvasImageSource;
+    const otherNationImage = { width: 3, height: 3 } as CanvasImageSource;
+    const entries = [
+      { slot: "nation-mark", nationId: "neutral", kind: "infantry", template: "unit", image: neutralUnitImage },
+      { slot: "nation-mark", nationId: "neutral", kind: "order", template: "command", image: neutralCommandImage },
+      { slot: "nation-mark", nationId: "germany", kind: "tank", template: "unit", image: otherNationImage },
+    ] as const;
+
+    expect(
+      resolveBestAssetEntry([...entries], "nation-mark", { ...assetContext, nationId: "neutral", kind: "tank" })?.image,
+    ).toBe(neutralUnitImage);
+    expect(
+      resolveBestAssetEntry([...entries], "nation-mark", {
+        ...assetContext,
+        nationId: "neutral",
+        kind: "countermeasure",
+        template: "command",
+      })?.image,
+    ).toBe(neutralCommandImage);
+  });
+
+  it("prefers generic same-nation marks over wrong-template specific marks", () => {
+    const genericNeutralImage = { width: 1, height: 1 } as CanvasImageSource;
+    const wrongTemplateImage = { width: 2, height: 2 } as CanvasImageSource;
+    const exactTankImage = { width: 3, height: 3 } as CanvasImageSource;
+    const entries = [
+      { slot: "nation-mark", nationId: "neutral", image: genericNeutralImage },
+      { slot: "nation-mark", nationId: "neutral", kind: "order", template: "command", image: wrongTemplateImage },
+    ] as const;
+
+    expect(
+      resolveBestAssetEntry([...entries], "nation-mark", { ...assetContext, nationId: "neutral", kind: "tank" })?.image,
+    ).toBe(genericNeutralImage);
+    expect(
+      resolveBestAssetEntry(
+        [
+          ...entries,
+          { slot: "nation-mark", nationId: "neutral", kind: "tank", template: "unit", image: exactTankImage },
+        ],
+        "nation-mark",
+        { ...assetContext, nationId: "neutral", kind: "tank" },
+      )?.image,
+    ).toBe(exactTankImage);
+  });
+
   it("returns undefined when filters do not match the card context", () => {
     const image = { width: 1, height: 1 } as CanvasImageSource;
     const resolver = createStaticAssetResolver([{ slot: "type-icon", kind: "order", image }]);

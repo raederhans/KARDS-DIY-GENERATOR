@@ -120,6 +120,32 @@ describe("card renderer output", () => {
     expect(calls.fillRect).not.toContainEqual([8, 489, 484, 160]);
   });
 
+  it("leaves the nation mark blank for custom cards", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const customMark = { width: 40, height: 40 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([{ slot: "nation-mark", nationId: "custom", image: customMark }]);
+
+    renderCard(canvas, { ...DEFAULT_CARD, nation: "custom" }, null, { assets, disablePrintWear: true });
+
+    expect(calls.drawImage.some(([image]) => image === customMark)).toBe(false);
+    expect(calls.fillText.some(([text]) => text === "CU")).toBe(false);
+  });
+
+  it("draws the neutral nation mark from a same-nation unit fallback instead of text", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const neutralMark = { width: 40, height: 40 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([
+      { slot: "nation-mark", nationId: "neutral", kind: "infantry", template: "unit", image: neutralMark },
+    ]);
+
+    renderCard(canvas, { ...DEFAULT_CARD, nation: "neutral", kind: "tank" }, null, {
+      assets,
+      disablePrintWear: true,
+    });
+
+    expect(calls.drawImage.some(([image]) => image === neutralMark)).toBe(true);
+    expect(calls.fillText.some(([text]) => text === "NE")).toBe(false);
+  });
 
   it("does not render whitespace-only keyword lines", () => {
     const { canvas, calls } = createFakeCanvas();

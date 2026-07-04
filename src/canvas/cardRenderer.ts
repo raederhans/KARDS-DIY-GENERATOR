@@ -288,6 +288,11 @@ function drawNationMark(
   const size = layout.nationSize;
   const x = layout.nationCenter.x - size / 2;
   const y = layout.nationCenter.y - size / 2;
+  if (assetContext.nationId === "custom") {
+    ctx.restore();
+    return;
+  }
+
   if (drawAsset(ctx, options, "nation-mark", { x, y, width: size, height: size }, assetContext)) {
     ctx.restore();
     return;

@@ -98,7 +98,7 @@ export function resolveBestAssetEntry(
       continue;
     }
 
-    const score = getAssetEntryScore(entry);
+    const score = getAssetEntryScore(entry, context);
     if (score > bestScore) {
       bestEntry = entry;
       bestScore = score;
@@ -109,6 +109,13 @@ export function resolveBestAssetEntry(
 }
 
 function doesAssetEntryMatch(entry: CardRenderAssetEntry, context: CardRenderAssetContext): boolean {
+  if (entry.slot === "nation-mark" && entry.nationId === context.nationId) {
+    return (
+      doesFilterMatch(entry.rarityId, context.rarityId) &&
+      doesFilterMatch(entry.setId, context.setId)
+    );
+  }
+
   return (
     doesFilterMatch(entry.kind, context.kind) &&
     doesFilterMatch(entry.nationId, context.nationId) &&
@@ -122,12 +129,36 @@ function doesFilterMatch(filterValue: string | undefined, actualValue: string): 
   return filterValue === undefined || filterValue === actualValue;
 }
 
-function getAssetEntryScore(entry: CardRenderAssetEntry): number {
+function getAssetEntryScore(entry: CardRenderAssetEntry, context: CardRenderAssetContext): number {
+  if (entry.slot === "nation-mark") {
+    return getNationMarkAssetEntryScore(entry, context);
+  }
+
   let score = 0;
   if (entry.kind) score += 16;
   if (entry.nationId) score += 8;
   if (entry.rarityId) score += 4;
   if (entry.setId) score += 2;
   if (entry.template) score += 1;
+  return score;
+}
+
+function getNationMarkAssetEntryScore(entry: CardRenderAssetEntry, context: CardRenderAssetContext): number {
+  const hasKind = entry.kind !== undefined;
+  const hasTemplate = entry.template !== undefined;
+  const kindMatches = entry.kind === context.kind;
+  const templateMatches = entry.template === context.template;
+  const isGeneric = !hasKind && !hasTemplate;
+  let score = entry.nationId === context.nationId ? 64 : 0;
+
+  if ((hasKind && !kindMatches) || (hasTemplate && !templateMatches)) {
+    score -= 32;
+  }
+
+  if (isGeneric) score += 16;
+  if (kindMatches) score += 32;
+  if (templateMatches) score += 20;
+  if (entry.rarityId) score += 4;
+  if (entry.setId) score += 2;
   return score;
 }
