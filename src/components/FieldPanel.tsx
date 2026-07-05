@@ -3,6 +3,13 @@ import { CARD_KINDS, NATIONS, RARITIES, SETS, getKind } from "../presets";
 import { translateKeywordLabel, translatePresetLabel, type Language, type UiText } from "../i18n";
 import type { CardSpec, CardUpdate } from "../types";
 import {
+  BODY_EFFECT_PRESETS,
+  getBodyEffectPresetInsert,
+  getBodyEffectPresetLabel,
+  insertBodyTextAtSelection,
+  wrapBodySelectionWithBold,
+} from "../bodyMarkup";
+import {
   BODY_MAX_LENGTH,
   isAllowedImageType,
   MAX_IMAGE_FILE_BYTES,
@@ -57,6 +64,7 @@ export function FieldPanel({
 }: FieldPanelProps) {
   const [keywordDrag, setKeywordDrag] = useState<KeywordDragState | null>(null);
   const suppressKeywordClickRef = useRef(false);
+  const bodyTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const kind = getKind(card.kind);
   const selectedKeywordIds = resolveCardKeywordIds(card);
   const availableKeywords = KEYWORD_PRESETS.filter((keyword) => canAddKeywordId(selectedKeywordIds, keyword.id));
@@ -208,6 +216,37 @@ export function FieldPanel({
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
     setKeywordDrag(null);
+  }
+
+  function insertBodyEffect(presetId: string) {
+    const insertion = getBodyEffectPresetInsert(language, presetId);
+    if (!insertion) {
+      return;
+    }
+
+    const textarea = bodyTextareaRef.current;
+    const currentBody = textarea?.value ?? card.body;
+    const selectionStart = textarea?.selectionStart ?? currentBody.length;
+    const selectionEnd = textarea?.selectionEnd ?? selectionStart;
+    const result = insertBodyTextAtSelection(currentBody, insertion, selectionStart, selectionEnd, BODY_MAX_LENGTH);
+    update({ body: result.value });
+    window.requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(result.cursor, result.cursor);
+    });
+  }
+
+  function addBodyBoldMarkers() {
+    const textarea = bodyTextareaRef.current;
+    const currentBody = textarea?.value ?? card.body;
+    const selectionStart = textarea?.selectionStart ?? currentBody.length;
+    const selectionEnd = textarea?.selectionEnd ?? selectionStart;
+    const result = wrapBodySelectionWithBold(currentBody, selectionStart, selectionEnd, BODY_MAX_LENGTH);
+    update({ body: result.value });
+    window.requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(result.cursor, result.cursor);
+    });
   }
 
   function getKeywordChipTransform(keywordId: string, index: number): string | undefined {
@@ -419,16 +458,27 @@ export function FieldPanel({
         </select>
       </div>
 
-      <label className="field-block">
+      <div className="field-block body-field">
         <span>{text.body}</span>
+        <div className="body-effect-buttons" aria-label={text.addBodyEmphasis}>
+          <button type="button" className="body-effect-button" onClick={addBodyBoldMarkers} aria-label={text.addBodyBold}>
+            <strong>B</strong>
+          </button>
+          {BODY_EFFECT_PRESETS.map((preset) => (
+            <button key={preset.id} type="button" className="body-effect-button" onClick={() => insertBodyEffect(preset.id)}>
+              {getBodyEffectPresetLabel(language, preset.id)}
+            </button>
+          ))}
+        </div>
         <textarea
+          ref={bodyTextareaRef}
           name="card-body"
           value={card.body}
           rows={5}
           maxLength={BODY_MAX_LENGTH}
           onChange={(event) => update({ body: event.target.value })}
         />
-      </label>
+      </div>
 
       <div className="select-grid">
         <label>

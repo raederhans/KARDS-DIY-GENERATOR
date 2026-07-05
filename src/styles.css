@@ -333,6 +333,26 @@ input[type="range"] {
   font-size: 13px;
 }
 
+.body-field {
+  align-items: stretch;
+}
+
+.body-effect-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.body-effect-button {
+  min-height: 32px;
+  width: auto;
+  padding: 0 10px;
+  border-color: var(--line-strong);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .crop-grid {
   padding: 9px 10px 8px;
   margin-bottom: 14px;

@@ -2,6 +2,7 @@ import { getKind, getNation, getRarity, getSet } from "../presets";
 import type { CardKind, CardSpec } from "../types";
 import { translateKeywordLabel } from "../i18n";
 import { getKeywordPreset, resolveCardKeywordIds } from "../keywords";
+import { drawMarkedBodyText } from "./bodyTextRenderer";
 import {
   CARD_HEIGHT,
   CARD_WIDTH,
@@ -528,7 +529,17 @@ function drawText(
     1,
     Math.min(layout.text.maxLines, Math.floor((layout.text.bodyBottomY - bodyY) / layout.text.lineHeight) + 1),
   );
-  drawWrappedText(ctx, card.body, 250, bodyY, layout.text.maxWidth, layout.text.lineHeight, bodyMaxLines, getTextScale(card.body, 0.96, 1));
+  drawMarkedBodyText(
+    ctx,
+    card.body,
+    250,
+    bodyY,
+    layout.text.maxWidth,
+    layout.text.lineHeight,
+    bodyMaxLines,
+    fonts.body,
+    getTextScale(card.body, 0.96, 1),
+  );
   ctx.restore();
 }
 
@@ -652,23 +663,6 @@ function drawPrintWear(ctx: CanvasRenderingContext2D): void {
     ctx.fillRect(x, y, 1 + (i % 2), 1 + (i % 3));
   }
   ctx.restore();
-}
-
-function drawWrappedText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-  maxLines: number,
-  scaleX = 1,
-): void {
-  const lines = createWrappedTextLines(ctx, text, maxWidth, maxLines, scaleX);
-
-  lines.forEach((wrappedLine, index) => {
-    fillScaledText(ctx, wrappedLine, x, y + index * lineHeight, scaleX);
-  });
 }
 
 export function createWrappedTextLines(

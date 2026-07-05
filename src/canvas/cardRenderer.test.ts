@@ -310,6 +310,39 @@ describe("card renderer output", () => {
     expect(bodyCall?.[2]).toBe(580);
   });
 
+  it("renders explicitly marked body text in bold without drawing the marker stars", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const card: CardSpec = {
+      ...DEFAULT_CARD,
+      keywords: [],
+      keywordLine: "",
+      body: "**Deployment**: draw a card",
+    };
+
+    renderCard(canvas, card, null);
+
+    const emphasizedStyle = calls.fillTextStyles.find((call) => call.text === "Deployment");
+    const plainStyle = calls.fillTextStyles.find((call) => call.text === ": draw a card");
+    expect(emphasizedStyle?.font).toContain("800 24px");
+    expect(plainStyle?.font).toContain("500 24px");
+    expect(calls.fillText.some(([text]) => String(text).includes("**"))).toBe(false);
+  });
+
+  it("preserves author-entered body line breaks before wrapping", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const card: CardSpec = {
+      ...DEFAULT_CARD,
+      keywords: [],
+      keywordLine: "",
+      body: "alpha\nbeta",
+    };
+
+    renderCard(canvas, card, null);
+
+    expect(calls.fillText.find(([text]) => text === "alpha")?.[2]).toBe(580);
+    expect(calls.fillText.find(([text]) => text === "beta")?.[2]).toBe(608);
+  });
+
   it("does not redraw legacy combined type icon crops when glyph masking is unavailable", () => {
     const { canvas, calls } = createFakeCanvas();
     const localImage = { width: 84, height: 78 } as CanvasImageSource;
