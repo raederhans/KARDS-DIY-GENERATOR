@@ -120,6 +120,49 @@ describe("card renderer output", () => {
     expect(calls.fillRect).not.toContainEqual([8, 489, 484, 160]);
   });
 
+  it("keeps a paper gap around command cost boards and strengthens the K marker", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const orderCard: CardSpec = {
+      ...DEFAULT_CARD,
+      kind: "order",
+      costs: { deployment: 3 },
+    };
+
+    renderCard(canvas, orderCard, null, { disablePrintWear: true });
+
+    expect(calls.fillRectStyles).toContainEqual({ x: 98, y: 13, width: 8, height: 94, fillStyle: "#d8d2bd" });
+    expect(calls.fillRectStyles).toContainEqual({ x: 12, y: 99, width: 94, height: 8, fillStyle: "#d8d2bd" });
+    const kreditStyle = calls.fillTextStyles.find((call) => call.text === "K");
+    expect(kreditStyle?.font).toContain("25px");
+    expect(kreditStyle?.scaleX).toBeCloseTo(1.08);
+  });
+
+  it("uses command-specific text spacing and Latin condensed body typography", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const orderCard: CardSpec = {
+      ...DEFAULT_CARD,
+      kind: "order",
+      title: "PLAN D",
+      body: "Choose 1 of 3 random elite Soviet units to add to your hand.",
+    };
+
+    renderCard(canvas, orderCard, null, { disablePrintWear: true });
+
+    const iconCall = calls.fillText.find(([text]) => text === "!");
+    const titleCall = calls.fillText.find(([text]) => text === "PLAN D");
+    const titleStyle = calls.fillTextStyles.find((call) => call.text === "PLAN D");
+    const bodyStyle = calls.fillTextStyles.find((call) => String(call.text).startsWith("Choose"));
+
+    expect(titleCall?.[2]).toBe(538);
+    expect(Number(titleCall?.[2]) - Number(iconCall?.[2])).toBeGreaterThan(55);
+    expect(titleStyle?.scaleX).toBeCloseTo(0.98);
+    expect(titleStyle?.font).toContain("40px");
+    expect(titleStyle?.font).toContain("800");
+    expect(bodyStyle?.font).toContain("'Libre Franklin'");
+    expect(bodyStyle?.font).toMatch(/^400 \d+px/);
+    expect(bodyStyle?.scaleX).toBeCloseTo(0.92);
+  });
+
   it("draws a darker unit cost board with gaps and no inner outline", () => {
     const { canvas, calls } = createFakeCanvas();
 

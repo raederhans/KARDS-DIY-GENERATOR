@@ -34,7 +34,12 @@ describe("card face layout", () => {
   it("uses the command artwork geometry for orders and countermeasures", () => {
     expect(getArtworkRect("order")).toEqual({ x: 12, y: 13, width: 476, height: 476 });
     expect(getArtworkRect("countermeasure")).toEqual({ x: 12, y: 13, width: 476, height: 476 });
-    expect(getCardFaceLayout("order").typeIcon).toEqual({ x: 222, y: 448, width: 56, height: 56 });
+    const layout = getCardFaceLayout("order");
+    expect(layout.costBoardGap).toBe(8);
+    expect(layout.typeIcon).toEqual({ x: 222, y: 448, width: 56, height: 56 });
+    expect(layout.text.titleY).toBe(538);
+    expect(layout.text.keywordY).toBe(590);
+    expect(layout.text.bodyY).toBe(618);
   });
 
   it("keeps HQ on its own template with a separate defense board", () => {

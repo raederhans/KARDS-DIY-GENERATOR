@@ -30,6 +30,7 @@ export type CardFaceLayout = {
   splitter?: Rect;
   extraBorder?: Rect;
   costBoard?: Rect;
+  costBoardGap?: number;
   nationCenter: Point;
   nationSize: number;
   rarity?: Rect;
@@ -73,12 +74,13 @@ const COMMAND_LAYOUT: CardFaceLayout = {
   artwork: { x: 12, y: 13, width: 476, height: 476 },
   extraBorder: { x: 0, y: 489, width: 500, height: 64 },
   costBoard: { x: 12, y: 13, width: 86, height: 86 },
+  costBoardGap: 8,
   nationCenter: { x: 450, y: 52 },
   nationSize: 54,
   rarity: { x: 222, y: 675, width: 56, height: 20 },
   setAnchor: { x: 488, y: 692 },
   typeIcon: { x: 222, y: 448, width: 56, height: 56 },
-  text: { titleY: 522, keywordY: 560, bodyY: 592, bodyBottomY: 656, maxWidth: 390, lineHeight: 28, maxLines: 4 },
+  text: { titleY: 538, keywordY: 590, bodyY: 618, bodyBottomY: 660, maxWidth: 390, lineHeight: 28, maxLines: 3 },
 };
 
 const HQ_LAYOUT: CardFaceLayout = {

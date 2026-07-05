@@ -106,6 +106,7 @@ export function renderCard(
       options,
       assetContext,
       fonts,
+      layout.costBoardGap,
     );
   }
   drawNationMark(ctx, layout, nation, options, assetContext, fonts);
@@ -247,8 +248,15 @@ function drawCostBoard(
   options: RenderCardOptions,
   assetContext: CardRenderAssetContext,
   fonts: ResolvedRenderFonts,
+  gap = 0,
 ): void {
   ctx.save();
+  if (gap > 0) {
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(rect.x + rect.width, rect.y, gap, rect.height + gap);
+    ctx.fillRect(rect.x, rect.y + rect.height, rect.width + gap, gap);
+  }
+
   const hasAsset = drawAsset(ctx, options, "cost-board", rect, assetContext);
   if (!hasAsset) {
     ctx.fillStyle = COST_BOARD_DARK;
@@ -273,8 +281,10 @@ function drawCostBoard(
   fillScaledText(ctx, deploymentText, deploymentCenterX, rect.y + rect.height * 0.56, deploymentStyle.scaleX, deploymentStyle.scaleY);
 
   ctx.fillStyle = ACTIVATED;
-  ctx.font = `900 23px ${fonts.cost}`;
-  fillScaledText(ctx, "K", sideCostCenterX, sideCostTopY, 1.02, sideCostScaleY);
+  const kreditSize = gap > 0 ? 25 : 23;
+  const kreditScale = gap > 0 ? 1.08 : 1.02;
+  ctx.font = `900 ${kreditSize}px ${fonts.cost}`;
+  fillScaledText(ctx, "K", sideCostCenterX, sideCostTopY, kreditScale, sideCostScaleY);
 
   if (operation !== undefined) {
     ctx.fillStyle = LIGHT;
@@ -529,7 +539,17 @@ function drawText(
     );
   } else if (layout.text.titleY !== undefined) {
     ctx.fillStyle = DARK;
-    fitText(ctx, card.title.toUpperCase(), 250, layout.text.titleY, 340, 36, fonts.title, getTextScale(card.title, 1.08, 1.02));
+    const isCommandTemplate = layout.template === "command";
+    fitText(
+      ctx,
+      card.title.toUpperCase(),
+      250,
+      layout.text.titleY,
+      isCommandTemplate ? 420 : 340,
+      isCommandTemplate ? 40 : 36,
+      fonts.title,
+      isCommandTemplate ? 0.98 : getTextScale(card.title, 1.08, 1.02),
+    );
   }
 
   if (keywordLabels.length > 0) {
@@ -537,7 +557,10 @@ function drawText(
   }
 
   ctx.fillStyle = DARK;
-  ctx.font = `500 24px ${fonts.body}`;
+  const bodyFont = layout.template === "command" ? fonts.utility : fonts.body;
+  const bodyScale = layout.template === "command" ? 0.92 : getTextScale(card.body, 0.96, 1);
+  const bodyWeights = layout.template === "command" ? { regular: 400, bold: 800 } : undefined;
+  ctx.font = `${bodyWeights?.regular ?? 500} 24px ${bodyFont}`;
   const bodyY = keywordLabels.length > 0 ? layout.text.bodyY : layout.text.keywordY;
   drawMarkedBodyText(
     ctx,
@@ -548,8 +571,9 @@ function drawText(
     layout.text.bodyBottomY,
     layout.text.maxLines,
     layout.text.lineHeight,
-    fonts.body,
-    getTextScale(card.body, 0.96, 1),
+    bodyFont,
+    bodyScale,
+    bodyWeights,
   );
   ctx.restore();
 }
