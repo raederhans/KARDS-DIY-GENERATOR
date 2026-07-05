@@ -19,13 +19,13 @@ export const BODY_EFFECT_PRESETS: BodyEffectPreset[] = [
   },
   {
     id: "destruction",
-    labels: { en: "Destruction", zh: "亡祭" },
-    inserts: { en: "**Destruction**: ", zh: "**亡祭**：" },
+    labels: { en: "Destruction", zh: "亡记" },
+    inserts: { en: "**Destruction**: ", zh: "**亡记**：" },
   },
   {
     id: "pincer",
-    labels: { en: "Pincer", zh: "前期" },
-    inserts: { en: "**Pincer**: ", zh: "**前期**：" },
+    labels: { en: "Pincer", zh: "钳击" },
+    inserts: { en: "**Pincer**: ", zh: "**钳击**：" },
   },
 ];
 

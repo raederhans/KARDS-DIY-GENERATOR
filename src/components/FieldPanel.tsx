@@ -462,7 +462,7 @@ export function FieldPanel({
         <span>{text.body}</span>
         <div className="body-effect-buttons" aria-label={text.addBodyEmphasis}>
           <button type="button" className="body-effect-button" onClick={addBodyBoldMarkers} aria-label={text.addBodyBold}>
-            <strong>B</strong>
+            {text.addBodyBold}
           </button>
           {BODY_EFFECT_PRESETS.map((preset) => (
             <button key={preset.id} type="button" className="body-effect-button" onClick={() => insertBodyEffect(preset.id)}>
