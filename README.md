@@ -1,19 +1,35 @@
 # KARDS Card Forge
 
-KARDS Card Forge is a local static card-face generator for making custom
-KARDS-style cards. It is a fan tool for editing and exporting card images; it
-does not include gameplay, deck legality, account, automation, or online game
-features.
+KARDS Card Forge is a local static KARDS-style card-face generator. It is a
+non-official, non-commercial fan utility for composing single custom card
+images in the browser.
+
+It is not a KARDS game client, deck builder, account tool, online service,
+network automation tool, legality checker, or official asset downloader.
 
 ## Current Scope
 
-- Edit card kind, nation, rarity, set, title, rules text, costs, and stats.
-- Preview a fixed `500x702` Canvas card face.
-- Upload and crop local artwork inside the card artwork area.
-- Export the current card as PNG or JSON.
-- Save lightweight browser drafts in `localStorage`.
-- Keep official KARDS assets, fonts, and extracted game files out of the
-  default app and out of git.
+- Edit card kind, nation, rarity, set mark, title, keywords, body text,
+  deployment cost, operation cost, attack, defense, and HQ defense.
+- Upload a local artwork image, then drag and zoom it inside the card artwork
+  frame.
+- Preview the card on a fixed `500x702` Canvas.
+- Export the current card as PNG, JPG, or PDF.
+- Export at `1x`, `2x`, or `3x`. Multi-size exports rerender the card into the
+  target backing resolution, such as `1000x1404` for `2x`, instead of simply
+  enlarging an already-rendered `500x702` canvas.
+- Apply export-only exposure and contrast adjustments.
+- Save and open a single-card project JSON file.
+- Keep a lightweight `localStorage` draft. Uploaded artwork is intentionally
+  not saved into the automatic draft.
+- Use the browser File System Access API, when available, to save card files and
+  append entries to a local card library file.
+- Load a local private style pack from the user's browser session. These assets
+  stay local to that session and are not part of the default public build.
+- Compare the generated card against a user-supplied reference image.
+- In development builds, preview private local reference samples when the local
+  private pack exists.
+- Switch the UI between Chinese and English.
 
 ## Tech Stack
 
@@ -22,22 +38,26 @@ features.
 - Vite
 - Canvas 2D rendering
 - Vitest
+- Playwright
+- GitHub Pages
+- Vercel
 
 ## Project Structure
 
 ```text
 src/
-  App.tsx                  App shell and editor state
+  App.tsx                  App shell, editor state, private preview wiring
+  assetPack.ts             Local/private style-pack manifest loading
   cardModel.ts             Card defaults, normalization, and bounds
-  limits.ts                Text and image safety limits
-  storage.ts               Browser draft persistence
-  presets.ts               Card kind, nation, rarity, and set presets
-  components/              Editor panels and Canvas preview component
-  canvas/
-    layout.ts              Fixed card-face geometry
-    cardRenderer.ts        Canvas drawing pipeline
+  exportCard.ts            PNG, JPG, PDF, scale, exposure, and contrast export
+  localLibrary.ts          File System Access local library helpers
+  storage.ts               Lightweight browser draft persistence
+  visualDiff.ts            Reference image comparison metrics
+  components/              Field, project, and Canvas preview panels
+  canvas/                  Fixed geometry, renderer, and render assets
+tools/                     Private calibration and visual smoke utilities
 docs/
-  active/                  Current plans, task notes, and worktree registry
+  active/                  Current plans, roadmap, and worktree registry
   archive/                 Completed task records
 ```
 
@@ -48,25 +68,54 @@ npm install
 npm run dev
 ```
 
+For a clean install, use:
+
+```bash
+npm ci
+```
+
 Useful checks:
 
 ```bash
 npm run typecheck
-npm run test
+npm test -- --run
 npm run build
 ```
 
+There is no `npm run validate` script at the moment.
+
 ## Safety Boundary
 
-This project is not affiliated with or endorsed by 1939 Games. The current
-renderer uses programmatic placeholder surfaces and project-owned code only.
-If official-style assets or fonts are ever added, they should be handled as a
-separate, explicit policy decision and should not be silently bundled into the
-default public build.
+This project is not affiliated with, endorsed by, sponsored by, or approved by
+1939 Games.
 
-## Next Framework Steps
+The default public app must not contain official KARDS assets, official fonts,
+extracted game files, private local paths, or `.runtime` contents. Official or
+official-derived materials belong in `.runtime` or in user-selected private
+local folders only.
 
-- Decide the asset/font policy before adding any official-derived materials.
-- Add an optional local asset-pack import flow only after that policy is clear.
-- Improve typography and preset coverage with focused renderer tests.
-- Add a lightweight visual regression path once the card template stabilizes.
+Do not commit or publish:
+
+- `.runtime`
+- `dist`
+- `.env*`
+- `.vercel`
+- local private asset packs
+- official assets, official fonts, or extracted game files
+
+Do not bundle official asset names, private path strings, or user-local
+`.runtime` references into the default public build.
+
+## Deployment
+
+Vercel uses the normal root-path Vite build with base `/`.
+
+GitHub Pages uses `KARDS_GITHUB_PAGES=true`, which changes the Vite base to
+`/KARDS/` for the project site.
+
+Do not commit `dist` or push built files to a `gh-pages` branch. GitHub Pages is
+deployed from the workflow artifact produced by `.github/workflows/deploy-pages.yml`.
+
+## Roadmap
+
+The current long-term roadmap is maintained in `docs/active/roadmap.md`.
