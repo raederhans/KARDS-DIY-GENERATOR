@@ -19,8 +19,8 @@ export const BODY_EFFECT_PRESETS: BodyEffectPreset[] = [
   },
   {
     id: "destruction",
-    labels: { en: "Destruction", zh: "亡记" },
-    inserts: { en: "**Destruction**: ", zh: "**亡记**：" },
+    labels: { en: "Destruction", zh: "亡计" },
+    inserts: { en: "**Destruction**: ", zh: "**亡计**：" },
   },
   {
     id: "pincer",
@@ -50,11 +50,7 @@ export function insertBodyTextAtSelection(
   const end = clampIndex(selectionEnd, value.length);
   const lowerIndex = Math.min(start, end);
   const upperIndex = Math.max(start, end);
-  const nextValue = `${value.slice(0, lowerIndex)}${insertion}${value.slice(upperIndex)}`.slice(0, maxLength);
-  return {
-    value: nextValue,
-    cursor: Math.min(lowerIndex + insertion.length, nextValue.length),
-  };
+  return replaceSelectionWithCompleteText(value, insertion, lowerIndex, upperIndex, maxLength, lowerIndex + insertion.length);
 }
 
 export function wrapBodySelectionWithBold(
@@ -69,11 +65,14 @@ export function wrapBodySelectionWithBold(
   const upperIndex = Math.max(start, end);
   const selectedText = value.slice(lowerIndex, upperIndex);
   const insertion = selectedText ? `**${selectedText}**` : "****";
-  const nextValue = `${value.slice(0, lowerIndex)}${insertion}${value.slice(upperIndex)}`.slice(0, maxLength);
-  return {
-    value: nextValue,
-    cursor: Math.min(lowerIndex + (selectedText ? insertion.length : 2), nextValue.length),
-  };
+  return replaceSelectionWithCompleteText(
+    value,
+    insertion,
+    lowerIndex,
+    upperIndex,
+    maxLength,
+    lowerIndex + (selectedText ? insertion.length : 2),
+  );
 }
 
 export function parseBodyMarkup(value: string): BodyMarkupSegment[][] {
@@ -117,6 +116,28 @@ function pushSegment(segments: BodyMarkupSegment[], text: string, bold: boolean)
   }
 
   segments.push({ text, bold });
+}
+
+function replaceSelectionWithCompleteText(
+  value: string,
+  insertion: string,
+  lowerIndex: number,
+  upperIndex: number,
+  maxLength: number,
+  cursor: number,
+): { value: string; cursor: number } {
+  const nextValue = `${value.slice(0, lowerIndex)}${insertion}${value.slice(upperIndex)}`;
+  if (nextValue.length > maxLength) {
+    return {
+      value,
+      cursor: lowerIndex,
+    };
+  }
+
+  return {
+    value: nextValue,
+    cursor,
+  };
 }
 
 function clampIndex(value: number, length: number): number {

@@ -28,3 +28,4 @@
 - Vercel GitHub auto-link can fail even when local `gh` auth works; a missing Vercel GitHub Login Connection blocks push-triggered Vercel integration but does not block authenticated CLI production deploys.
 - Vite apps deployed as GitHub project Pages need a repository-subpath base such as `/KARDS/`; keep that behind a Pages-only environment flag so Vercel root-path deploys still emit `/assets/...`.
 - Browser local-library workflows cannot persist ordinary absolute paths; store File System Access directory handles in IndexedDB and request permission again only when writing.
+- Multi-size card export must rerender the card at the target backing resolution; scaling an already-rendered `500x702` canvas creates a larger but softer file and breaks the export-size contract.

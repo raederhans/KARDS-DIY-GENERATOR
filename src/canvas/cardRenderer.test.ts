@@ -67,6 +67,17 @@ describe("card renderer output", () => {
     expect(calls.clearRect[0]).toEqual([0, 0, CARD_WIDTH, CARD_HEIGHT]);
   });
 
+  it("rerenders the card at a higher backing resolution for export scale", () => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, DEFAULT_CARD, null, { pixelScale: 2 });
+
+    expect(canvas.width).toBe(CARD_WIDTH * 2);
+    expect(canvas.height).toBe(CARD_HEIGHT * 2);
+    expect(calls.clearRect[0]).toEqual([0, 0, CARD_WIDTH * 2, CARD_HEIGHT * 2]);
+    expect(calls.scales).toContainEqual([2, 2]);
+  });
+
   it("does not add a generated dark edge frame around placeholder cards", () => {
     const { canvas, calls } = createFakeCanvas();
 
@@ -679,6 +690,7 @@ function createFakeCanvas() {
     operations: Array<{ kind: "drawImage" | "fillText"; value: unknown }>;
     fills: Array<{ fillStyle: unknown; rotation: number }>;
     paths: Array<{ fillStyle: unknown; points: CanvasPathPoint[] }>;
+    scales: Array<[number, number]>;
   } = {
     clearRect: [],
     drawImage: [],
@@ -691,6 +703,7 @@ function createFakeCanvas() {
     operations: [],
     fills: [],
     paths: [],
+    scales: [],
   };
 
   const gradient = { addColorStop() {} };
@@ -752,6 +765,7 @@ function createFakeCanvas() {
       transform = { ...transform, x: transform.x + x * transform.scaleX, y: transform.y + y * transform.scaleY };
     },
     scale(x: number, y = 1) {
+      calls.scales.push([x, y]);
       transform = { ...transform, scaleX: transform.scaleX * x, scaleY: transform.scaleY * y };
     },
     rotate(angle: number) {

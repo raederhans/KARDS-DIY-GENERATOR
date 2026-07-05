@@ -94,15 +94,21 @@ export async function writeBlobToDirectory(
 
 export async function saveLibraryDirectoryHandle(directory: LocalDirectoryHandle): Promise<void> {
   const database = await openLibraryDatabase();
-  await runStoreRequest(database, "readwrite", (store) => store.put(directory, LOCAL_LIBRARY_HANDLE_KEY));
-  database.close();
+  try {
+    await runStoreRequest(database, "readwrite", (store) => store.put(directory, LOCAL_LIBRARY_HANDLE_KEY));
+  } finally {
+    database.close();
+  }
 }
 
 export async function loadSavedLibraryDirectoryHandle(): Promise<LocalDirectoryHandle | null> {
   const database = await openLibraryDatabase();
-  const handle = await runStoreRequest<unknown>(database, "readonly", (store) => store.get(LOCAL_LIBRARY_HANDLE_KEY));
-  database.close();
-  return isLocalDirectoryHandle(handle) ? handle : null;
+  try {
+    const handle = await runStoreRequest<unknown>(database, "readonly", (store) => store.get(LOCAL_LIBRARY_HANDLE_KEY));
+    return isLocalDirectoryHandle(handle) ? handle : null;
+  } finally {
+    database.close();
+  }
 }
 
 export function createCardLibraryEntry(card: CardSpec): CardLibraryEntry {
@@ -186,10 +192,15 @@ function runStoreRequest<T>(
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const transaction = database.transaction(LOCAL_LIBRARY_STORE, mode);
+    let requestResult: T;
     const request = createRequest(transaction.objectStore(LOCAL_LIBRARY_STORE));
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      requestResult = request.result;
+    };
     request.onerror = () => reject(request.error ?? new Error("Could not update local library storage."));
+    transaction.oncomplete = () => resolve(requestResult);
     transaction.onerror = () => reject(transaction.error ?? new Error("Could not update local library storage."));
+    transaction.onabort = () => reject(transaction.error ?? new Error("Could not update local library storage."));
   });
 }
 

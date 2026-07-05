@@ -1,4 +1,6 @@
-import { CARD_HEIGHT, CARD_WIDTH } from "./canvas/cardRenderer";
+import { CARD_HEIGHT, CARD_WIDTH, renderCard } from "./canvas/cardRenderer";
+import type { RenderCardOptions } from "./canvas/renderAssets";
+import type { CardSpec } from "./types";
 
 export type CardExportFormat = "png" | "jpg" | "pdf";
 
@@ -8,6 +10,12 @@ export type CardExportOptions = {
   exposure: number;
   contrast: number;
   jpegQuality: number;
+};
+
+export type CardExportSource = {
+  card: CardSpec;
+  artworkImage?: HTMLImageElement | null;
+  renderOptions?: RenderCardOptions;
 };
 
 export const CARD_EXPORT_SCALES = [1, 2, 3] as const;
@@ -47,9 +55,12 @@ export function normalizeExportOptions(options: CardExportOptions): CardExportOp
 export async function createCardExportBlob(
   sourceCanvas: HTMLCanvasElement,
   options: CardExportOptions,
+  source?: CardExportSource,
 ): Promise<Blob> {
   const normalizedOptions = normalizeExportOptions(options);
-  const exportCanvas = renderAdjustedCanvas(sourceCanvas, normalizedOptions);
+  const exportCanvas = source
+    ? renderCardExportCanvas(source, normalizedOptions)
+    : renderAdjustedCanvas(sourceCanvas, normalizedOptions);
 
   if (normalizedOptions.format === "pdf") {
     return createPdfBlob(exportCanvas, normalizedOptions.jpegQuality);
@@ -62,12 +73,39 @@ export async function createCardExportBlob(
   );
 }
 
+function renderCardExportCanvas(source: CardExportSource, options: CardExportOptions): HTMLCanvasElement {
+  const exportCanvas = document.createElement("canvas");
+  renderCard(exportCanvas, source.card, source.artworkImage, {
+    ...source.renderOptions,
+    pixelScale: options.scale,
+  });
+  return applyCanvasAdjustments(exportCanvas, options);
+}
+
 function renderAdjustedCanvas(sourceCanvas: HTMLCanvasElement, options: CardExportOptions): HTMLCanvasElement {
   const dimensions = getExportDimensions(options.scale);
   const exportCanvas = document.createElement("canvas");
   exportCanvas.width = dimensions.width;
   exportCanvas.height = dimensions.height;
+  return drawAdjustedCanvas(sourceCanvas, exportCanvas, options);
+}
 
+function applyCanvasAdjustments(sourceCanvas: HTMLCanvasElement, options: CardExportOptions): HTMLCanvasElement {
+  if (options.exposure === 0 && options.contrast === 0) {
+    return sourceCanvas;
+  }
+
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = sourceCanvas.width;
+  exportCanvas.height = sourceCanvas.height;
+  return drawAdjustedCanvas(sourceCanvas, exportCanvas, options);
+}
+
+function drawAdjustedCanvas(
+  sourceCanvas: HTMLCanvasElement,
+  exportCanvas: HTMLCanvasElement,
+  options: CardExportOptions,
+): HTMLCanvasElement {
   const context = exportCanvas.getContext("2d");
   if (!context) {
     throw new Error("Could not create export canvas.");
@@ -76,7 +114,7 @@ function renderAdjustedCanvas(sourceCanvas: HTMLCanvasElement, options: CardExpo
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
   context.filter = `brightness(${100 + options.exposure}%) contrast(${100 + options.contrast}%)`;
-  context.drawImage(sourceCanvas, 0, 0, dimensions.width, dimensions.height);
+  context.drawImage(sourceCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
   context.filter = "none";
 
   return exportCanvas;

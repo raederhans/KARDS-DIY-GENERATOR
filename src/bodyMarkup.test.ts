@@ -36,15 +36,15 @@ describe("body markup", () => {
     });
   });
 
-  it("truncates inserted body markup at the body maximum length", () => {
+  it("keeps preset markup complete when the body maximum length is reached", () => {
     expect(insertBodyTextAtSelection("abcdef", "**部署**：", 3, 6, 8)).toEqual({
-      value: "abc**部署*",
-      cursor: 8,
+      value: "abcdef",
+      cursor: 3,
     });
   });
 
   it("localizes quick effect labels and inserted text", () => {
-    expect(getBodyEffectPresetLabel("zh", "destruction")).toBe("亡记");
+    expect(getBodyEffectPresetLabel("zh", "destruction")).toBe("亡计");
     expect(getBodyEffectPresetLabel("zh", "pincer")).toBe("钳击");
     expect(getBodyEffectPresetInsert("en", "pincer")).toBe("**Pincer**: ");
     expect(getBodyEffectPresetInsert("zh", "pincer")).toBe("**钳击**：");
@@ -61,6 +61,13 @@ describe("body markup", () => {
     expect(wrapBodySelectionWithBold("alpha", 5, 5, 30)).toEqual({
       value: "alpha****",
       cursor: 7,
+    });
+  });
+
+  it("leaves selected text unchanged when bold markers would exceed the body maximum length", () => {
+    expect(wrapBodySelectionWithBold("alpha beta", 6, 10, 10)).toEqual({
+      value: "alpha beta",
+      cursor: 6,
     });
   });
 });

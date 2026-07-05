@@ -68,6 +68,7 @@ export type RenderCardOptions = {
   fonts?: CardRenderFontSet;
   disablePrintWear?: boolean;
   language?: Language;
+  pixelScale?: number;
 };
 
 const SLOT_SET = new Set<string>(CARD_RENDER_ASSET_SLOTS);

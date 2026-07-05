@@ -7,6 +7,7 @@ import {
   getExportExtension,
   type CardExportFormat,
 } from "../exportCard";
+import type { RenderCardOptions } from "../canvas/renderAssets";
 import { localizeAssetPackName, localizeRuntimeMessage, type Language, type UiText } from "../i18n";
 import {
   LOCAL_LIBRARY_FILE_NAME,
@@ -31,6 +32,8 @@ type ProjectPanelProps = {
   defaultCard: CardSpec;
   onCardChange: (update: CardUpdate) => void;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  artworkImage: HTMLImageElement | null;
+  renderOptions?: RenderCardOptions;
   assetPackStatus: {
     name: string;
     imageCount: number;
@@ -59,6 +62,8 @@ export function ProjectPanel({
   defaultCard,
   onCardChange,
   canvasRef,
+  artworkImage,
+  renderOptions,
   assetPackStatus,
   assetPackError,
   referenceDiff,
@@ -111,7 +116,7 @@ export function ProjectPanel({
     if (!canvas) {
       return;
     }
-    if (assetPackStatus && !window.confirm(text.privatePngConfirm)) {
+    if (assetPackStatus && !window.confirm(text.privateCardConfirm)) {
       return;
     }
 
@@ -123,6 +128,10 @@ export function ProjectPanel({
         exposure: exportExposure,
         contrast: exportContrast,
         jpegQuality: 0.92,
+      }, {
+        card,
+        artworkImage,
+        renderOptions,
       });
       if (exportDirectory) {
         await writeBlobToDirectory(exportDirectory, fileName, blob);
@@ -199,14 +208,23 @@ export function ProjectPanel({
   }
 
   async function saveToLibrary() {
+    let savedLibraryCount: number | null = null;
+    let savedDirectoryName = "";
     try {
       setLibraryError(null);
       const directory = libraryDirectory ?? await pickWritableDirectory();
       const library = await saveCardToLocalLibrary(directory, card);
-      await saveLibraryDirectoryHandle(directory);
+      savedLibraryCount = library.cards.length;
+      savedDirectoryName = directory.name;
       setLibraryDirectory(directory);
       setLibraryStatus(text.librarySaved(directory.name, library.cards.length));
+      await saveLibraryDirectoryHandle(directory);
     } catch (error) {
+      if (savedLibraryCount !== null) {
+        setLibraryStatus(text.librarySaved(savedDirectoryName, savedLibraryCount));
+        setLibraryError(error instanceof Error ? error.message : text.libraryRememberFailed);
+        return;
+      }
       setLibraryError(error instanceof Error ? error.message : text.libraryUnavailable);
     }
   }
@@ -458,13 +476,15 @@ export function ProjectPanel({
   );
 }
 
-function downloadBlob(blob: Blob, fileName: string): void {
+export function downloadBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = fileName;
+  document.body?.append(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 export function safeFileName(value: string): string {

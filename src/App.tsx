@@ -392,6 +392,8 @@ function App() {
           defaultCard={localizedDefaultCard}
           onCardChange={updateCard}
           canvasRef={canvasRef}
+          artworkImage={artworkImage}
+          renderOptions={renderOptions}
           assetPackStatus={
             assetPack
               ? {

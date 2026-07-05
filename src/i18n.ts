@@ -78,6 +78,7 @@ export const UI_TEXT = {
       libraryReady: (name: string, count: number) => `${name}: ${count} saved records`,
       librarySaved: (name: string, count: number) => `${name}: saved, ${count} records`,
       libraryUnavailable: "Could not update the local card library.",
+      libraryRememberFailed: "Saved the card, but could not remember this folder for next time.",
       referenceTools: "Reference tools",
       referenceOn: "visible",
       referenceOff: "hidden",
@@ -103,7 +104,7 @@ export const UI_TEXT = {
       averageDiff: "Avg diff",
       overallDiff: "Overall diff",
       changed: "Changed pixels",
-      privatePngConfirm: "This PNG includes pixels from your local style pack. Keep the exported image private?",
+      privateCardConfirm: "This export includes pixels from your local style pack. Keep the exported file private?",
       projectTooLarge: "This card project is too large to open. Please choose a JSON file under 8 MB.",
       jsonOpenFailed: "This JSON file could not be opened as a card project.",
       disclaimer:
@@ -188,6 +189,7 @@ export const UI_TEXT = {
       libraryReady: (name: string, count: number) => `${name}：已有 ${count} 条记录`,
       librarySaved: (name: string, count: number) => `${name}：已保存，共 ${count} 条记录`,
       libraryUnavailable: "无法更新本地制卡库。",
+      libraryRememberFailed: "卡牌已保存，但无法为下次记住这个文件夹。",
       referenceTools: "参考工具",
       referenceOn: "显示中",
       referenceOff: "已隐藏",
@@ -213,7 +215,7 @@ export const UI_TEXT = {
       averageDiff: "平均差异",
       overallDiff: "整体差异",
       changed: "变化像素",
-      privatePngConfirm: "这个 PNG 包含你本地风格包里的像素。确认只私下保存这张导出图？",
+      privateCardConfirm: "这次导出包含你本地风格包里的像素。确认只私下保存这个文件？",
       projectTooLarge: "这个卡牌项目太大，无法打开。请选择 8 MB 以下的 JSON 文件。",
       jsonOpenFailed: "这个 JSON 文件无法作为卡牌项目打开。",
       disclaimer:

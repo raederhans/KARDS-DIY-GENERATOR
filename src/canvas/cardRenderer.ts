@@ -71,9 +71,13 @@ export function renderCard(
     return;
   }
 
-  canvas.width = CARD_WIDTH;
-  canvas.height = CARD_HEIGHT;
-  ctx.clearRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
+  const pixelScale = normalizePixelScale(options.pixelScale);
+  canvas.width = CARD_WIDTH * pixelScale;
+  canvas.height = CARD_HEIGHT * pixelScale;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (pixelScale !== 1) {
+    ctx.scale(pixelScale, pixelScale);
+  }
 
   const nation = getNation(card.nation);
   const rarity = getRarity(card.rarity);
@@ -1087,4 +1091,11 @@ function resolveRenderFonts(fonts: CardRenderFontSet | undefined): ResolvedRende
     stat: fonts?.stat ?? DEFAULT_NUMERIC_FONT,
     utility,
   };
+}
+
+function normalizePixelScale(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) {
+    return 1;
+  }
+  return Math.min(3, Math.max(1, Math.round(value)));
 }
