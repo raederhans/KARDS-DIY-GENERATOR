@@ -1,5 +1,41 @@
 # Worktree Registry
 
+## KARDS CI validation workflow
+
+- Worktree name/path: CI validation, `C:\Users\raede\Documents\KARDS-ci-validation`
+- Thread/task: add unified local validation entry and repository CI workflow
+- Base branch/base commit: `origin/main`, `94bee150ba122f3fcb92941245094f49c2435181`
+- Current branch/HEAD: `codex/kards-ci-validation`, CI validation commit
+- Task goal: add `npm run validate`, create a non-deploying GitHub Actions CI workflow, and keep Pages/Vercel deployment behavior unchanged
+- Status: integrated on `main` after closeout
+- Main changed files:
+  - Core files: none
+  - Config files: `package.json`, `.github/workflows/ci.yml`
+  - Docs files: `README.md`, `docs/active/_worktree_registry.md`
+  - Temporary/runtime files: none
+- Shared hotspot files touched: package scripts, GitHub Actions workflow config, README command docs, active worktree registry
+- Current diff summary:
+  - Adds `validate` as `npm run typecheck && npm test -- --run && npm run build`
+  - Adds standalone CI on pull requests, pushes to `main`, and manual dispatch
+  - Keeps CI on Node 22 with `npm ci` and `npm run validate`
+  - Keeps visual smoke out of public CI because it depends on private `.runtime` calibration assets
+  - Updates README Useful checks to mention `npm run validate`
+- Commit state: committed as the CI validation change and pushed to `origin/main`
+- Base/main divergence: branch starts from current `origin/main`; main checkout has unrelated source WIP and is intentionally not used for validation
+- Potential conflict/overlap:
+  - Direct overlap with future changes to `package.json`, GitHub Actions workflows, README command docs, or this registry
+  - No overlap with current dirty source WIP in the main checkout
+- Validation run:
+  - `git diff --check` passed; only local CRLF normalization warnings were reported
+  - `npm run validate` initially stopped before validation because dependencies were not installed in the temporary worktree
+  - `npm ci` passed, installing local dependencies without changing dependency manifests
+  - `npm run validate` passed after install: typecheck passed, 14 Vitest files / 113 tests passed, production build passed
+- Tests not run:
+  - `npm run smoke:visual:kards` was not run because it depends on private `.runtime` calibration assets and is intentionally outside public CI
+  - GitHub Actions was not run locally; the workflow will run after push or on pull requests
+- Recommended integration order: merged this small CI/config change before future branches rely on the validation entry
+- Next action: temporary worktree can be removed after push because the branch commit is recoverable from main history
+
 ## KARDS automation follow-up regression closeout
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

@@ -77,12 +77,14 @@ npm ci
 Useful checks:
 
 ```bash
+npm run validate
 npm run typecheck
 npm test -- --run
 npm run build
 ```
 
-There is no `npm run validate` script at the moment.
+`npm run validate` is the standard local gate for repository-safe checks. It
+does not run the private visual smoke workflow.
 
 ## Safety Boundary
 

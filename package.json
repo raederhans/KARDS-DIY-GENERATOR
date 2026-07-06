@@ -8,7 +8,8 @@
     "build": "npm run typecheck && vite build",
     "test": "vitest run",
     "smoke:visual:kards": "node tools/kards_browser_visual_smoke.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json --pretty false && tsc --noEmit -p tsconfig.node.json --pretty false"
+    "typecheck": "tsc --noEmit -p tsconfig.json --pretty false && tsc --noEmit -p tsconfig.node.json --pretty false",
+    "validate": "npm run typecheck && npm test -- --run && npm run build"
   },
   "dependencies": {
     "@fontsource/libre-franklin": "^5.2.8",
