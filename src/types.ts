@@ -10,12 +10,27 @@ export type CardKind =
 
 export type ArtworkSource = "upload" | "none";
 
+export type CardTextAppearance = {
+  fontScale: number;
+  scaleX: number;
+  scaleY: number;
+  offsetX: number;
+  offsetY: number;
+};
+
 export type CardAppearance = {
   texture: {
     seed: number;
     intensity: number;
     randomness: number;
     mottle: number;
+  };
+  text: {
+    title: CardTextAppearance & {
+      bold: boolean;
+    };
+    keywords: CardTextAppearance;
+    body: CardTextAppearance;
   };
 };
 

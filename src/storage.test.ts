@@ -8,11 +8,20 @@ describe("card draft storage", () => {
     const card: CardSpec = {
       ...DEFAULT_CARD,
       appearance: {
+        ...DEFAULT_CARD.appearance,
         texture: {
           seed: 456,
           intensity: 2.1,
           randomness: 1.7,
           mottle: 1.2,
+        },
+        text: {
+          ...DEFAULT_CARD.appearance.text,
+          body: {
+            ...DEFAULT_CARD.appearance.text.body,
+            fontScale: 1.2,
+            offsetY: -8,
+          },
         },
       },
       artwork: {
@@ -28,6 +37,7 @@ describe("card draft storage", () => {
     expect(draft.artwork.dataUrl).toBeUndefined();
     expect(draft.artwork.crop).toEqual({ x: 5, y: 6, scale: 1.2 });
     expect(draft.appearance.texture).toEqual(card.appearance.texture);
+    expect(draft.appearance.text.body).toEqual(card.appearance.text.body);
   });
 
   it("reports autosave failure instead of throwing when storage quota is exceeded", () => {

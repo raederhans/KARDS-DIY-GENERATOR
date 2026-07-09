@@ -505,6 +505,75 @@ describe("card renderer output", () => {
     expect(deploymentStyle?.font).toContain("Yantramanav");
   });
 
+  it("applies serialized title typography controls on unit and command title paths", () => {
+    const unitCanvas = createFakeCanvas();
+    renderCard(
+      unitCanvas.canvas,
+      {
+        ...DEFAULT_CARD,
+        title: "T-70",
+        appearance: {
+          ...DEFAULT_CARD.appearance,
+          text: {
+            ...DEFAULT_CARD.appearance.text,
+            title: {
+              fontScale: 1.2,
+              scaleX: 0.9,
+              scaleY: 1.1,
+              offsetX: 14,
+              offsetY: -5,
+              bold: false,
+            },
+          },
+        },
+      },
+      null,
+    );
+
+    const unitTitleStyle = unitCanvas.calls.fillTextStyles.find((call) => call.text === "T-70");
+    const unitTitleCall = unitCanvas.calls.fillText.find(([text]) => text === "T-70");
+    expect(unitTitleStyle?.font).toContain("600 54px");
+    expect(unitTitleStyle?.scaleX).toBeCloseTo(1.12 * 0.9);
+    expect(unitTitleStyle?.scaleY).toBeCloseTo(1.1);
+    expect(unitTitleCall?.[1]).toBe(279);
+    expect(unitTitleCall?.[2]).toBe(51);
+
+    const commandCanvas = createFakeCanvas();
+    renderCard(
+      commandCanvas.canvas,
+      {
+        ...DEFAULT_CARD,
+        kind: "order",
+        title: "PLAN D",
+        keywords: [],
+        keywordLine: "",
+        appearance: {
+          ...DEFAULT_CARD.appearance,
+          text: {
+            ...DEFAULT_CARD.appearance.text,
+            title: {
+              fontScale: 1.1,
+              scaleX: 1.05,
+              scaleY: 0.95,
+              offsetX: -20,
+              offsetY: 8,
+              bold: true,
+            },
+          },
+        },
+      },
+      null,
+    );
+
+    const commandTitleStyle = commandCanvas.calls.fillTextStyles.find((call) => call.text === "PLAN D");
+    const commandTitleCall = commandCanvas.calls.fillText.find(([text]) => text === "PLAN D");
+    expect(commandTitleStyle?.font).toContain("800 44px");
+    expect(commandTitleStyle?.scaleX).toBeCloseTo(0.98 * 1.05);
+    expect(commandTitleStyle?.scaleY).toBeCloseTo(0.95);
+    expect(commandTitleCall?.[1]).toBe(230);
+    expect(commandTitleCall?.[2]).toBe(546);
+  });
+
   it("uses compact numeric styling for two-digit costs and unit stats", () => {
     const { canvas, calls } = createFakeCanvas();
 
@@ -596,6 +665,51 @@ describe("card renderer output", () => {
     expect(emphasizedStyle?.font).toContain("800 24px");
     expect(plainStyle?.font).toContain("500 24px");
     expect(calls.fillText.some(([text]) => String(text).includes("**"))).toBe(false);
+  });
+
+  it("applies serialized keyword and body typography controls to whole text groups", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const card: CardSpec = {
+      ...DEFAULT_CARD,
+      keywords: ["guard"],
+      body: "alpha beta",
+      appearance: {
+        ...DEFAULT_CARD.appearance,
+        text: {
+          ...DEFAULT_CARD.appearance.text,
+          keywords: {
+            fontScale: 1.2,
+            scaleX: 0.85,
+            scaleY: 1.1,
+            offsetX: -16,
+            offsetY: 6,
+          },
+          body: {
+            fontScale: 1.25,
+            scaleX: 0.8,
+            scaleY: 1.15,
+            offsetX: 18,
+            offsetY: -10,
+          },
+        },
+      },
+    };
+
+    renderCard(canvas, card, null);
+
+    const keywordStyle = calls.fillTextStyles.find((call) => call.text === "Guard");
+    const keywordCall = calls.fillText.find(([text]) => text === "Guard");
+    const bodyStyle = calls.fillTextStyles.find((call) => call.text === "alpha beta");
+    const bodyCall = calls.fillText.find(([text]) => text === "alpha beta");
+    expect(keywordStyle?.font).toContain("32px");
+    expect(keywordStyle?.scaleX).toBeCloseTo(1.02 * 0.85);
+    expect(keywordStyle?.scaleY).toBeCloseTo(1.1);
+    expect(keywordCall?.[1]).toBe(234);
+    expect(keywordCall?.[2]).toBe(586);
+    expect(bodyStyle?.font).toContain("30px");
+    expect(bodyStyle?.scaleX).toBeCloseTo(0.96 * 0.8);
+    expect(bodyStyle?.scaleY).toBeCloseTo(1.15);
+    expect(bodyCall?.[2]).toBe(606);
   });
 
   it("keeps CJK body copy on the same line after an emphasized effect label when it fits", () => {

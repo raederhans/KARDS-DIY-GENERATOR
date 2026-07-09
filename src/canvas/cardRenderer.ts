@@ -532,6 +532,10 @@ function drawText(
   fonts: ResolvedRenderFonts,
   options: RenderCardOptions,
 ): void {
+  const textAppearance = card.appearance?.text ?? DEFAULT_CARD_APPEARANCE.text;
+  const titleAppearance = textAppearance.title ?? DEFAULT_CARD_APPEARANCE.text.title;
+  const keywordAppearance = textAppearance.keywords ?? DEFAULT_CARD_APPEARANCE.text.keywords;
+  const bodyAppearance = textAppearance.body ?? DEFAULT_CARD_APPEARANCE.text.body;
   const keywordLabels = resolveCardKeywordIds(card)
     .map((keywordId) => {
       const preset = getKeywordPreset(keywordId);
@@ -545,53 +549,70 @@ function drawText(
 
   if (layout.title) {
     ctx.fillStyle = shouldUseDarkTitle(card.nation) ? DARK : LIGHT;
+    const baseScaleX = getTextScale(card.title, 1.12, 1.02);
     fitText(
       ctx,
       card.title.toUpperCase(),
-      layout.title.x,
-      layout.title.y,
+      layout.title.x + titleAppearance.offsetX,
+      layout.title.y + titleAppearance.offsetY,
       layout.title.maxWidth,
-      layout.title.size,
+      Math.round(layout.title.size * titleAppearance.fontScale),
       fonts.title,
-      getTextScale(card.title, 1.12, 1.02),
+      baseScaleX * titleAppearance.scaleX,
+      titleAppearance.scaleY,
+      titleAppearance.bold ? 800 : 600,
     );
   } else if (layout.text.titleY !== undefined) {
     ctx.fillStyle = DARK;
     const isCommandTemplate = layout.template === "command";
+    const baseScaleX = isCommandTemplate ? 0.98 : getTextScale(card.title, 1.08, 1.02);
     fitText(
       ctx,
       card.title.toUpperCase(),
-      250,
-      layout.text.titleY,
+      250 + titleAppearance.offsetX,
+      layout.text.titleY + titleAppearance.offsetY,
       isCommandTemplate ? 420 : 340,
-      isCommandTemplate ? 40 : 36,
+      Math.round((isCommandTemplate ? 40 : 36) * titleAppearance.fontScale),
       fonts.title,
-      isCommandTemplate ? 0.98 : getTextScale(card.title, 1.08, 1.02),
+      baseScaleX * titleAppearance.scaleX,
+      titleAppearance.scaleY,
+      titleAppearance.bold ? 800 : 600,
     );
   }
 
   if (keywordLabels.length > 0) {
-    drawKeywordLabels(ctx, keywordLabels, 250, layout.text.keywordY, layout.text.maxWidth, fonts.keyword);
+    drawKeywordLabels(
+      ctx,
+      keywordLabels,
+      250 + keywordAppearance.offsetX,
+      layout.text.keywordY + keywordAppearance.offsetY,
+      layout.text.maxWidth,
+      fonts.keyword,
+      keywordAppearance,
+    );
   }
 
   ctx.fillStyle = DARK;
   const bodyFont = layout.template === "command" ? fonts.utility : fonts.body;
-  const bodyScale = layout.template === "command" ? 0.92 : getTextScale(card.body, 0.96, 1);
+  const bodyScale = (layout.template === "command" ? 0.92 : getTextScale(card.body, 0.96, 1)) * bodyAppearance.scaleX;
   const bodyWeights = layout.template === "command" ? { regular: 400, bold: 800 } : undefined;
-  ctx.font = `${bodyWeights?.regular ?? 500} 24px ${bodyFont}`;
+  const bodyFontSize = Math.round(24 * bodyAppearance.fontScale);
+  ctx.font = `${bodyWeights?.regular ?? 500} ${bodyFontSize}px ${bodyFont}`;
   const bodyY = keywordLabels.length > 0 ? layout.text.bodyY : layout.text.keywordY;
   drawMarkedBodyText(
     ctx,
     card.body,
-    250,
-    bodyY,
+    250 + bodyAppearance.offsetX,
+    bodyY + bodyAppearance.offsetY,
     layout.text.maxWidth,
-    layout.text.bodyBottomY,
+    layout.text.bodyBottomY + bodyAppearance.offsetY,
     layout.text.maxLines,
     layout.text.lineHeight,
     bodyFont,
     bodyScale,
+    bodyAppearance.scaleY,
     bodyWeights,
+    bodyFontSize,
   );
   ctx.restore();
 }
@@ -603,13 +624,16 @@ function drawKeywordLabels(
   y: number,
   maxWidth: number,
   fontFamily: string,
+  appearance: CardSpec["appearance"]["text"]["keywords"],
 ): void {
   const keywordLine = keywordLabels.join(", ");
-  const scaleX = getTextScale(keywordLine, 1.02, 1);
-  const fontSize = getFittedKeywordFontSize(ctx, keywordLine, maxWidth, 27, 18, fontFamily, scaleX);
+  const scaleX = getTextScale(keywordLine, 1.02, 1) * appearance.scaleX;
+  const initialSize = Math.round(27 * appearance.fontScale);
+  const minimumSize = Math.max(10, Math.round(18 * Math.min(1, appearance.fontScale)));
+  const fontSize = getFittedKeywordFontSize(ctx, keywordLine, maxWidth, initialSize, minimumSize, fontFamily, scaleX);
   ctx.fillStyle = DARK;
   ctx.font = `800 ${fontSize}px ${fontFamily}`;
-  fillScaledText(ctx, keywordLine, centerX, y, scaleX);
+  fillScaledText(ctx, keywordLine, centerX, y, scaleX, appearance.scaleY);
 }
 
 function getFittedKeywordFontSize(
@@ -1275,10 +1299,12 @@ function fitText(
   initialSize: number,
   fontFamily = DEFAULT_TEXT_FONT,
   scaleX = 1,
+  scaleY = 1,
+  fontWeight = 800,
 ): void {
-  const size = getFittedFontSize(ctx, text, maxWidth, initialSize, 18, fontFamily, scaleX);
-  ctx.font = `800 ${size}px ${fontFamily}`;
-  fillScaledText(ctx, truncateToWidth(ctx, text, maxWidth, scaleX), x, y, scaleX);
+  const size = getFittedFontSize(ctx, text, maxWidth, initialSize, 18, fontFamily, scaleX, fontWeight);
+  ctx.font = `${fontWeight} ${size}px ${fontFamily}`;
+  fillScaledText(ctx, truncateToWidth(ctx, text, maxWidth, scaleX), x, y, scaleX, scaleY);
 }
 
 export function getFittedFontSize(
@@ -1289,10 +1315,11 @@ export function getFittedFontSize(
   minimumSize: number,
   fontFamily = DEFAULT_TEXT_FONT,
   scaleX = 1,
+  fontWeight = 800,
 ): number {
   let size = initialSize;
   while (size > minimumSize) {
-    ctx.font = `800 ${size}px ${fontFamily}`;
+    ctx.font = `${fontWeight} ${size}px ${fontFamily}`;
     if (measureScaledText(ctx, text, scaleX) <= maxWidth) {
       break;
     }

@@ -18,14 +18,28 @@ export function drawMarkedBodyText(
   baseLineHeight: number,
   fontFamily: string,
   scaleX = 1,
+  scaleY = 1,
   weights: BodyTextWeights = DEFAULT_BODY_TEXT_WEIGHTS,
+  baseFontSize = BODY_BASE_FONT_SIZE,
 ): void {
-  const layout = fitBodyMarkupLayout(ctx, text, maxWidth, bodyBottomY - y, maxLinesCap, baseLineHeight, fontFamily, scaleX, weights);
+  const layout = fitBodyMarkupLayout(
+    ctx,
+    text,
+    maxWidth,
+    bodyBottomY - y,
+    maxLinesCap,
+    baseLineHeight,
+    fontFamily,
+    scaleX,
+    scaleY,
+    weights,
+    baseFontSize,
+  );
   const previousTextAlign = ctx.textAlign;
   ctx.textAlign = "left";
 
   layout.lines.forEach((line, index) => {
-    drawBodyMarkupLine(ctx, line, centerX, y + index * layout.lineHeight, fontFamily, layout.fontSize, scaleX, weights);
+    drawBodyMarkupLine(ctx, line, centerX, y + index * layout.lineHeight, fontFamily, layout.fontSize, scaleX, scaleY, weights);
   });
   ctx.textAlign = previousTextAlign;
 }
@@ -39,21 +53,25 @@ function fitBodyMarkupLayout(
   baseLineHeight: number,
   fontFamily: string,
   scaleX: number,
+  scaleY: number,
   weights: BodyTextWeights,
+  baseFontSize: number,
 ): { lines: BodyMarkupSegment[][]; fontSize: number; lineHeight: number } {
+  const initialFontSize = Math.max(10, Math.round(baseFontSize));
+  const minimumFontSize = Math.min(BODY_MIN_FONT_SIZE, initialFontSize);
   let fallbackLayout = createWrappedBodyMarkupLines(
     ctx,
     text,
     maxWidth,
-    resolveMaxLines(maxHeight, resolveBodyLineHeight(BODY_MIN_FONT_SIZE, baseLineHeight), maxLinesCap),
+    resolveMaxLines(maxHeight, resolveScaledBodyLineHeight(minimumFontSize, baseLineHeight, scaleY), maxLinesCap),
     fontFamily,
-    BODY_MIN_FONT_SIZE,
+    minimumFontSize,
     scaleX,
     weights,
   );
 
-  for (let fontSize = BODY_BASE_FONT_SIZE; fontSize >= BODY_MIN_FONT_SIZE; fontSize -= 1) {
-    const lineHeight = resolveBodyLineHeight(fontSize, baseLineHeight);
+  for (let fontSize = initialFontSize; fontSize >= minimumFontSize; fontSize -= 1) {
+    const lineHeight = resolveScaledBodyLineHeight(fontSize, baseLineHeight, scaleY);
     const maxLines = resolveMaxLines(maxHeight, lineHeight, maxLinesCap);
     const layout = createWrappedBodyMarkupLines(ctx, text, maxWidth, maxLines, fontFamily, fontSize, scaleX, weights);
     if (!layout.didOverflow) {
@@ -64,8 +82,8 @@ function fitBodyMarkupLayout(
 
   return {
     lines: fallbackLayout.lines,
-    fontSize: BODY_MIN_FONT_SIZE,
-    lineHeight: resolveBodyLineHeight(BODY_MIN_FONT_SIZE, baseLineHeight),
+    fontSize: minimumFontSize,
+    lineHeight: resolveScaledBodyLineHeight(minimumFontSize, baseLineHeight, scaleY),
   };
 }
 
@@ -77,6 +95,7 @@ function drawBodyMarkupLine(
   fontFamily: string,
   fontSize: number,
   scaleX: number,
+  scaleY: number,
   weights: BodyTextWeights,
 ): void {
   const lineWidth = measureBodyMarkupLine(ctx, line, fontFamily, fontSize, scaleX, weights);
@@ -88,7 +107,7 @@ function drawBodyMarkupLine(
     }
 
     setBodySegmentFont(ctx, fontFamily, fontSize, segment.bold, weights);
-    fillScaledText(ctx, segment.text, cursorX, y, scaleX);
+    fillScaledText(ctx, segment.text, cursorX, y, scaleX, scaleY);
     cursorX += measureScaledText(ctx, segment.text, scaleX);
   }
 }
@@ -318,19 +337,23 @@ function resolveBodyLineHeight(fontSize: number, baseLineHeight: number): number
   return Math.max(fontSize + 1, Math.round(baseLineHeight - (BODY_BASE_FONT_SIZE - fontSize) * 1.4));
 }
 
+function resolveScaledBodyLineHeight(fontSize: number, baseLineHeight: number, scaleY: number): number {
+  return Math.max(fontSize + 1, Math.round(resolveBodyLineHeight(fontSize, baseLineHeight) * scaleY));
+}
+
 function resolveMaxLines(maxHeight: number, lineHeight: number, maxLinesCap: number): number {
   return Math.max(1, Math.min(maxLinesCap, Math.floor(maxHeight / lineHeight) + 1));
 }
 
-function fillScaledText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, scaleX = 1): void {
-  if (scaleX === 1) {
+function fillScaledText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, scaleX = 1, scaleY = 1): void {
+  if (scaleX === 1 && scaleY === 1) {
     ctx.fillText(text, x, y);
     return;
   }
 
   ctx.save();
   ctx.translate(x, y);
-  ctx.scale(scaleX, 1);
+  ctx.scale(scaleX, scaleY);
   ctx.fillText(text, 0, 0);
   ctx.restore();
 }

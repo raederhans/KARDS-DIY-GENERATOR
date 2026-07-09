@@ -15,12 +15,44 @@ export const DEFAULT_CARD_APPEARANCE: CardAppearance = {
     randomness: 1.55,
     mottle: 1.35,
   },
+  text: {
+    title: {
+      fontScale: 1,
+      scaleX: 1,
+      scaleY: 1,
+      offsetX: 0,
+      offsetY: 0,
+      bold: true,
+    },
+    keywords: {
+      fontScale: 1,
+      scaleX: 1,
+      scaleY: 1,
+      offsetX: 0,
+      offsetY: 0,
+    },
+    body: {
+      fontScale: 1,
+      scaleX: 1,
+      scaleY: 1,
+      offsetX: 0,
+      offsetY: 0,
+    },
+  },
 };
 
 export const CARD_TEXTURE_BOUNDS = {
   intensity: { min: 0.35, max: 3 },
   randomness: { min: 0.5, max: 3 },
   mottle: { min: 0.35, max: 3 },
+} as const;
+
+export const CARD_TEXT_APPEARANCE_BOUNDS = {
+  fontScale: { min: 0.65, max: 1.45 },
+  scaleX: { min: 0.75, max: 1.25 },
+  scaleY: { min: 0.75, max: 1.25 },
+  offsetX: { min: -80, max: 80 },
+  offsetY: { min: -80, max: 80 },
 } as const;
 
 export const DEFAULT_CARD: CardSpec = {
@@ -130,6 +162,7 @@ function normalizeArtwork(artwork: Record<string, unknown>, crop: Record<string,
 
 function normalizeCardAppearance(appearance: Record<string, unknown>): CardAppearance {
   const texture = isRecord(appearance.texture) ? appearance.texture : {};
+  const text = isRecord(appearance.text) ? appearance.text : {};
 
   return {
     texture: {
@@ -153,6 +186,60 @@ function normalizeCardAppearance(appearance: Record<string, unknown>): CardAppea
         DEFAULT_CARD_APPEARANCE.texture.mottle,
       ),
     },
+    text: {
+      title: normalizeTitleTextAppearance(isRecord(text.title) ? text.title : {}),
+      keywords: normalizeTextAppearance("keywords", isRecord(text.keywords) ? text.keywords : {}),
+      body: normalizeTextAppearance("body", isRecord(text.body) ? text.body : {}),
+    },
+  };
+}
+
+function normalizeTitleTextAppearance(text: Record<string, unknown>): CardAppearance["text"]["title"] {
+  const defaultTitle = DEFAULT_CARD_APPEARANCE.text.title;
+
+  return {
+    ...normalizeTextAppearance("title", text),
+    bold: typeof text.bold === "boolean" ? text.bold : defaultTitle.bold,
+  };
+}
+
+function normalizeTextAppearance(
+  role: keyof CardAppearance["text"],
+  text: Record<string, unknown>,
+): CardAppearance["text"]["body"] {
+  const defaultText = DEFAULT_CARD_APPEARANCE.text[role];
+
+  return {
+    fontScale: clampNumber(
+      text.fontScale,
+      CARD_TEXT_APPEARANCE_BOUNDS.fontScale.min,
+      CARD_TEXT_APPEARANCE_BOUNDS.fontScale.max,
+      defaultText.fontScale,
+    ),
+    scaleX: clampNumber(
+      text.scaleX,
+      CARD_TEXT_APPEARANCE_BOUNDS.scaleX.min,
+      CARD_TEXT_APPEARANCE_BOUNDS.scaleX.max,
+      defaultText.scaleX,
+    ),
+    scaleY: clampNumber(
+      text.scaleY,
+      CARD_TEXT_APPEARANCE_BOUNDS.scaleY.min,
+      CARD_TEXT_APPEARANCE_BOUNDS.scaleY.max,
+      defaultText.scaleY,
+    ),
+    offsetX: clampNumber(
+      text.offsetX,
+      CARD_TEXT_APPEARANCE_BOUNDS.offsetX.min,
+      CARD_TEXT_APPEARANCE_BOUNDS.offsetX.max,
+      defaultText.offsetX,
+    ),
+    offsetY: clampNumber(
+      text.offsetY,
+      CARD_TEXT_APPEARANCE_BOUNDS.offsetY.min,
+      CARD_TEXT_APPEARANCE_BOUNDS.offsetY.max,
+      defaultText.offsetY,
+    ),
   };
 }
 

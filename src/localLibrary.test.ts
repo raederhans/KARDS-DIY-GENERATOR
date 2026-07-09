@@ -9,11 +9,21 @@ describe("local card library records", () => {
       ...DEFAULT_CARD,
       title: "Library Tank",
       appearance: {
+        ...DEFAULT_CARD.appearance,
         texture: {
           seed: 789,
           intensity: 2,
           randomness: 1.6,
           mottle: 1.4,
+        },
+        text: {
+          ...DEFAULT_CARD.appearance.text,
+          title: {
+            ...DEFAULT_CARD.appearance.text.title,
+            fontScale: 1.15,
+            scaleX: 0.9,
+            offsetX: 12,
+          },
         },
       },
       artwork: {
@@ -30,6 +40,7 @@ describe("local card library records", () => {
     expect(entry.card.artwork.dataUrl).toBeUndefined();
     expect(entry.card.artwork.crop).toEqual({ x: 4, y: 5, scale: 1.1 });
     expect(entry.card.appearance.texture).toEqual(card.appearance.texture);
+    expect(entry.card.appearance.text.title).toEqual(card.appearance.text.title);
   });
 
   it("normalizes old or damaged library files instead of trusting raw JSON", () => {

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { CARD_TEXT_APPEARANCE_BOUNDS } from "../cardModel";
 import { CARD_KINDS, NATIONS, RARITIES, SETS, getKind } from "../presets";
 import { translateKeywordLabel, translatePresetLabel, type Language, type UiText } from "../i18n";
 import type { CardSpec, CardUpdate } from "../types";
@@ -103,6 +104,25 @@ export function FieldPanel({
       ...currentCard,
       keywords: keywordIds,
       keywordLine: formatKeywordLineFromIds(keywordIds),
+    }));
+  }
+
+  function updateTextAppearance(
+    role: keyof CardSpec["appearance"]["text"],
+    next: Partial<CardSpec["appearance"]["text"]["title"]>,
+  ) {
+    onCardChange((currentCard) => ({
+      ...currentCard,
+      appearance: {
+        ...currentCard.appearance,
+        text: {
+          ...currentCard.appearance.text,
+          [role]: {
+            ...currentCard.appearance.text[role],
+            ...next,
+          },
+        },
+      },
     }));
   }
 
@@ -418,6 +438,52 @@ export function FieldPanel({
           onChange={(event) => update({ title: event.target.value })}
         />
       </label>
+      <div className="text-appearance-grid" aria-label={text.titleAppearance}>
+        <TextAppearanceRange
+          label={text.fontSize}
+          name="card-title-font-scale"
+          value={card.appearance.text.title.fontScale}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.fontScale}
+          onChange={(value) => updateTextAppearance("title", { fontScale: value })}
+        />
+        <TextAppearanceRange
+          label={text.horizontalScale}
+          name="card-title-scale-x"
+          value={card.appearance.text.title.scaleX}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.scaleX}
+          onChange={(value) => updateTextAppearance("title", { scaleX: value })}
+        />
+        <TextAppearanceRange
+          label={text.verticalScale}
+          name="card-title-scale-y"
+          value={card.appearance.text.title.scaleY}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.scaleY}
+          onChange={(value) => updateTextAppearance("title", { scaleY: value })}
+        />
+        <TextAppearanceRange
+          label={text.offsetX}
+          name="card-title-offset-x"
+          value={card.appearance.text.title.offsetX}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.offsetX}
+          onChange={(value) => updateTextAppearance("title", { offsetX: value })}
+        />
+        <TextAppearanceRange
+          label={text.offsetY}
+          name="card-title-offset-y"
+          value={card.appearance.text.title.offsetY}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.offsetY}
+          onChange={(value) => updateTextAppearance("title", { offsetY: value })}
+        />
+        <label className="text-toggle">
+          <span>{text.titleBold}</span>
+          <input
+            name="card-title-bold"
+            type="checkbox"
+            checked={card.appearance.text.title.bold}
+            onChange={(event) => updateTextAppearance("title", { bold: event.target.checked })}
+          />
+        </label>
+      </div>
 
       <div className="field-block keyword-field">
         <span>{text.keywords}</span>
@@ -462,6 +528,43 @@ export function FieldPanel({
           ))}
         </select>
       </div>
+      <div className="text-appearance-grid" aria-label={text.keywordAppearance}>
+        <TextAppearanceRange
+          label={text.fontSize}
+          name="card-keyword-font-scale"
+          value={card.appearance.text.keywords.fontScale}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.fontScale}
+          onChange={(value) => updateTextAppearance("keywords", { fontScale: value })}
+        />
+        <TextAppearanceRange
+          label={text.horizontalScale}
+          name="card-keyword-scale-x"
+          value={card.appearance.text.keywords.scaleX}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.scaleX}
+          onChange={(value) => updateTextAppearance("keywords", { scaleX: value })}
+        />
+        <TextAppearanceRange
+          label={text.verticalScale}
+          name="card-keyword-scale-y"
+          value={card.appearance.text.keywords.scaleY}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.scaleY}
+          onChange={(value) => updateTextAppearance("keywords", { scaleY: value })}
+        />
+        <TextAppearanceRange
+          label={text.offsetX}
+          name="card-keyword-offset-x"
+          value={card.appearance.text.keywords.offsetX}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.offsetX}
+          onChange={(value) => updateTextAppearance("keywords", { offsetX: value })}
+        />
+        <TextAppearanceRange
+          label={text.offsetY}
+          name="card-keyword-offset-y"
+          value={card.appearance.text.keywords.offsetY}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.offsetY}
+          onChange={(value) => updateTextAppearance("keywords", { offsetY: value })}
+        />
+      </div>
 
       <div className="field-block body-field">
         <span>{text.body}</span>
@@ -482,6 +585,43 @@ export function FieldPanel({
           rows={5}
           maxLength={BODY_MAX_LENGTH}
           onChange={(event) => update({ body: event.target.value })}
+        />
+      </div>
+      <div className="text-appearance-grid" aria-label={text.bodyAppearance}>
+        <TextAppearanceRange
+          label={text.fontSize}
+          name="card-body-font-scale"
+          value={card.appearance.text.body.fontScale}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.fontScale}
+          onChange={(value) => updateTextAppearance("body", { fontScale: value })}
+        />
+        <TextAppearanceRange
+          label={text.horizontalScale}
+          name="card-body-scale-x"
+          value={card.appearance.text.body.scaleX}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.scaleX}
+          onChange={(value) => updateTextAppearance("body", { scaleX: value })}
+        />
+        <TextAppearanceRange
+          label={text.verticalScale}
+          name="card-body-scale-y"
+          value={card.appearance.text.body.scaleY}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.scaleY}
+          onChange={(value) => updateTextAppearance("body", { scaleY: value })}
+        />
+        <TextAppearanceRange
+          label={text.offsetX}
+          name="card-body-offset-x"
+          value={card.appearance.text.body.offsetX}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.offsetX}
+          onChange={(value) => updateTextAppearance("body", { offsetX: value })}
+        />
+        <TextAppearanceRange
+          label={text.offsetY}
+          name="card-body-offset-y"
+          value={card.appearance.text.body.offsetY}
+          bounds={CARD_TEXT_APPEARANCE_BOUNDS.offsetY}
+          onChange={(value) => updateTextAppearance("body", { offsetY: value })}
         />
       </div>
 
@@ -627,6 +767,40 @@ function NumberField({
         max={max}
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function TextAppearanceRange({
+  label,
+  name,
+  value,
+  bounds,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  value: number;
+  bounds: { min: number; max: number };
+  onChange: (value: number) => void;
+}) {
+  const displayValue = bounds.min < 0 ? `${value > 0 ? "+" : ""}${value}` : `${Math.round(value * 100)}%`;
+
+  return (
+    <label className="text-appearance-control">
+      <span>
+        <span>{label}</span>
+        <strong>{displayValue}</strong>
+      </span>
+      <input
+        name={name}
+        type="range"
+        min={bounds.min}
+        max={bounds.max}
+        step={bounds.min < 0 ? "1" : "0.05"}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
       />
     </label>
   );

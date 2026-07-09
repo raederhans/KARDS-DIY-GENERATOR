@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CARD, normalizeCardSpec, sanitizeInteger } from "./cardModel";
+import { CARD_TEXT_APPEARANCE_BOUNDS, DEFAULT_CARD, normalizeCardSpec, sanitizeInteger } from "./cardModel";
 import { BODY_MAX_LENGTH, MAX_DATA_URL_LENGTH } from "./limits";
 
 describe("sanitizeInteger", () => {
@@ -40,6 +40,11 @@ describe("normalizeCardSpec", () => {
           randomness: 2.2,
           mottle: 1.8,
         },
+        text: {
+          title: { fontScale: 1.2, scaleX: 0.9, scaleY: 1.1, offsetX: 12, offsetY: -6, bold: false },
+          keywords: { fontScale: 0.85, scaleX: 1.15, scaleY: 0.95, offsetX: -10, offsetY: 4 },
+          body: { fontScale: 1.1, scaleX: 0.92, scaleY: 1.08, offsetX: 6, offsetY: -12 },
+        },
       },
     });
 
@@ -57,6 +62,28 @@ describe("normalizeCardSpec", () => {
       randomness: 2.2,
       mottle: 1.8,
     });
+    expect(card.appearance.text.title).toEqual({
+      fontScale: 1.2,
+      scaleX: 0.9,
+      scaleY: 1.1,
+      offsetX: 12,
+      offsetY: -6,
+      bold: false,
+    });
+    expect(card.appearance.text.keywords).toEqual({
+      fontScale: 0.85,
+      scaleX: 1.15,
+      scaleY: 0.95,
+      offsetX: -10,
+      offsetY: 4,
+    });
+    expect(card.appearance.text.body).toEqual({
+      fontScale: 1.1,
+      scaleX: 0.92,
+      scaleY: 1.08,
+      offsetX: 6,
+      offsetY: -12,
+    });
   });
 
   it("normalizes card appearance so project files reproduce texture settings safely", () => {
@@ -68,6 +95,23 @@ describe("normalizeCardSpec", () => {
           randomness: -99,
           mottle: "not-a-number",
         },
+        text: {
+          title: {
+            fontScale: 99,
+            scaleX: -99,
+            scaleY: "not-a-number",
+            offsetX: 999,
+            offsetY: -999,
+            bold: "yes",
+          },
+          keywords: {
+            fontScale: 0,
+            scaleX: 2,
+            scaleY: 2,
+            offsetX: "not-a-number",
+            offsetY: 24,
+          },
+        },
       },
     });
 
@@ -77,6 +121,22 @@ describe("normalizeCardSpec", () => {
       randomness: 0.5,
       mottle: DEFAULT_CARD.appearance.texture.mottle,
     });
+    expect(card.appearance.text.title).toEqual({
+      fontScale: CARD_TEXT_APPEARANCE_BOUNDS.fontScale.max,
+      scaleX: CARD_TEXT_APPEARANCE_BOUNDS.scaleX.min,
+      scaleY: DEFAULT_CARD.appearance.text.title.scaleY,
+      offsetX: CARD_TEXT_APPEARANCE_BOUNDS.offsetX.max,
+      offsetY: CARD_TEXT_APPEARANCE_BOUNDS.offsetY.min,
+      bold: DEFAULT_CARD.appearance.text.title.bold,
+    });
+    expect(card.appearance.text.keywords).toEqual({
+      fontScale: CARD_TEXT_APPEARANCE_BOUNDS.fontScale.min,
+      scaleX: CARD_TEXT_APPEARANCE_BOUNDS.scaleX.max,
+      scaleY: CARD_TEXT_APPEARANCE_BOUNDS.scaleY.max,
+      offsetX: DEFAULT_CARD.appearance.text.keywords.offsetX,
+      offsetY: 24,
+    });
+    expect(card.appearance.text.body).toEqual(DEFAULT_CARD.appearance.text.body);
   });
 
   it("keeps ordinary card-face numeric values within the two-digit range", () => {
