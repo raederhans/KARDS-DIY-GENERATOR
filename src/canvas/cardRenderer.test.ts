@@ -221,6 +221,28 @@ describe("card renderer output", () => {
     expect(calls.drawImage).toContainEqual([layer.canvas, 0, 0, CARD_WIDTH, CARD_HEIGHT]);
   });
 
+  it("draws keywords and rarity marks above the paper aging layer", () => {
+    const { canvas, calls } = createFakeCanvas({ enableLayerCanvas: true });
+    const rarityImage = { width: 8, height: 13 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([{ slot: "rarity-pip", rarityId: DEFAULT_CARD.rarity, image: rarityImage }]);
+
+    renderCard(canvas, DEFAULT_CARD, null, {
+      assets,
+      textureIntensity: 2.4,
+      textureRandomness: 2.2,
+      textureMottle: 2.1,
+    });
+
+    const layer = calls.layerCanvases[0];
+    const layerIndex = calls.operations.findIndex((op) => op.kind === "drawImage" && op.value === layer.canvas);
+    const rarityIndex = calls.operations.findIndex((op) => op.kind === "drawImage" && op.value === rarityImage);
+    const keywordIndex = calls.operations.findIndex((op) => op.kind === "fillText" && op.value === "Heavy Armor 1");
+
+    expect(layerIndex).toBeGreaterThanOrEqual(0);
+    expect(rarityIndex).toBeGreaterThan(layerIndex);
+    expect(keywordIndex).toBeGreaterThan(layerIndex);
+  });
+
   it("uses a supplied CC0 paper texture image when paper aging is enabled", () => {
     const { canvas, calls } = createFakeCanvas();
     const paperTexture = { width: 960, height: 563 } as CanvasImageSource;

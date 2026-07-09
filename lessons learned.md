@@ -35,3 +35,4 @@
 - Paper-aging protected regions for non-rectangular boards should reuse the drawn shape paths, not expanded rectangles; otherwise the surrounding paper can lose texture and look like a square cutout.
 - Canvas `evenodd` texture clips must avoid nested protected holes; a small region inside an already-protected banner can cancel the protection and let texture leak back in.
 - Overlapping paper-aging protected regions should be erased from a texture layer as a union; `evenodd` clipping can leak high-randomness texture into partially overlapping stat and type overlays.
+- Paper-aging layers should sit below readable foreground marks such as keywords, rarity pips, set marks, values, and type icons; masking alone is not a substitute for correct draw order.

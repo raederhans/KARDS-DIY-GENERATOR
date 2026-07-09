@@ -129,14 +129,14 @@ export function renderCard(
   }
   drawNationMark(ctx, layout, nation, options, assetContext, fonts);
   drawFrame(ctx, options, assetContext);
+  if (!options.disablePrintWear) {
+    drawPrintWear(ctx, resolvePrintWearSettings(options), getPrintWearProtectedRegions(layout, card.kind), pixelScale);
+  }
   drawRarity(ctx, layout, rarity.color, card.rarity, options, assetContext);
   drawSet(ctx, layout, set.mark, options, assetContext, fonts);
   drawValues(ctx, layout, card, options, assetContext, fonts);
   drawTypeIcon(ctx, layout, card.kind, kind.symbol, options, assetContext, fonts);
   drawText(ctx, layout, card, fonts, options);
-  if (!options.disablePrintWear) {
-    drawPrintWear(ctx, resolvePrintWearSettings(options), getPrintWearProtectedRegions(layout, card.kind), pixelScale);
-  }
 }
 
 function drawCardMat(
