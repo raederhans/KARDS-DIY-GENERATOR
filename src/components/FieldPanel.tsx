@@ -788,13 +788,15 @@ export function FieldPanel({
         onToggle={toggleSection}
       >
         <div className="number-grid">
-          <NumberField
-            label={text.cost}
-            name="card-deployment-cost"
-            value={card.costs.deployment}
-            max={CARD_FACE_VALUE_MAX}
-            onChange={(value) => updateCost("deployment", value)}
-          />
+          {card.kind !== "hq" ? (
+            <NumberField
+              label={text.cost}
+              name="card-deployment-cost"
+              value={card.costs.deployment}
+              max={CARD_FACE_VALUE_MAX}
+              onChange={(value) => updateCost("deployment", value)}
+            />
+          ) : null}
           {kind.hasOperationCost ? (
             <NumberField
               label={text.operation}

@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { hasDraggedFiles, isImportableArtworkFile, toggleFieldPanelSection } from "./FieldPanel";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+import { DEFAULT_CARD } from "../cardModel";
+import { UI_TEXT } from "../i18n";
+import { FieldPanel, hasDraggedFiles, isImportableArtworkFile, toggleFieldPanelSection } from "./FieldPanel";
 
 describe("FieldPanel collapsible sections", () => {
   it("toggles one section without changing the other collapsed sections", () => {
@@ -13,6 +17,47 @@ describe("FieldPanel collapsible sections", () => {
       title: true,
       artwork: false,
     });
+  });
+});
+
+describe("FieldPanel value fields", () => {
+  it("shows only HQ defense for headquarters cards", () => {
+    const markup = renderToStaticMarkup(
+      createElement(FieldPanel, {
+        card: {
+          ...DEFAULT_CARD,
+          kind: "hq",
+          costs: {},
+          stats: { hqDefense: 20 },
+        },
+        language: "zh",
+        text: UI_TEXT.zh.fieldPanel,
+        onCardChange: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain('name="card-hq-defense"');
+    expect(markup).not.toContain('name="card-deployment-cost"');
+    expect(markup).not.toContain('name="card-operation-cost"');
+    expect(markup).not.toContain('name="card-attack"');
+    expect(markup).not.toContain('name="card-defense"');
+  });
+
+  it("keeps ordinary unit values without showing HQ defense", () => {
+    const markup = renderToStaticMarkup(
+      createElement(FieldPanel, {
+        card: DEFAULT_CARD,
+        language: "zh",
+        text: UI_TEXT.zh.fieldPanel,
+        onCardChange: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain('name="card-deployment-cost"');
+    expect(markup).toContain('name="card-operation-cost"');
+    expect(markup).toContain('name="card-attack"');
+    expect(markup).toContain('name="card-defense"');
+    expect(markup).not.toContain('name="card-hq-defense"');
   });
 });
 
