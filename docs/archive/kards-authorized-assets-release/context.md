@@ -63,3 +63,15 @@
 - Pinned Vercel CLI `55.0.0` produced Preview deployment `dpl_9k58tWBU1oZSFirB9spSxTL83SqF`, status Ready.
 - The Preview is deployment-protected. Authenticated `vercel curl` probes returned HTTP 200 with correct content types for the app, manifest, `t70.card.json`, `dingo.png`, and `Washington.png`.
 - The verified Preview manifest is 15,158 bytes and reports version 1, 91 images, and `requiresPrivateExportConfirm: false`.
+
+## Final Publication Evidence
+
+- Final release commit `6ae5b6fa03ab60b312a524df3c45e0d03f9f4af6` passed CI run `29055178856` and GitHub Pages run `29055178846`.
+- Annotated tag `v0.2.0` resolves to the final release commit.
+- GitHub Release `https://github.com/raederhans/KARDS/releases/tag/v0.2.0` is published, non-draft, non-prerelease, and latest.
+- Release assets are uploaded and GitHub's digests match local SHA-256 values: production dist `0aea9707...9d020` and standalone reference pack `efe16ba0...c7e75`.
+- Final Vercel Preview deployment `dpl_AJZp7vMgExP92UNZcrnr8yNqivaK` passed authenticated probes before promotion.
+- Vercel promoted the verified artifact to Production deployment `dpl_2LzMkgqa1uZ2aQhCZszu4tsf4U7k`, status Ready.
+- Stable production URL `https://kards-card-forge.vercel.app` returned HTTP 200 with correct content types for the app, manifest, sample JSON, card reference PNG, and HQ reference PNG after alias propagation.
+- Stable manifest reports version 1, 91 images, and `requiresPrivateExportConfirm: false`; representative PNG signatures are valid.
+- Final GitHub Pages probes also returned HTTP 200 with correct content types for the same representative resource set.

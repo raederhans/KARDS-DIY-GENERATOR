@@ -5,17 +5,17 @@
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
 - Thread/task: publish all current local changes with the user-authorized card reference pack to GitHub and Vercel
 - Base branch/base commit: `main` / `origin/main`, `fb0aba244411889811ab2a0449990fa436c046a3`
-- Current branch/HEAD: `main`, implementation commit `7c29db7bc7d01d84882ef83b1751779200a5fc37` pushed and remotely verified
+- Current branch/HEAD: `main`; release commit `6ae5b6fa03ab60b312a524df3c45e0d03f9f4af6` is tagged `v0.2.0`, pushed, and remotely verified
 - Task goal: ship v0.2.0 with the exact authorized reference-pack runtime closure, verified GitHub Pages output, GitHub release artifacts, and Vercel production deployment
-- Current status: ready-for-integration; implementation is pushed, GitHub CI/Pages and Vercel Preview are verified, final tag/release and production promotion remain
+- Current status: integrated; GitHub Release v0.2.0 and Vercel Production are published and remotely verified
 - Main changed files: `src/App.tsx`, `src/assetPack.ts`, `src/devPreviewCatalog.ts`, `src/i18n.ts`, three existing tests, `tools/verify_dist_private_boundary.mjs`, package version files, `public/reference-pack/v1/**`, lessons, registry, and task records
 - Shared hotspot files: production startup, asset-pack manifest schema/loader, catalog paths, validation entrypoint, package release metadata
 - Validation run: focused 31/31 and 26/26 tests passed; final `npm run validate` passed 169 tests/typecheck/build/strict pack boundary; Pages-mode build passed; npm audit found 0 vulnerabilities
-- Tests not run: final Vercel stable-alias probes and published GitHub release checks remain pending
+- Tests not run: none required for the requested release; no browser smoke was used because HTTP/resource probes, builds, and automated tests covered the changed paths
 - Base/main divergence: none at task start; only this worktree exists
 - Potential overlap: green for worktrees; yellow semantic risk for startup and asset-loading behavior, closed by three independent reviews and regression tests
-- Recommended integration order: commit this candidate evidence; push and wait for exact-SHA CI/Pages; tag final SHA; create draft release; promote the verified Preview; probe production; publish release; archive the task
-- Next action: create the release-evidence Lore commit, push it, and build the final v0.2.0 release artifacts from that clean tagged SHA
+- Recommended integration order: completed directly on clean `main`; no merge, rebase, or cherry-pick is required
+- Next action: archive the completed task record and push the docs-only closeout; no worktree cleanup is needed because only the main checkout exists
 
 ## Card-kind reference samples and edit protection
 

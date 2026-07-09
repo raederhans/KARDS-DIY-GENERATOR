@@ -20,10 +20,10 @@ Publish the current `main` branch to GitHub and Vercel with the user-authorized 
 - [x] Extend existing tests and production-boundary verification for the new public contract.
 - [x] Run targeted validation, full validation, Pages-path validation, and independent reviews.
 - [x] Commit and push `main` using the Lore protocol.
-- [ ] Create and verify a draft GitHub release from the final tagged commit.
+- [x] Create, verify, and publish the GitHub release from the final tagged commit.
 - [x] Deploy a Vercel Preview with pinned CLI and probe the protected deployment through an authenticated bypass.
-- [ ] Promote the verified Preview artifact to production and probe the stable alias.
-- [ ] Close the delivery package, archive this task, and clean any completed worktree residue.
+- [x] Promote the verified Preview artifact to production and probe the stable alias.
+- [x] Close the delivery package, archive this task, and confirm there is no completed worktree residue.
 
 ## Verification
 
