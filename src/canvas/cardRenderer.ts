@@ -69,7 +69,10 @@ type PrintWearSettings = {
   mottle: number;
 };
 
-type PrintWearProtectedRegion = Rect;
+type PrintWearProtectedRegion =
+  | { kind: "rect"; rect: Rect }
+  | { kind: "stat-board"; rect: Rect; shape: StatBoardShape }
+  | { kind: "round-rect"; rect: Rect; radius: number };
 
 export function renderCard(
   canvas: HTMLCanvasElement,
@@ -730,9 +733,24 @@ function drawPrintWear(
 function applyPrintWearClip(ctx: CanvasRenderingContext2D, protectedRegions: PrintWearProtectedRegion[]): void {
   roundRect(ctx, 0, 0, CARD_WIDTH, CARD_HEIGHT, 18);
   for (const region of protectedRegions) {
-    ctx.rect(region.x, region.y, region.width, region.height);
+    addPrintWearProtectedRegionPath(ctx, region);
   }
   ctx.clip("evenodd");
+}
+
+function addPrintWearProtectedRegionPath(ctx: CanvasRenderingContext2D, region: PrintWearProtectedRegion): void {
+  if (region.kind === "rect") {
+    ctx.rect(region.rect.x, region.rect.y, region.rect.width, region.rect.height);
+    return;
+  }
+
+  if (region.kind === "round-rect") {
+    addRoundRectPath(ctx, region.rect.x, region.rect.y, region.rect.width, region.rect.height, region.radius);
+    return;
+  }
+
+  drawStatBoardFallbackPath(ctx, region.rect, region.shape);
+  ctx.closePath();
 }
 
 function drawPaperTextureImage(ctx: CanvasRenderingContext2D, settings: PrintWearSettings): void {
@@ -1076,35 +1094,40 @@ function getTextureImageSize(image: CanvasImageSource): { width: number; height:
 function getPrintWearProtectedRegions(layout: CardFaceLayout, kind: CardKind): PrintWearProtectedRegion[] {
   const regions: PrintWearProtectedRegion[] = [];
 
+  regions.push({ kind: "rect", rect: layout.artwork });
+
   if (layout.costBoard) {
     regions.push(
-      expandRect(
-        {
-          ...layout.costBoard,
-          width: layout.costBoard.width + (layout.costBoardGap ?? 0),
-          height: layout.costBoard.height + (layout.costBoardGap ?? 0),
-        },
-        2,
-      ),
+      {
+        kind: "rect",
+        rect: expandRect(
+          {
+            ...layout.costBoard,
+            width: layout.costBoard.width + (layout.costBoardGap ?? 0),
+            height: layout.costBoard.height + (layout.costBoardGap ?? 0),
+          },
+          2,
+        ),
+      },
     );
   }
 
-  regions.push(expandRect(getNationMarkRect(layout), 4));
+  regions.push({ kind: "rect", rect: expandRect(getNationMarkRect(layout), 4) });
 
   if (layout.template === "hq" && layout.hqDefenseBoard) {
-    regions.push(expandRect(layout.hqDefenseBoard, 4));
+    regions.push({ kind: "stat-board", rect: layout.hqDefenseBoard, shape: "shield" });
   } else if (isUnitKind(kind)) {
     const attackBoard = isSpecialAttackKind(kind) && layout.specialAttackBoard ? layout.specialAttackBoard : layout.attackBoard;
     if (attackBoard) {
-      regions.push(expandRect(attackBoard, 4));
+      regions.push({ kind: "stat-board", rect: attackBoard, shape: "inverted-shield" });
     }
     if (layout.defenseBoard) {
-      regions.push(expandRect(layout.defenseBoard, 4));
+      regions.push({ kind: "stat-board", rect: layout.defenseBoard, shape: "shield" });
     }
   }
 
   if (layout.typeIcon) {
-    regions.push(expandRect(layout.typeIcon, 4));
+    regions.push({ kind: "round-rect", rect: layout.typeIcon, radius: 9 });
   }
 
   return regions;
@@ -1429,14 +1452,25 @@ function roundRect(
   height: number,
   radius = 8,
 ): void {
-  const r = Math.min(radius, width / 2, height / 2);
   ctx.beginPath();
+  addRoundRectPath(ctx, x, y, width, height, radius);
+  ctx.closePath();
+}
+
+function addRoundRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius = 8,
+): void {
+  const r = Math.min(radius, width / 2, height / 2);
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + width, y, x + width, y + height, r);
   ctx.arcTo(x + width, y + height, x, y + height, r);
   ctx.arcTo(x, y + height, x, y, r);
   ctx.arcTo(x, y, x + width, y, r);
-  ctx.closePath();
 }
 
 function resolveNationGlyph(nation: { shortLabel: string; emblem: string }): string {

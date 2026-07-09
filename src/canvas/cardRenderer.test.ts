@@ -144,7 +144,7 @@ describe("card renderer output", () => {
     );
   });
 
-  it("clips paper aging away from cost, stat, type, and nation regions", () => {
+  it("clips paper aging away from artwork and the direct cost, stat, type, and nation regions", () => {
     const { canvas, calls } = createFakeCanvas();
 
     renderCard(canvas, DEFAULT_CARD, null);
@@ -154,8 +154,17 @@ describe("card renderer output", () => {
     expect(textureClip).toBeDefined();
     expect(textureClip?.points).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({ kind: "rect", x: 12, y: 99, width: 476, height: 426 }),
         expect.objectContaining({ kind: "rect", x: 10, y: 11, width: 82, height: 82 }),
         expect.objectContaining({ kind: "rect", x: 419, y: 21, width: 62, height: 62 }),
+        expect.objectContaining({ kind: "moveTo", x: 129, y: 472 }),
+        expect.objectContaining({ kind: "lineTo", x: 371, y: 551 }),
+        expect.objectContaining({ kind: "moveTo", x: 217, y: 473 }),
+        expect.objectContaining({ kind: "arcTo", x1: 292, y1: 473, x2: 292, y2: 555, radius: 9 }),
+      ]),
+    );
+    expect(textureClip?.points).not.toEqual(
+      expect.arrayContaining([
         expect.objectContaining({ kind: "rect", x: 84, y: 464, width: 90, height: 90 }),
         expect.objectContaining({ kind: "rect", x: 326, y: 469, width: 90, height: 90 }),
         expect.objectContaining({ kind: "rect", x: 204, y: 469, width: 92, height: 90 }),
@@ -770,6 +779,7 @@ describe("card renderer output", () => {
 type CanvasPathPoint =
   | { kind: "moveTo" | "lineTo"; x: number; y: number }
   | { kind: "quadraticCurveTo"; cpx: number; cpy: number; x: number; y: number }
+  | { kind: "arcTo"; x1: number; y1: number; x2: number; y2: number; radius: number }
   | { kind: "rect"; x: number; y: number; width: number; height: number };
 
 function createFakeCanvas() {
@@ -861,7 +871,9 @@ function createFakeCanvas() {
     quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
       currentPath.push({ kind: "quadraticCurveTo", cpx, cpy, x, y });
     },
-    arcTo() {},
+    arcTo(x1: number, y1: number, x2: number, y2: number, radius: number) {
+      currentPath.push({ kind: "arcTo", x1, y1, x2, y2, radius });
+    },
     translate(x: number, y: number) {
       transform = { ...transform, x: transform.x + x * transform.scaleX, y: transform.y + y * transform.scaleY };
     },
