@@ -53,3 +53,13 @@
 - `npm audit --audit-level=moderate`: 0 vulnerabilities.
 - `git diff --check`: passed with Windows line-ending warnings only.
 - Three independent static reviews checked architecture, resource closure/security, and release ordering. Their verified findings were fixed before commit.
+
+## Remote Candidate Evidence
+
+- Implementation commit `7c29db7bc7d01d84882ef83b1751779200a5fc37` is pushed to `origin/main` with Lore trailers.
+- GitHub Actions CI run `29054877965` passed for that exact commit.
+- GitHub Pages run `29054877886` built and deployed successfully for that exact commit.
+- Live Pages probes returned HTTP 200 for the app, manifest, one sample JSON, one card reference PNG, and one HQ reference PNG; the manifest reports version 1, 91 images, and `requiresPrivateExportConfirm: false`.
+- Pinned Vercel CLI `55.0.0` produced Preview deployment `dpl_9k58tWBU1oZSFirB9spSxTL83SqF`, status Ready.
+- The Preview is deployment-protected. Authenticated `vercel curl` probes returned HTTP 200 with correct content types for the app, manifest, `t70.card.json`, `dingo.png`, and `Washington.png`.
+- The verified Preview manifest is 15,158 bytes and reports version 1, 91 images, and `requiresPrivateExportConfirm: false`.

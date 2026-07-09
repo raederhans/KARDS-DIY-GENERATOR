@@ -22,8 +22,8 @@
 
 - Base: `main` / `fb0aba244411889811ab2a0449990fa436c046a3`.
 - Current branch: `main`.
-- Commit state: implementation is locally verified and awaiting the first Lore-protocol commit.
-- Main divergence: none at task start.
+- Commit state: implementation commit `7c29db7bc7d01d84882ef83b1751779200a5fc37` is pushed to `origin/main` with Lore trailers.
+- Main divergence: none at task start; local and remote `main` are aligned at the implementation commit before this closeout record update.
 - Worktree conflicts: none; only the main checkout exists.
 
 ### Validation
@@ -36,9 +36,9 @@
 
 ### Remaining Risks
 
-- Production asset paths are locally verified, but remote Pages and Vercel probes are pending.
-- GitHub and Vercel production publication have not yet run.
+- GitHub Pages and the protected Vercel Preview are remotely verified, including representative JSON and PNG resources.
+- The GitHub v0.2.0 release and Vercel production promotion are still pending.
 
 ### Recommended Next Step
 
-- Commit and push the verified implementation, wait for exact-SHA CI/Pages, then create the final tag/draft release and run Vercel Preview-to-Promote.
+- Commit and push this evidence record, wait for exact-SHA CI/Pages, create and verify v0.2.0 artifacts, tag that final release commit, publish a draft GitHub release, promote the verified Vercel deployment, then publish the release and archive this task.

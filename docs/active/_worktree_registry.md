@@ -5,17 +5,17 @@
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
 - Thread/task: publish all current local changes with the user-authorized card reference pack to GitHub and Vercel
 - Base branch/base commit: `main` / `origin/main`, `fb0aba244411889811ab2a0449990fa436c046a3`
-- Current branch/HEAD: `main`, initially aligned with `origin/main`
+- Current branch/HEAD: `main`, implementation commit `7c29db7bc7d01d84882ef83b1751779200a5fc37` pushed and remotely verified
 - Task goal: ship v0.2.0 with the exact authorized reference-pack runtime closure, verified GitHub Pages output, GitHub release artifacts, and Vercel production deployment
-- Current status: in-progress; local implementation and verification complete, external publication pending
+- Current status: ready-for-integration; implementation is pushed, GitHub CI/Pages and Vercel Preview are verified, final tag/release and production promotion remain
 - Main changed files: `src/App.tsx`, `src/assetPack.ts`, `src/devPreviewCatalog.ts`, `src/i18n.ts`, three existing tests, `tools/verify_dist_private_boundary.mjs`, package version files, `public/reference-pack/v1/**`, lessons, registry, and task records
 - Shared hotspot files: production startup, asset-pack manifest schema/loader, catalog paths, validation entrypoint, package release metadata
 - Validation run: focused 31/31 and 26/26 tests passed; final `npm run validate` passed 169 tests/typecheck/build/strict pack boundary; Pages-mode build passed; npm audit found 0 vulnerabilities
-- Tests not run: remote GitHub Pages and Vercel probes remain pending until the commit is pushed
+- Tests not run: final Vercel stable-alias probes and published GitHub release checks remain pending
 - Base/main divergence: none at task start; only this worktree exists
 - Potential overlap: green for worktrees; yellow semantic risk for startup and asset-loading behavior, closed by three independent reviews and regression tests
-- Recommended integration order: commit directly on clean, current `main`; push; wait for exact-SHA CI/Pages; tag final SHA; create draft release; deploy Preview; promote; publish release
-- Next action: explicitly stage all tracked and untracked release files, verify cached scope, then create the first Lore-protocol commit
+- Recommended integration order: commit this candidate evidence; push and wait for exact-SHA CI/Pages; tag final SHA; create draft release; promote the verified Preview; probe production; publish release; archive the task
+- Next action: create the release-evidence Lore commit, push it, and build the final v0.2.0 release artifacts from that clean tagged SHA
 
 ## Card-kind reference samples and edit protection
 
