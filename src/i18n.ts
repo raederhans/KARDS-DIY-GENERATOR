@@ -114,8 +114,6 @@ export const UI_TEXT = {
       privateCardConfirm: "This export includes pixels from your local style pack. Keep the exported file private?",
       projectTooLarge: "This card project is too large to open. Please choose a JSON file under 8 MB.",
       jsonOpenFailed: "This JSON file could not be opened as a card project.",
-      disclaimer:
-        "Unofficial non-commercial fan utility. It ships with original placeholder visuals only. Local asset packs and reference images stay in this browser session and are not saved into card JSON.",
     },
     errors: {
       privatePreviewCatalog: "Could not load the local reference catalog.",
@@ -232,8 +230,6 @@ export const UI_TEXT = {
       privateCardConfirm: "这次导出包含你本地风格包里的像素。确认只私下保存这个文件？",
       projectTooLarge: "这个卡牌项目太大，无法打开。请选择 8 MB 以下的 JSON 文件。",
       jsonOpenFailed: "这个 JSON 文件无法作为卡牌项目打开。",
-      disclaimer:
-        "非官方、非商业的粉丝工具。默认只包含原创占位视觉。本地素材包和参考图只保留在当前浏览器会话中，不会保存进卡牌 JSON。",
     },
     errors: {
       privatePreviewCatalog: "无法加载本地参考目录。",

@@ -520,9 +520,6 @@ export function ProjectPanel({
         ) : null}
       </div>
 
-      <p className="disclaimer">
-        {text.disclaimer}
-      </p>
     </aside>
   );
 }

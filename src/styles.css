@@ -687,13 +687,6 @@ input[type="range"] {
   line-height: 1.35;
 }
 
-.disclaimer {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.55;
-}
-
 @media (max-width: 1120px) {
   .workspace {
     grid-template-columns: minmax(270px, 320px) 1fr;
