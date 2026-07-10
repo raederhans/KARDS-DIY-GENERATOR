@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { CARD_TEXT_APPEARANCE_BOUNDS, DEFAULT_CARD, normalizeCardSpec, sanitizeInteger } from "./cardModel";
 import {
+  applyAutomaticArtwork,
   applyUserCardUpdate,
+  applyUserArtworkIfRevisionMatches,
+  clearAutomaticArtwork,
+  clearMismatchedAutomaticArtwork,
   createCardEditorState,
   getCardKindReferenceCard,
   replaceCardEditorContent,
@@ -223,6 +227,115 @@ describe("normalizeCardSpec", () => {
 });
 
 describe("card editor reference samples", () => {
+  it("tracks automatic artwork separately and never overwrites user artwork", () => {
+    const empty = createCardEditorState(getCardKindReferenceCard("tank", "zh"), false);
+    const automatic = applyAutomaticArtwork(empty, "t70", {
+      source: "upload",
+      dataUrl: "data:image/png;base64,automatic",
+      crop: { x: 1, y: 2, scale: 1.1 },
+    });
+    const refreshed = applyAutomaticArtwork(automatic, "dingo", {
+      source: "upload",
+      dataUrl: "data:image/png;base64,refreshed",
+      crop: { x: 3, y: 4, scale: 1.2 },
+    });
+    const userCrop = applyUserCardUpdate(refreshed, (card) => ({
+      ...card,
+      artwork: {
+        ...card.artwork,
+        crop: { ...card.artwork.crop, x: 12 },
+      },
+    }));
+    const protectedState = applyAutomaticArtwork(userCrop, "t70", {
+      source: "upload",
+      dataUrl: "data:image/png;base64,should-not-win",
+      crop: { x: 0, y: 0, scale: 1 },
+    });
+
+    expect(empty.artworkOrigin).toEqual({ kind: "none" });
+    expect(automatic.artworkOrigin).toEqual({ kind: "auto-reference", sampleId: "t70" });
+    expect(refreshed.card.artwork.dataUrl).toContain("refreshed");
+    expect(userCrop.artworkOrigin).toEqual({ kind: "user" });
+    expect(protectedState).toBe(userCrop);
+  });
+
+  it("clears stale automatic artwork on no-match without touching user artwork", () => {
+    const automatic = applyAutomaticArtwork(createCardEditorState(DEFAULT_CARD, false), "t70", {
+      source: "upload",
+      dataUrl: "data:image/png;base64,auto",
+      crop: { x: 1, y: 2, scale: 1.1 },
+    });
+    const cleared = clearAutomaticArtwork(automatic);
+    const user = applyUserCardUpdate(automatic, (card) => ({
+      ...card,
+      artwork: { ...card.artwork, crop: { x: 5, y: 2, scale: 1.1 } },
+    }));
+
+    expect(cleared.artworkOrigin).toEqual({ kind: "none" });
+    expect(cleared.card.artwork).toEqual({ source: "none", crop: { x: 0, y: 0, scale: 1 } });
+    expect(clearAutomaticArtwork(user)).toBe(user);
+  });
+
+  it("does not let an older reference-artwork request overwrite a newer user artwork edit", () => {
+    const initial = createCardEditorState(DEFAULT_CARD, false);
+    const requestRevision = initial.artworkRevision;
+    const userEdited = applyUserCardUpdate(initial, (card) => ({
+      ...card,
+      artwork: {
+        source: "upload",
+        dataUrl: "data:image/png;base64,user",
+        crop: { x: 0.1, y: 0.2, scale: 1.4 },
+      },
+    }));
+
+    expect(applyUserArtworkIfRevisionMatches(userEdited, requestRevision, {
+      source: "upload",
+      dataUrl: "data:image/png;base64,older-reference",
+      crop: { x: 0, y: 0, scale: 1 },
+    })).toBe(userEdited);
+  });
+
+  it("clears sample A when unique sample B fails without clearing user artwork", () => {
+    const automaticA = applyAutomaticArtwork(createCardEditorState(DEFAULT_CARD, false), "sample-a", {
+      source: "upload",
+      dataUrl: "data:image/png;base64,sample-a",
+      crop: { x: 0, y: 0, scale: 1 },
+    });
+    const user = applyUserCardUpdate(automaticA, (card) => ({
+      ...card,
+      artwork: { ...card.artwork, crop: { x: 1, y: 0, scale: 1 } },
+    }));
+
+    expect(clearMismatchedAutomaticArtwork(automaticA, "sample-b").artworkOrigin)
+      .toEqual({ kind: "none" });
+    expect(clearMismatchedAutomaticArtwork(automaticA, "sample-a")).toBe(automaticA);
+    expect(clearMismatchedAutomaticArtwork(user, "sample-b")).toBe(user);
+  });
+
+  it("keeps automatic artwork provenance for unrelated edits", () => {
+    const automatic = applyAutomaticArtwork(
+      createCardEditorState(getCardKindReferenceCard("tank", "zh"), false),
+      "t70",
+      {
+        source: "upload",
+        dataUrl: "data:image/png;base64,automatic",
+        crop: { x: 0, y: 0, scale: 1 },
+      },
+    );
+    const titled = applyUserCardUpdate(automatic, (card) => ({ ...card, title: "保留标题" }));
+
+    expect(titled.card.title).toBe("保留标题");
+    expect(titled.artworkOrigin).toEqual({ kind: "auto-reference", sampleId: "t70" });
+  });
+
+  it("treats imports, full-card loads, and reset as explicit source transitions", () => {
+    const imported = replaceCardEditorContent(getCardKindReferenceCard("fighter", "zh"));
+    const reset = resetCardEditorState("zh");
+
+    expect(imported.artworkOrigin).toEqual({ kind: "user" });
+    expect(reset.artworkOrigin).toEqual({ kind: "none" });
+  });
+
   it("provides complete, kind-appropriate reference content for every card kind", () => {
     let state = createCardEditorState(getLocalizedDefaultCard("zh"), false);
 

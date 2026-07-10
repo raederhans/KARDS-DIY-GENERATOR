@@ -1,10 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createElement } from "react";
+import { Children, createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CARD_TEXTURE_BOUNDS } from "../cardModel";
+import { UI_TEXT } from "../i18n";
+import { DEFAULT_CARD } from "../cardModel";
+import { getDevPreviewSampleById } from "../devPreviewCatalog";
+import { getCardExportPreflight } from "../exportCard";
 import {
+  ExportDiagnostics,
   TEXTURE_CONTROL_LIMITS,
-  TemplateSamplePicker,
+  WorkbenchTabList,
+  WorkbenchTabPanel,
   canStartCardExport,
   downloadBlob,
   isImportableReferenceImageFile,
@@ -12,6 +18,8 @@ import {
   parseImportedCardProject,
   safeFileName,
 } from "./ProjectPanel";
+import { clearStaleActiveLibraryEntry, LocalLibraryWorkbench } from "./LocalLibraryWorkbench";
+import { ReferenceWorkbench } from "./ReferenceWorkbench";
 import { consumeSelectedFile, readBrowserFile } from "../browserFiles";
 import { isAllowedEmbeddedImageDataUrl } from "../limits";
 
@@ -83,50 +91,164 @@ describe("ProjectPanel texture controls", () => {
   });
 });
 
-describe("ProjectPanel template sample picker", () => {
-  it("uses one action picker with separate card and HQ groups", () => {
+describe("ProjectPanel four-tab workbench", () => {
+  it("renders four keyboard-addressable ARIA tabs", () => {
     const markup = renderToStaticMarkup(
-      createElement(TemplateSamplePicker, {
-        label: "载入示例模板",
-        loadingLabel: "正在载入模板……",
-        placeholder: "选择普通卡牌或总部模板……",
-        cardGroupLabel: "普通卡牌",
-        hqGroupLabel: "总部",
-        templateSamples: [{ id: "t70", label: "T-70" }],
-        hqSamples: [{ id: "london_hq", label: "伦敦" }],
-        isLoading: false,
-        error: null,
-        onLoad: vi.fn(),
+      createElement(WorkbenchTabList, {
+        activeTab: "appearance",
+        text: UI_TEXT.zh.projectPanel,
+        onTabChange: vi.fn(),
       }),
     );
 
-    expect(markup.match(/<select/g)).toHaveLength(1);
-    expect(markup).toContain('name="card-template-sample"');
-    expect(markup).toContain('<optgroup label="普通卡牌">');
-    expect(markup).toContain('<optgroup label="总部">');
-    expect(markup).toContain('<option value="" disabled="" selected="">');
+    expect(markup.match(/role="tab"/g)).toHaveLength(4);
+    expect(markup).toContain("外观");
+    expect(markup).toContain("卡库");
+    expect(markup).toContain("导出");
+    expect(markup).toContain("参考");
+    expect(markup).toContain('aria-selected="true"');
+    expect(markup).toContain('tabindex="-1"');
   });
 
-  it("disables the action picker and exposes its busy state while loading", () => {
+  it("keeps inactive panel content mounted while hiding it accessibly", () => {
+    const markup = renderToStaticMarkup(createElement(WorkbenchTabPanel, {
+      activeTab: "appearance",
+      tab: "library",
+      children: createElement("span", null, "preserved state"),
+    }));
+
+    expect(markup).toContain('role="tabpanel"');
+    expect(markup).toContain('hidden=""');
+    expect(markup).toContain("preserved state");
+  });
+
+  it("cycles tabs with arrow keys and supports Home and End", () => {
+    const onTabChange = vi.fn();
+    const focus = vi.fn();
+    vi.stubGlobal("document", { getElementById: vi.fn(() => ({ focus })) });
+    const tree = WorkbenchTabList({
+      activeTab: "appearance",
+      text: UI_TEXT.zh.projectPanel,
+      onTabChange,
+    });
+    const buttons = Children.toArray(tree.props.children) as ReactElement<{
+      onKeyDown: (event: { key: string; preventDefault: () => void }) => void;
+    }>[];
+    const preventDefault = vi.fn();
+
+    buttons[0].props.onKeyDown({ key: "ArrowLeft", preventDefault });
+    buttons[0].props.onKeyDown({ key: "ArrowRight", preventDefault });
+    buttons[2].props.onKeyDown({ key: "Home", preventDefault });
+    buttons[1].props.onKeyDown({ key: "End", preventDefault });
+
+    expect(onTabChange.mock.calls.map(([tab]) => tab)).toEqual(["reference", "library", "appearance", "reference"]);
+    expect(preventDefault).toHaveBeenCalledTimes(4);
+    expect(focus).toHaveBeenCalledTimes(4);
+  });
+
+  it("renders local-library empty and read-only states with disabled writes", () => {
     const markup = renderToStaticMarkup(
-      createElement(TemplateSamplePicker, {
-        label: "Load sample template",
-        loadingLabel: "Loading template...",
-        placeholder: "Choose a card or HQ template...",
-        cardGroupLabel: "Card",
-        hqGroupLabel: "HQ",
-        templateSamples: [],
-        hqSamples: [{ id: "washington_hq", label: "Washington" }],
-        isLoading: true,
-        error: "Template failed",
-        onLoad: vi.fn(),
+      createElement(LocalLibraryWorkbench, {
+        card: DEFAULT_CARD,
+        language: "zh",
+        text: UI_TEXT.zh.projectPanel,
+        activeEntryId: null,
+        onEntryLoad: vi.fn(),
+        onActiveEntryChange: vi.fn(),
+        onDirectoryChange: vi.fn(),
       }),
     );
 
-    expect(markup).toContain("Loading template...");
+    expect(markup).toContain("尚未打开本地卡库");
+    expect(markup).toContain("当前浏览器不支持安全写入");
     expect(markup).toContain('disabled=""');
-    expect(markup).toContain('aria-busy="true"');
-    expect(markup).toContain("Template failed");
+  });
+
+  it("notifies the App when a refreshed library no longer contains the active entry", () => {
+    const onActiveEntryChange = vi.fn();
+    clearStaleActiveLibraryEntry("stale", { cards: [] }, onActiveEntryChange);
+    expect(onActiveEntryChange).toHaveBeenCalledWith(null);
+
+    onActiveEntryChange.mockClear();
+    clearStaleActiveLibraryEntry("current", {
+      cards: [{
+        id: "current",
+        title: DEFAULT_CARD.title,
+        kind: DEFAULT_CARD.kind,
+        nation: DEFAULT_CARD.nation,
+        rarity: DEFAULT_CARD.rarity,
+        set: DEFAULT_CARD.set,
+        updatedAt: "2026-07-09T00:00:00.000Z",
+        card: DEFAULT_CARD,
+      }],
+    }, onActiveEntryChange);
+    expect(onActiveEntryChange).not.toHaveBeenCalled();
+  });
+
+  it("renders reference filters, selected-row actions, and auto-artwork control", () => {
+    const sample = getDevPreviewSampleById("t70")!;
+    const markup = renderToStaticMarkup(
+      createElement(ReferenceWorkbench, {
+        card: DEFAULT_CARD,
+        language: "zh",
+        text: UI_TEXT.zh.projectPanel,
+        samples: [sample],
+        selectedSampleId: sample.id,
+        getVisibleSamples: () => [sample],
+        onSampleSelect: vi.fn(),
+        onArtworkApply: vi.fn(),
+        onFullCardLoad: vi.fn(),
+        autoArtworkEnabled: true,
+        onAutoArtworkToggle: vi.fn(),
+        showReferenceComparison: true,
+        onReferenceComparisonToggle: vi.fn(),
+        onReferenceFileSelect: vi.fn(),
+        isLoading: false,
+        error: null,
+        referenceDiff: null,
+        referenceDiffError: null,
+      }),
+    );
+
+    expect(markup).toContain('name="reference-search"');
+    expect(markup).toContain('name="reference-kind-filter"');
+    expect(markup).toContain('name="reference-sort"');
+    expect(markup).toContain("自动应用卡图");
+    expect(markup).toContain("应用卡图");
+    expect(markup).toContain("载入整卡");
+    expect(markup).toContain("T-70");
+  });
+
+  it("renders preflight and latest export result without claiming a download was saved", () => {
+    const preflight = getCardExportPreflight({
+      canvasAvailable: true,
+      artworkReady: true,
+      assetPackWarnings: ["missing font"],
+      usesProgramTexture: true,
+      requiresPrivateConfirmation: false,
+    });
+    const markup = renderToStaticMarkup(createElement(ExportDiagnostics, {
+      text: UI_TEXT.zh.projectPanel,
+      preflight,
+      result: {
+        blob: new Blob(["1234"], { type: "image/png" }),
+        fileName: "card.png",
+        format: "png",
+        mimeType: "image/png",
+        width: 500,
+        height: 702,
+        byteLength: 4,
+        durationMs: 12,
+        normalizedOptions: { format: "png", scale: 1, exposure: 0, contrast: 0, jpegQuality: 0.92 },
+        target: { kind: "download", status: "triggered" },
+      },
+      error: null,
+    }));
+
+    expect(markup).toContain("有提醒");
+    expect(markup).toContain("card.png");
+    expect(markup).toContain("已触发浏览器下载");
+    expect(markup).not.toContain("已保存到下载目录");
   });
 });
 

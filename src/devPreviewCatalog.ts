@@ -1,6 +1,8 @@
 import type { DevPreviewArtworkReferenceCrop } from "./devPreviewState";
 import type { CardKind, CardSpec } from "./types";
 import { DEFAULT_CARD_APPEARANCE } from "./cardModel";
+import { CARD_KINDS, SETS } from "./presets";
+import type { Language } from "./i18n";
 
 const PUBLIC_REFERENCE_ROOT = `${import.meta.env.BASE_URL}reference-pack/v1`;
 const SAMPLE_ROOT = `${PUBLIC_REFERENCE_ROOT}/samples`;
@@ -15,6 +17,8 @@ export type DevPreviewSample = {
   label: string;
   labelZh?: string;
   kind: CardKind;
+  nation: string;
+  rarity: string;
   set: string;
   referenceUrl: string;
   artworkReferenceCrop?: DevPreviewArtworkReferenceCrop;
@@ -104,6 +108,73 @@ export const DEV_PREVIEW_REFERENCE_SAMPLES: DevPreviewSample[] = [
 
 const DEV_PREVIEW_ALL_SAMPLES = [...DEV_PREVIEW_REFERENCE_SAMPLES, ...DEV_PREVIEW_HQ_SAMPLES];
 
+export type ReferenceFilters = {
+  query: string;
+  kind?: CardKind | "";
+  nation?: string;
+  rarity?: string;
+  set?: string;
+};
+
+export type ReferenceSort = "match" | "name" | "set";
+
+export function filterDevPreviewSamples(
+  samples: readonly DevPreviewSample[],
+  filters: ReferenceFilters,
+): DevPreviewSample[] {
+  const query = filters.query.trim().toLocaleLowerCase();
+  return samples.filter((sample) => {
+    const searchable = `${sample.id} ${sample.label} ${sample.labelZh ?? ""}`.toLocaleLowerCase();
+    return (!query || searchable.includes(query))
+      && (!filters.kind || sample.kind === filters.kind)
+      && (!filters.nation || sample.nation === filters.nation)
+      && (!filters.rarity || sample.rarity === filters.rarity)
+      && (!filters.set || sample.set === filters.set);
+  });
+}
+
+export function sortDevPreviewSamples(
+  samples: readonly DevPreviewSample[],
+  card: CardSpec,
+  sort: ReferenceSort,
+  language: Language,
+): DevPreviewSample[] {
+  const locale = language === "zh" ? "zh-CN" : "en";
+  return [...samples].sort((left, right) => {
+    let result = 0;
+    if (sort === "match") {
+      result = compareMatchTuple(getMatchTuple(right, card), getMatchTuple(left, card));
+    } else if (sort === "name") {
+      result = getSampleLabel(left, language).localeCompare(getSampleLabel(right, language), locale);
+    } else {
+      result = getPresetIndex(SETS, left.set) - getPresetIndex(SETS, right.set)
+        || getPresetIndex(CARD_KINDS, left.kind) - getPresetIndex(CARD_KINDS, right.kind);
+    }
+    return result || left.id.localeCompare(right.id, "en");
+  });
+}
+
+export function findUniqueAutomaticArtworkSample(
+  samples: readonly DevPreviewSample[],
+  card: Pick<CardSpec, "kind" | "nation" | "set" | "rarity">,
+): DevPreviewSample | undefined {
+  const matches = samples.filter((sample) => card.kind === "hq"
+    ? sample.kind === "hq" && sample.nation === card.nation
+    : sample.kind === card.kind
+      && sample.nation === card.nation
+      && sample.set === card.set
+      && sample.rarity === card.rarity);
+  return matches.length === 1 ? matches[0] : undefined;
+}
+
+export function getAutomaticArtworkMatchingKey(
+  card: Pick<CardSpec, "kind" | "nation" | "set" | "rarity">,
+): string {
+  return card.kind === "hq"
+    ? `${card.kind}|${card.nation}`
+    : `${card.kind}|${card.nation}|${card.set}|${card.rarity}`;
+}
+
 export const DEV_PREVIEW_SET_SAMPLES: DevPreviewSample[] = [
   getDevPreviewSampleById("t70"),
   getDevPreviewSampleById("a26_invader"),
@@ -147,11 +218,17 @@ export function getDevPreviewReferenceForCard(card: Pick<CardSpec, "kind" | "set
 }
 
 function cardSample(id: string, set: string, kind: CardKind, label: string, labelZh?: string): DevPreviewSample {
+  const metadata = getDevPreviewSampleMetadata(id);
+  if (!metadata) {
+    throw new Error(`Missing reference sample metadata: ${id}`);
+  }
   return {
     id,
     label,
     labelZh,
     kind,
+    nation: metadata.nation,
+    rarity: metadata.rarity,
     set,
     cardUrl: `${SAMPLE_ROOT}/${id}.card.json`,
     referenceUrl: `${REFERENCE_ROOT}/${id}.png`,
@@ -172,6 +249,8 @@ function hqSample(
     label,
     labelZh,
     kind: "hq",
+    nation,
+    rarity: "none",
     set: "base",
     referenceUrl,
     artworkReferenceCrop: {
@@ -203,4 +282,108 @@ function hqSample(
       appearance: DEFAULT_CARD_APPEARANCE,
     },
   };
+}
+
+function getSampleLabel(sample: DevPreviewSample, language: Language): string {
+  return language === "zh" ? sample.labelZh ?? sample.label : sample.label;
+}
+
+function getMatchTuple(sample: DevPreviewSample, card: CardSpec): number[] {
+  const normalizedTitle = card.title.trim().toLocaleLowerCase();
+  return [
+    normalizedTitle !== "" && [sample.label, sample.labelZh].some((label) => label?.toLocaleLowerCase() === normalizedTitle) ? 1 : 0,
+    sample.kind === card.kind ? 1 : 0,
+    sample.nation === card.nation ? 1 : 0,
+    sample.set === card.set ? 1 : 0,
+    sample.rarity === card.rarity ? 1 : 0,
+  ];
+}
+
+function compareMatchTuple(left: readonly number[], right: readonly number[]): number {
+  for (let index = 0; index < left.length; index += 1) {
+    const difference = left[index] - right[index];
+    if (difference !== 0) {
+      return difference;
+    }
+  }
+  return 0;
+}
+
+function getPresetIndex(items: readonly { id: string }[], id: string): number {
+  const index = items.findIndex((item) => item.id === id);
+  return index === -1 ? items.length : index;
+}
+
+function getDevPreviewSampleMetadata(id: string): { nation: string; rarity: string } | undefined {
+  return ({
+  "24th_uan": { nation: "poland", rarity: "standard" },
+  "37mm_bofors_gun": { nation: "poland", rarity: "limited" },
+  "45_mm_antitank_gun": { nation: "soviet", rarity: "standard" },
+  "4e_brigade": { nation: "france", rarity: "standard" },
+  "641st_rifles": { nation: "soviet", rarity: "elite" },
+  "6_pounder": { nation: "britain", rarity: "standard" },
+  "6th_brigade_nz_vet": { nation: "anzac", rarity: "standard" },
+  "76th_napoli": { nation: "italy", rarity: "standard" },
+  "980_volksgrenadier": { nation: "germany", rarity: "standard" },
+  "a26_invader": { nation: "us", rarity: "standard" },
+  "b29_superfortress": { nation: "us", rarity: "elite" },
+  "blackout": { nation: "germany", rarity: "standard" },
+  "cannone_da_47": { nation: "italy", rarity: "standard" },
+  "careless_talk": { nation: "germany", rarity: "standard" },
+  "cup_of_tea": { nation: "britain", rarity: "standard" },
+  "decisive_defense": { nation: "italy", rarity: "special" },
+  "dingo": { nation: "anzac", rarity: "standard" },
+  "farman_f_222": { nation: "france", rarity: "special" },
+  "fiat_br_20": { nation: "italy", rarity: "special" },
+  "fokker_d_xxi": { nation: "finland", rarity: "limited" },
+  "french_75": { nation: "france", rarity: "standard" },
+  "friendly_fire": { nation: "finland", rarity: "standard" },
+  "front_formation": { nation: "soviet", rarity: "elite" },
+  "g4m1_betty": { nation: "japan", rarity: "standard" },
+  "gordon_highlanders": { nation: "britain", rarity: "elite" },
+  "hampden_mk_i": { nation: "britain", rarity: "limited" },
+  "heroes_of_the_soviet_union": { nation: "soviet", rarity: "elite" },
+  "hold_the_line": { nation: "poland", rarity: "standard" },
+  "honor": { nation: "japan", rarity: "standard" },
+  "hotchkiss_h35": { nation: "france", rarity: "standard" },
+  "humber_mk_ii": { nation: "britain", rarity: "standard" },
+  "i16_ishak": { nation: "soviet", rarity: "standard" },
+  "il2m_pl": { nation: "poland", rarity: "limited" },
+  "in_the_navy": { nation: "us", rarity: "special" },
+  "interception": { nation: "britain", rarity: "standard" },
+  "jet_prototype": { nation: "germany", rarity: "limited" },
+  "ju_87_b_stuka": { nation: "germany", rarity: "standard" },
+  "katalina": { nation: "soviet", rarity: "standard" },
+  "kikka": { nation: "japan", rarity: "elite" },
+  "l640": { nation: "italy", rarity: "standard" },
+  "light_detachment_15": { nation: "finland", rarity: "standard" },
+  "m2a4": { nation: "us", rarity: "standard" },
+  "m_s_406": { nation: "france", rarity: "standard" },
+  "macchi_c_200": { nation: "italy", rarity: "standard" },
+  "maus": { nation: "germany", rarity: "elite" },
+  "mito_regiment": { nation: "japan", rarity: "standard" },
+  "model_25": { nation: "japan", rarity: "standard" },
+  "p40_warhawk": { nation: "us", rarity: "standard" },
+  "pak_36_fi": { nation: "finland", rarity: "standard" },
+  "plan": { nation: "neutral", rarity: "standard" },
+  "plan_d": { nation: "france", rarity: "standard" },
+  "plan_west": { nation: "poland", rarity: "standard" },
+  "pzl_p_7": { nation: "poland", rarity: "standard" },
+  "raaf_lightning_f4": { nation: "anzac", rarity: "special" },
+  "routed_troops": { nation: "neutral", rarity: "standard" },
+  "royal_scots": { nation: "britain", rarity: "standard" },
+  "salpa_line": { nation: "finland", rarity: "standard" },
+  "sdf": { nation: "britain", rarity: "special" },
+  "spitfire_mk_v": { nation: "britain", rarity: "standard" },
+  "t19_howitzer": { nation: "us", rarity: "standard" },
+  "t26_fi": { nation: "finland", rarity: "standard" },
+  "t70": { nation: "soviet", rarity: "standard" },
+  "task_force_44": { nation: "anzac", rarity: "standard" },
+  "the_regulars_vet": { nation: "us", rarity: "standard" },
+  "tks": { nation: "poland", rarity: "standard" },
+  "type_88_aa_gun": { nation: "japan", rarity: "standard" },
+  "usace": { nation: "us", rarity: "standard" },
+  "vanguard": { nation: "italy", rarity: "standard" },
+    "wespe": { nation: "germany", rarity: "limited" },
+  } satisfies Record<string, { nation: string; rarity: string }>)[id];
 }

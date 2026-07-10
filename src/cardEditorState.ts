@@ -6,7 +6,14 @@ export type CardEditorState = {
   card: CardSpec;
   hasUserEdits: boolean;
   clearedNumericFields: NumericCardField[];
+  artworkOrigin: ArtworkOrigin;
+  artworkRevision: number;
 };
+
+export type ArtworkOrigin =
+  | { kind: "none" }
+  | { kind: "user" }
+  | { kind: "auto-reference"; sampleId: string };
 
 export const NUMERIC_CARD_FIELDS = [
   "deployment",
@@ -215,6 +222,10 @@ export function createCardEditorState(
     clearedNumericFields: clearedNumericFields === undefined
       ? hasUserEdits ? getMissingEditableNumericFields(normalizedCard) : []
       : normalizeClearedNumericFields(clearedNumericFields),
+    artworkOrigin: normalizedCard.artwork.source === "upload"
+      ? { kind: "user" }
+      : { kind: "none" },
+    artworkRevision: 0,
   };
 }
 
@@ -237,7 +248,64 @@ export function applyUserCardUpdate(state: CardEditorState, update: CardUpdate):
     card: nextCard,
     hasUserEdits: true,
     clearedNumericFields: [...clearedNumericFields],
+    artworkOrigin: hasArtworkChanged(currentCard.artwork, nextCard.artwork)
+      ? { kind: "user" }
+      : state.artworkOrigin,
+    artworkRevision: hasArtworkChanged(currentCard.artwork, nextCard.artwork)
+      ? state.artworkRevision + 1
+      : state.artworkRevision,
   };
+}
+
+export function applyAutomaticArtwork(
+  state: CardEditorState,
+  sampleId: string,
+  artwork: CardSpec["artwork"],
+): CardEditorState {
+  if (state.artworkOrigin.kind === "user") {
+    return state;
+  }
+
+  return {
+    ...state,
+    card: normalizeCardSpec({ ...state.card, artwork }),
+    artworkOrigin: { kind: "auto-reference", sampleId },
+  };
+}
+
+export function clearAutomaticArtwork(state: CardEditorState): CardEditorState {
+  if (state.artworkOrigin.kind !== "auto-reference") {
+    return state;
+  }
+  return {
+    ...state,
+    card: normalizeCardSpec({
+      ...state.card,
+      artwork: { source: "none", crop: { x: 0, y: 0, scale: 1 } },
+    }),
+    artworkOrigin: { kind: "none" },
+  };
+}
+
+export function clearMismatchedAutomaticArtwork(
+  state: CardEditorState,
+  expectedSampleId: string,
+): CardEditorState {
+  return state.artworkOrigin.kind === "auto-reference"
+    && state.artworkOrigin.sampleId !== expectedSampleId
+    ? clearAutomaticArtwork(state)
+    : state;
+}
+
+export function applyUserArtworkIfRevisionMatches(
+  state: CardEditorState,
+  expectedArtworkRevision: number,
+  artwork: CardSpec["artwork"],
+): CardEditorState {
+  if (state.artworkRevision !== expectedArtworkRevision) {
+    return state;
+  }
+  return applyUserCardUpdate(state, (card) => ({ ...card, artwork }));
 }
 
 export function selectCardKind(
@@ -250,6 +318,8 @@ export function selectCardKind(
       card: getCardKindReferenceCard(kind, language),
       hasUserEdits: false,
       clearedNumericFields: [],
+      artworkOrigin: { kind: "none" },
+      artworkRevision: state.artworkRevision,
     };
   }
 
@@ -283,13 +353,26 @@ export function selectCardKind(
     }),
     hasUserEdits: true,
     clearedNumericFields: state.clearedNumericFields,
+    artworkOrigin: state.artworkOrigin,
+    artworkRevision: state.artworkRevision,
   };
 }
 
 export function replaceCardEditorContent(card: CardSpec): CardEditorState {
-  return createCardEditorState(card, true);
+  return {
+    ...createCardEditorState(card, true),
+    artworkOrigin: { kind: "user" },
+  };
 }
 
 export function resetCardEditorState(language: Language): CardEditorState {
   return createCardEditorState(getCardKindReferenceCard("tank", language), false);
+}
+
+function hasArtworkChanged(current: CardSpec["artwork"], next: CardSpec["artwork"]): boolean {
+  return current.source !== next.source
+    || current.dataUrl !== next.dataUrl
+    || current.crop.x !== next.crop.x
+    || current.crop.y !== next.crop.y
+    || current.crop.scale !== next.crop.scale;
 }

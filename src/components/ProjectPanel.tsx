@@ -1,23 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { CARD_TEXTURE_BOUNDS, normalizeCardSpec } from "../cardModel";
 import {
   CARD_EXPORT_SCALES,
-  createCardExportBlob,
+  CardExportError,
+  completeCardExportDelivery,
+  createCardExportResult,
+  getCardExportPreflight,
   getExportDimensions,
   getExportExtension,
+  type CardExportPreflight,
+  type CardExportResult,
   type CardExportFormat,
+  type ExportDiagnosticCode,
 } from "../exportCard";
 import type { RenderCardOptions } from "../canvas/renderAssets";
 import { localizeAssetPackName, localizeRuntimeMessage, type Language, type UiText } from "../i18n";
 import {
   LOCAL_LIBRARY_FILE_NAME,
   isDirectoryPickerAvailable,
-  loadSavedLibraryDirectoryHandle,
   pickWritableDirectory,
-  readLocalLibrary,
-  saveLibraryDirectoryHandle,
-  saveCardToLocalLibrary,
   writeBlobToDirectory,
+  type CardLibraryEntry,
   type LocalDirectoryHandle,
 } from "../localLibrary";
 import type { CardSpec } from "../types";
@@ -29,6 +32,9 @@ import {
 import { LOCAL_ASSET_PACK_MANIFEST } from "../assetPack";
 import type { ImageDiffMetrics } from "../visualDiff";
 import { consumeSelectedFile, readBrowserFile } from "../browserFiles";
+import { LocalLibraryWorkbench } from "./LocalLibraryWorkbench";
+import { ReferenceWorkbench } from "./ReferenceWorkbench";
+import type { DevPreviewSample, ReferenceFilters, ReferenceSort } from "../devPreviewCatalog";
 
 export const TEXTURE_CONTROL_LIMITS = CARD_TEXTURE_BOUNDS;
 
@@ -58,11 +64,21 @@ type ProjectPanelProps = {
   onReferenceCompare: (file: File | null) => void;
   showReferenceComparison: boolean;
   onReferenceComparisonToggle: (enabled: boolean) => void;
-  templateSamples: { id: string; label: string }[];
-  hqSamples: { id: string; label: string }[];
+  referenceSamples: readonly DevPreviewSample[];
+  selectedReferenceSampleId: string;
+  getVisibleReferenceSamples: (filters: ReferenceFilters, sort: ReferenceSort) => DevPreviewSample[];
+  onReferenceSampleSelect: (sampleId: string) => void;
+  onReferenceArtworkApply: (sampleId: string) => void;
+  autoArtworkEnabled: boolean;
+  onAutoArtworkToggle: (enabled: boolean) => void;
+  isArtworkMatching: boolean;
   isTemplateLoading: boolean;
   templateLoadError: string | null;
-  onTemplateSampleLoad?: (sampleId: string) => void;
+  onTemplateSampleLoad: (sampleId: string) => void;
+  activeLibraryEntryId: string | null;
+  onLibraryEntryLoad: (entry: CardLibraryEntry) => void;
+  onActiveLibraryEntryChange: (entryId: string | null) => void;
+  onLibraryDirectoryChange: () => void;
   onRandomTexture: () => void;
   textureSettings: {
     intensity: number;
@@ -70,68 +86,79 @@ type ProjectPanelProps = {
     mottle: number;
   };
   textureSourceLabel: string;
+  usesProgramTexture: boolean;
   onTextureSettingChange: (key: "intensity" | "randomness" | "mottle", value: number) => void;
 };
 
-type TemplateSamplePickerProps = {
-  label: string;
-  loadingLabel: string;
-  placeholder: string;
-  cardGroupLabel: string;
-  hqGroupLabel: string;
-  templateSamples: { id: string; label: string }[];
-  hqSamples: { id: string; label: string }[];
-  isLoading: boolean;
-  error: string | null;
-  onLoad: (sampleId: string) => void;
-};
+export type WorkbenchTab = "appearance" | "library" | "export" | "reference";
 
-export function TemplateSamplePicker({
-  label,
-  loadingLabel,
-  placeholder,
-  cardGroupLabel,
-  hqGroupLabel,
-  templateSamples,
-  hqSamples,
-  isLoading,
-  error,
-  onLoad,
-}: TemplateSamplePickerProps) {
+const WORKBENCH_TABS: WorkbenchTab[] = ["appearance", "library", "export", "reference"];
+
+export function WorkbenchTabList({
+  activeTab,
+  text,
+  onTabChange,
+}: {
+  activeTab: WorkbenchTab;
+  text: UiText["projectPanel"];
+  onTabChange: (tab: WorkbenchTab) => void;
+}) {
+  const labels: Record<WorkbenchTab, string> = {
+    appearance: text.tabAppearance,
+    library: text.tabLibrary,
+    export: text.tabExport,
+    reference: text.tabReference,
+  };
   return (
-    <label className="field-block compact-field-block">
-      <span>{isLoading ? loadingLabel : label}</span>
-      <select
-        name="card-template-sample"
-        value=""
-        disabled={isLoading}
-        aria-busy={isLoading}
-        onChange={(event) => {
-          if (event.target.value) {
-            onLoad(event.target.value);
-          }
-        }}
-      >
-        <option value="" disabled>
-          {placeholder}
-        </option>
-        <optgroup label={cardGroupLabel}>
-          {templateSamples.map((sample) => (
-            <option key={sample.id} value={sample.id}>
-              {sample.label}
-            </option>
-          ))}
-        </optgroup>
-        <optgroup label={hqGroupLabel}>
-          {hqSamples.map((sample) => (
-            <option key={sample.id} value={sample.id}>
-              {sample.label}
-            </option>
-          ))}
-        </optgroup>
-      </select>
-      {error ? <span className="status-warning">{error}</span> : null}
-    </label>
+    <div className="workbench-tabs" role="tablist" aria-label={text.heading}>
+      {WORKBENCH_TABS.map((tab, index) => (
+        <button
+          type="button"
+          role="tab"
+          id={`workbench-tab-${tab}`}
+          aria-controls={`workbench-panel-${tab}`}
+          aria-selected={activeTab === tab}
+          tabIndex={activeTab === tab ? 0 : -1}
+          key={tab}
+          onClick={() => onTabChange(tab)}
+          onKeyDown={(event) => {
+            if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+            event.preventDefault();
+            const nextIndex = event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? WORKBENCH_TABS.length - 1
+                : (index + (event.key === "ArrowRight" ? 1 : -1) + WORKBENCH_TABS.length) % WORKBENCH_TABS.length;
+            const nextTab = WORKBENCH_TABS[nextIndex];
+            onTabChange(nextTab);
+            document.getElementById(`workbench-tab-${nextTab}`)?.focus();
+          }}
+        >
+          {labels[tab]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function WorkbenchTabPanel({
+  activeTab,
+  tab,
+  children,
+}: {
+  activeTab: WorkbenchTab;
+  tab: WorkbenchTab;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      role="tabpanel"
+      id={`workbench-panel-${tab}`}
+      aria-labelledby={`workbench-tab-${tab}`}
+      hidden={activeTab !== tab}
+    >
+      {children}
+    </section>
   );
 }
 
@@ -153,62 +180,77 @@ export function ProjectPanel({
   onReferenceCompare,
   showReferenceComparison,
   onReferenceComparisonToggle,
-  templateSamples,
-  hqSamples,
+  referenceSamples,
+  selectedReferenceSampleId,
+  getVisibleReferenceSamples,
+  onReferenceSampleSelect,
+  onReferenceArtworkApply,
+  autoArtworkEnabled,
+  onAutoArtworkToggle,
+  isArtworkMatching,
   isTemplateLoading,
   templateLoadError,
   onTemplateSampleLoad,
+  activeLibraryEntryId,
+  onLibraryEntryLoad,
+  onActiveLibraryEntryChange,
+  onLibraryDirectoryChange,
   onRandomTexture,
   textureSettings,
   textureSourceLabel,
+  usesProgramTexture,
   onTextureSettingChange,
 }: ProjectPanelProps) {
+  const [activeTab, setActiveTab] = useState<WorkbenchTab>("appearance");
   const [exportFormat, setExportFormat] = useState<CardExportFormat>("png");
   const [exportScale, setExportScale] = useState(1);
   const [exportExposure, setExportExposure] = useState(0);
   const [exportContrast, setExportContrast] = useState(0);
   const [exportDirectory, setExportDirectory] = useState<LocalDirectoryHandle | null>(null);
-  const [exportStatus, setExportStatus] = useState<string | null>(null);
-  const [libraryDirectory, setLibraryDirectory] = useState<LocalDirectoryHandle | null>(null);
-  const [libraryStatus, setLibraryStatus] = useState<string | null>(null);
-  const [libraryError, setLibraryError] = useState<string | null>(null);
-  const [librarySavePending, setLibrarySavePending] = useState(false);
+  const [exportResult, setExportResult] = useState<CardExportResult | null>(null);
+  const [exportError, setExportError] = useState<CardExportError | null>(null);
+  const [isExportPending, setIsExportPending] = useState(false);
+  const [canvasAvailable, setCanvasAvailable] = useState(false);
+  const exportPendingRef = useRef(false);
+  const exportAttemptRef = useRef(0);
   const exportDimensions = getExportDimensions(exportScale);
   const directoryPickerAvailable = isDirectoryPickerAvailable();
-  const artworkReady = isArtworkReadyForExport(card.artwork.dataUrl, artworkImage, artworkImageSource);
+  const artworkReady = !isArtworkMatching
+    && isArtworkReadyForExport(card.artwork.dataUrl, artworkImage, artworkImageSource);
+  const exportPreflight = getCardExportPreflight({
+    canvasAvailable,
+    artworkReady,
+    assetPackWarnings: assetPackStatus?.warnings ?? [],
+    usesProgramTexture,
+    requiresPrivateConfirmation: assetPackStatus?.requiresPrivateExportConfirm ?? false,
+  });
 
   useEffect(() => {
-    if (!directoryPickerAvailable) {
-      return;
-    }
-
-    let cancelled = false;
-    void loadSavedLibraryDirectoryHandle()
-      .then((directory) => {
-        if (!cancelled && directory) {
-          setLibraryDirectory(directory);
-          setLibraryStatus(text.libraryRemembered(directory.name));
-        }
-      })
-      .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [directoryPickerAvailable, text]);
+    setCanvasAvailable(Boolean(canvasRef.current));
+  }, [canvasRef]);
 
   async function exportCard() {
+    if (exportPendingRef.current) {
+      return;
+    }
     const canvas = canvasRef.current;
     if (!canvas) {
+      setCanvasAvailable(false);
       return;
     }
     if (!canStartCardExport(assetPackStatus, () => window.confirm(text.privateCardConfirm), artworkReady)) {
       return;
     }
 
+    const attemptId = exportAttemptRef.current + 1;
+    exportAttemptRef.current = attemptId;
+    exportPendingRef.current = true;
+    setIsExportPending(true);
+    setExportResult(null);
+    setExportError(null);
     const fileName = `${safeFileName(card.title)}.${getExportExtension(exportFormat)}`;
     try {
-      const blob = await createCardExportBlob(canvas, {
+      const result = await createCardExportResult(canvas, {
         format: exportFormat,
         scale: exportScale,
         exposure: exportExposure,
@@ -218,16 +260,35 @@ export function ProjectPanel({
         card,
         artworkImage,
         renderOptions,
-      });
-      if (exportDirectory) {
-        await writeBlobToDirectory(exportDirectory, fileName, blob);
-        setExportStatus(text.savedToDirectory(exportDirectory.name));
-      } else {
-        downloadBlob(blob, fileName);
-        setExportStatus(text.savedToDownloads);
+      }, fileName);
+      if (attemptId !== exportAttemptRef.current) {
+        return;
+      }
+      setExportResult(result);
+      const deliveredResult = await completeCardExportDelivery(result, exportDirectory
+        ? {
+            kind: "directory",
+            directoryName: exportDirectory.name,
+            write: () => writeBlobToDirectory(exportDirectory, fileName, result.blob),
+          }
+        : {
+            kind: "download",
+            download: () => downloadBlob(result.blob, fileName),
+          });
+      if (attemptId === exportAttemptRef.current) {
+        setExportResult(deliveredResult);
       }
     } catch (error) {
-      setExportStatus(error instanceof Error ? error.message : text.exportFailed);
+      if (attemptId === exportAttemptRef.current) {
+        setExportError(error instanceof CardExportError
+          ? error
+          : new CardExportError("encode", "encode-failed", error));
+      }
+    } finally {
+      if (attemptId === exportAttemptRef.current) {
+        exportPendingRef.current = false;
+        setIsExportPending(false);
+      }
     }
   }
 
@@ -253,12 +314,6 @@ export function ProjectPanel({
     event.target.value = "";
   }
 
-  function compareReference(event: React.ChangeEvent<HTMLInputElement>) {
-    const input = event.target;
-    const file = event.target.files?.[0] ?? null;
-    void compareReferenceFile(file, input);
-  }
-
   async function compareReferenceFile(file: File | null, input: HTMLInputElement) {
     if (file && !(await isImportableReferenceImageFile(file))) {
       window.alert(text.invalidReferenceImage);
@@ -270,50 +325,14 @@ export function ProjectPanel({
   }
 
   async function chooseExportDirectory() {
+    if (exportPendingRef.current) {
+      return;
+    }
     try {
       const directory = await pickWritableDirectory();
       setExportDirectory(directory);
-      setExportStatus(text.exportDirectorySelected(directory.name));
     } catch (error) {
-      setExportStatus(error instanceof Error ? error.message : text.directoryUnavailable);
-    }
-  }
-
-  async function chooseLibraryDirectory() {
-    try {
-      setLibraryError(null);
-      const directory = await pickWritableDirectory();
-      const library = await readLocalLibrary(directory);
-      await saveLibraryDirectoryHandle(directory);
-      setLibraryDirectory(directory);
-      setLibraryStatus(text.libraryReady(directory.name, library.cards.length));
-    } catch (error) {
-      setLibraryError(error instanceof Error ? error.message : text.libraryUnavailable);
-    }
-  }
-
-  async function saveToLibrary() {
-    let savedLibraryCount: number | null = null;
-    let savedDirectoryName = "";
-    try {
-      setLibrarySavePending(true);
-      setLibraryError(null);
-      const directory = libraryDirectory ?? await pickWritableDirectory();
-      const library = await saveCardToLocalLibrary(directory, card);
-      savedLibraryCount = library.cards.length;
-      savedDirectoryName = directory.name;
-      setLibraryDirectory(directory);
-      setLibraryStatus(text.librarySaved(directory.name, library.cards.length));
-      await saveLibraryDirectoryHandle(directory);
-    } catch (error) {
-      if (savedLibraryCount !== null) {
-        setLibraryStatus(text.librarySaved(savedDirectoryName, savedLibraryCount));
-        setLibraryError(error instanceof Error ? error.message : text.libraryRememberFailed);
-        return;
-      }
-      setLibraryError(error instanceof Error ? error.message : text.libraryUnavailable);
-    } finally {
-      setLibrarySavePending(false);
+      setExportError(new CardExportError("write", "write-failed", error));
     }
   }
 
@@ -324,255 +343,217 @@ export function ProjectPanel({
         <span>{text.scope}</span>
       </div>
 
-      <div className="project-section texture-section">
-        <div className="section-heading">
-          <p>{text.textureControls}</p>
-          <span>{textureSourceLabel}</span>
-        </div>
-        <TextureRange
-          label={text.textureIntensity}
-          name="card-texture-intensity"
-          value={textureSettings.intensity}
-          min={TEXTURE_CONTROL_LIMITS.intensity.min}
-          max={TEXTURE_CONTROL_LIMITS.intensity.max}
-          onChange={(value) => onTextureSettingChange("intensity", value)}
-        />
-        <TextureRange
-          label={text.textureRandomness}
-          name="card-texture-randomness"
-          value={textureSettings.randomness}
-          min={TEXTURE_CONTROL_LIMITS.randomness.min}
-          max={TEXTURE_CONTROL_LIMITS.randomness.max}
-          onChange={(value) => onTextureSettingChange("randomness", value)}
-        />
-        <TextureRange
-          label={text.textureMottle}
-          name="card-texture-mottle"
-          value={textureSettings.mottle}
-          min={TEXTURE_CONTROL_LIMITS.mottle.min}
-          max={TEXTURE_CONTROL_LIMITS.mottle.max}
-          onChange={(value) => onTextureSettingChange("mottle", value)}
-        />
-        <button type="button" className="primary-action" onClick={onRandomTexture}>
-          {text.randomTexture}
-        </button>
+      <WorkbenchTabList activeTab={activeTab} text={text} onTabChange={setActiveTab} />
+
+      <div className="workbench-tab-content">
+        <WorkbenchTabPanel activeTab={activeTab} tab="appearance">
+            <div className="project-section texture-section">
+              <div className="section-heading">
+                <p>{text.textureControls}</p>
+                <span>{textureSourceLabel}</span>
+              </div>
+              <TextureRange label={text.textureIntensity} name="card-texture-intensity" value={textureSettings.intensity} min={TEXTURE_CONTROL_LIMITS.intensity.min} max={TEXTURE_CONTROL_LIMITS.intensity.max} onChange={(value) => onTextureSettingChange("intensity", value)} />
+              <TextureRange label={text.textureRandomness} name="card-texture-randomness" value={textureSettings.randomness} min={TEXTURE_CONTROL_LIMITS.randomness.min} max={TEXTURE_CONTROL_LIMITS.randomness.max} onChange={(value) => onTextureSettingChange("randomness", value)} />
+              <TextureRange label={text.textureMottle} name="card-texture-mottle" value={textureSettings.mottle} min={TEXTURE_CONTROL_LIMITS.mottle.min} max={TEXTURE_CONTROL_LIMITS.mottle.max} onChange={(value) => onTextureSettingChange("mottle", value)} />
+              <button type="button" className="primary-action" onClick={onRandomTexture}>{text.randomTexture}</button>
+            </div>
+
+            <div className="project-section">
+              <div className="section-heading">
+                <p>{text.stylePack}</p>
+                <span>{assetPackStatus ? text.assetsLoaded : text.assetsPlaceholder}</span>
+              </div>
+              <label className="file-button">
+                {text.loadAssets}
+                <input
+                  name="local-asset-pack"
+                  type="file"
+                  accept="application/json,.json,image/*,.ttf,.otf,.woff,.woff2"
+                  multiple
+                  onChange={importAssetPack}
+                  {...{ webkitdirectory: "", directory: "" }}
+                />
+              </label>
+            </div>
+
+            <div className="asset-pack-status">
+              <p><span>{text.manifest}</span><strong>{LOCAL_ASSET_PACK_MANIFEST}</strong></p>
+              {assetPackStatus ? (
+                <>
+                  <p>
+                    <span>{localizeAssetPackName(language, assetPackStatus.name)}</span>
+                    <strong>{text.imageFontCounts(assetPackStatus.imageCount, assetPackStatus.fontCount)}</strong>
+                  </p>
+                  {assetPackStatus.warnings.map((warning) => (
+                    <p className="status-warning" key={warning}>{localizeRuntimeMessage(language, warning)}</p>
+                  ))}
+                </>
+              ) : null}
+              {assetPackError ? <p className="status-warning">{localizeRuntimeMessage(language, assetPackError)}</p> : null}
+            </div>
+        </WorkbenchTabPanel>
+
+        <WorkbenchTabPanel activeTab={activeTab} tab="library">
+            <div className="project-section">
+              <div className="section-heading">
+                <p>{text.projectJson}</p>
+                <span>{text.projectJsonScope}</span>
+              </div>
+              <div className="export-stack two-up">
+                <button type="button" onClick={exportJson}>{text.saveJson}</button>
+                <label className="file-button">
+                  {text.openJson}
+                  <input name="project-json-import" type="file" accept="application/json,.json" onChange={importJson} />
+                </label>
+              </div>
+            </div>
+            <div className="project-section">
+              <div className="section-heading">
+                <p>{text.localLibrary}</p>
+                <span>{LOCAL_LIBRARY_FILE_NAME}</span>
+              </div>
+              <LocalLibraryWorkbench card={card} language={language} text={text} activeEntryId={activeLibraryEntryId} onEntryLoad={onLibraryEntryLoad} onActiveEntryChange={onActiveLibraryEntryChange} onDirectoryChange={onLibraryDirectoryChange} />
+            </div>
+        </WorkbenchTabPanel>
+
+        <WorkbenchTabPanel activeTab={activeTab} tab="export">
+            <div className="project-section export-workbench">
+              <div className="section-heading">
+                <p>{text.exportWorkbench}</p>
+                <span>{exportDimensions.width} x {exportDimensions.height}</span>
+              </div>
+              <div className="control-grid">
+                <label>
+                  <span>{text.exportFormat}</span>
+                  <select name="card-export-format" value={exportFormat} onChange={(event) => setExportFormat(event.target.value as CardExportFormat)}>
+                    <option value="png">PNG</option>
+                    <option value="jpg">JPG</option>
+                    <option value="pdf">PDF</option>
+                  </select>
+                </label>
+                <label>
+                  <span>{text.exportSize}</span>
+                  <select name="card-export-scale" value={exportScale} onChange={(event) => setExportScale(Number(event.target.value))}>
+                    {CARD_EXPORT_SCALES.map((scale) => {
+                      const dimensions = getExportDimensions(scale);
+                      return <option key={scale} value={scale}>{scale}x · {dimensions.width} x {dimensions.height}</option>;
+                    })}
+                  </select>
+                </label>
+              </div>
+              <ExportRange label={text.exposure} name="card-export-exposure" value={exportExposure} onChange={setExportExposure} />
+              <ExportRange label={text.contrast} name="card-export-contrast" value={exportContrast} onChange={setExportContrast} />
+              <div className="export-stack two-up">
+                <button type="button" disabled={!directoryPickerAvailable || isExportPending} onClick={chooseExportDirectory}>{text.chooseExportDirectory}</button>
+                <button type="button" className="primary-action" disabled={exportPreflight.status === "blocking" || isExportPending} onClick={exportCard}>
+                  {assetPackStatus?.requiresPrivateExportConfirm ? text.exportPrivateCard : text.exportCard}
+                </button>
+              </div>
+              {!directoryPickerAvailable ? <p className="status-warning">{text.directoryUnsupported}</p> : null}
+            </div>
+            <ExportDiagnostics text={text} preflight={exportPreflight} result={exportResult} error={exportError} />
+        </WorkbenchTabPanel>
+
+        <WorkbenchTabPanel activeTab={activeTab} tab="reference">
+            <ReferenceWorkbench
+              card={card}
+              language={language}
+              text={text}
+              samples={referenceSamples}
+              selectedSampleId={selectedReferenceSampleId}
+              getVisibleSamples={getVisibleReferenceSamples}
+              onSampleSelect={onReferenceSampleSelect}
+              onArtworkApply={onReferenceArtworkApply}
+              onFullCardLoad={onTemplateSampleLoad}
+              autoArtworkEnabled={autoArtworkEnabled}
+              onAutoArtworkToggle={onAutoArtworkToggle}
+              showReferenceComparison={showReferenceComparison}
+              onReferenceComparisonToggle={onReferenceComparisonToggle}
+              onReferenceFileSelect={compareReferenceFile}
+              isLoading={isTemplateLoading}
+              error={templateLoadError}
+              referenceDiff={referenceDiff}
+              referenceDiffError={referenceDiffError}
+            />
+        </WorkbenchTabPanel>
       </div>
 
-      <div className="project-section export-workbench">
-        <div className="section-heading">
-          <p>{text.exportWorkbench}</p>
-          <span>{exportDimensions.width} x {exportDimensions.height}</span>
-        </div>
-        <div className="control-grid">
-          <label>
-            <span>{text.exportFormat}</span>
-            <select
-              name="card-export-format"
-              value={exportFormat}
-              onChange={(event) => setExportFormat(event.target.value as CardExportFormat)}
-            >
-              <option value="png">PNG</option>
-              <option value="jpg">JPG</option>
-              <option value="pdf">PDF</option>
-            </select>
-          </label>
-          <label>
-            <span>{text.exportSize}</span>
-            <select
-              name="card-export-scale"
-              value={exportScale}
-              onChange={(event) => setExportScale(Number(event.target.value))}
-            >
-              {CARD_EXPORT_SCALES.map((scale) => {
-                const dimensions = getExportDimensions(scale);
-                return (
-                  <option key={scale} value={scale}>
-                    {scale}x · {dimensions.width} x {dimensions.height}
-                  </option>
-                );
-              })}
-            </select>
-          </label>
-        </div>
-        <ExportRange
-          label={text.exposure}
-          name="card-export-exposure"
-          value={exportExposure}
-          onChange={setExportExposure}
-        />
-        <ExportRange
-          label={text.contrast}
-          name="card-export-contrast"
-          value={exportContrast}
-          onChange={setExportContrast}
-        />
+      <footer className="workbench-footer">
         <div className="export-stack">
-          <button type="button" disabled={!directoryPickerAvailable} onClick={chooseExportDirectory}>
-            {text.chooseExportDirectory}
-          </button>
-          <button type="button" className="primary-action" disabled={!artworkReady} onClick={exportCard}>
-            {assetPackStatus?.requiresPrivateExportConfirm ? text.exportPrivateCard : text.exportCard}
-          </button>
+          <button type="button" className="danger-action" onClick={onCardReset}>{text.resetCard}</button>
         </div>
-        {exportStatus ? <p className="status-line">{exportStatus}</p> : null}
-        {!directoryPickerAvailable ? <p className="status-warning">{text.directoryUnsupported}</p> : null}
-      </div>
-
-      <div className="project-section">
-        <div className="section-heading">
-          <p>{text.projectJson}</p>
-          <span>{text.projectJsonScope}</span>
+        <div className="summary-list">
+          <p><span>{text.output}</span><strong>{exportDimensions.width} x {exportDimensions.height} {exportFormat.toUpperCase()}</strong></p>
+          <p><span>{text.artwork}</span><strong>{card.artwork.source === "upload" ? text.artworkEmbedded : text.artworkNotEmbedded}</strong></p>
+          <p><span>{text.cardScope}</span><strong>{text.cardFaceOnly}</strong></p>
+          <p><span>{text.assets}</span><strong>{assetPackStatus ? text.assetsLoaded : text.assetsPlaceholder}</strong></p>
         </div>
-        <div className="export-stack two-up">
-          <button type="button" onClick={exportJson}>
-            {text.saveJson}
-          </button>
-          <label className="file-button">
-            {text.openJson}
-            <input name="project-json-import" type="file" accept="application/json,.json" onChange={importJson} />
-          </label>
-        </div>
-      </div>
-
-      <div className="project-section">
-        <div className="section-heading">
-          <p>{text.localLibrary}</p>
-          <span>{LOCAL_LIBRARY_FILE_NAME}</span>
-        </div>
-        <div className="export-stack two-up">
-          <button type="button" disabled={!directoryPickerAvailable} onClick={chooseLibraryDirectory}>
-            {text.chooseLibraryDirectory}
-          </button>
-          <button type="button" disabled={!directoryPickerAvailable || librarySavePending} onClick={saveToLibrary}>
-            {text.saveToLibrary}
-          </button>
-        </div>
-        {libraryStatus ? <p className="status-line">{libraryStatus}</p> : null}
-        {libraryError ? <p className="status-warning">{localizeRuntimeMessage(language, libraryError)}</p> : null}
-      </div>
-
-      <div className="project-section">
-        <div className="section-heading">
-          <p>{text.referenceTools}</p>
-          <span>{showReferenceComparison ? text.referenceOn : text.referenceOff}</span>
-        </div>
-        <label className="toggle-row">
-          <input
-            name="reference-comparison-toggle"
-            type="checkbox"
-            checked={showReferenceComparison}
-            onChange={(event) => onReferenceComparisonToggle(event.target.checked)}
-          />
-          <span>{text.showReference}</span>
-        </label>
-        <label className="file-button">
-          {text.comparePng}
-          <input name="reference-card-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={compareReference} />
-        </label>
-        {onTemplateSampleLoad && (templateSamples.length || hqSamples.length) ? (
-          <TemplateSamplePicker
-            label={text.sampleTemplate}
-            loadingLabel={text.loadingSampleTemplate}
-            placeholder={text.chooseSampleTemplate}
-            cardGroupLabel={text.cardTemplate}
-            hqGroupLabel={text.hqTemplate}
-            templateSamples={templateSamples}
-            hqSamples={hqSamples}
-            isLoading={isTemplateLoading}
-            error={templateLoadError ? localizeRuntimeMessage(language, templateLoadError) : null}
-            onLoad={onTemplateSampleLoad}
-          />
-        ) : null}
-      </div>
-
-      <div className="project-section">
-        <div className="section-heading">
-          <p>{text.stylePack}</p>
-          <span>{assetPackStatus ? text.assetsLoaded : text.assetsPlaceholder}</span>
-        </div>
-        <label className="file-button">
-          {text.loadAssets}
-          <input
-            name="local-asset-pack"
-            type="file"
-            accept="application/json,.json,image/*,.ttf,.otf,.woff,.woff2"
-            multiple
-            onChange={importAssetPack}
-            {...{ webkitdirectory: "", directory: "" }}
-          />
-        </label>
-      </div>
-
-      <div className="export-stack">
-        <button type="button" className="danger-action" onClick={onCardReset}>
-          {text.resetCard}
-        </button>
-      </div>
-
-      <div className="summary-list">
-        <p>
-          <span>{text.output}</span>
-          <strong>{exportDimensions.width} x {exportDimensions.height} {exportFormat.toUpperCase()}</strong>
-        </p>
-        <p>
-          <span>{text.artwork}</span>
-          <strong>{card.artwork.source === "upload" ? text.artworkEmbedded : text.artworkNotEmbedded}</strong>
-        </p>
-        <p>
-          <span>{text.cardScope}</span>
-          <strong>{text.cardFaceOnly}</strong>
-        </p>
-        <p>
-          <span>{text.assets}</span>
-          <strong>{assetPackStatus ? text.assetsLoaded : text.assetsPlaceholder}</strong>
-        </p>
-      </div>
-
-      <div className="asset-pack-status">
-        <p>
-          <span>{text.manifest}</span>
-          <strong>{LOCAL_ASSET_PACK_MANIFEST}</strong>
-        </p>
-        {assetPackStatus ? (
-          <>
-            <p>
-              <span>{localizeAssetPackName(language, assetPackStatus.name)}</span>
-              <strong>{text.imageFontCounts(assetPackStatus.imageCount, assetPackStatus.fontCount)}</strong>
-            </p>
-            {assetPackStatus.warnings.slice(0, 2).map((warning) => (
-              <p className="status-warning" key={warning}>
-                {localizeRuntimeMessage(language, warning)}
-              </p>
-            ))}
-          </>
-        ) : null}
-        {assetPackError ? <p className="status-warning">{localizeRuntimeMessage(language, assetPackError)}</p> : null}
-      </div>
-
-      <div className="diff-status">
-        {referenceDiff ? (
-          <>
-            <p>
-              <span>{text.averageDiff}</span>
-              <strong>{referenceDiff.meanAbsoluteError}</strong>
-            </p>
-            <p>
-              <span>{text.overallDiff}</span>
-              <strong>{referenceDiff.rootMeanSquareError}</strong>
-            </p>
-            <p>
-              <span>{text.changed}</span>
-              <strong>{formatPercent(referenceDiff.changedPixelRatio)}</strong>
-            </p>
-          </>
-        ) : null}
-        {referenceDiffError ? (
-          <p className="status-warning">{localizeRuntimeMessage(language, referenceDiffError)}</p>
-        ) : null}
-      </div>
-
+      </footer>
     </aside>
   );
+}
+
+export function ExportDiagnostics({
+  text,
+  preflight,
+  result,
+  error,
+}: {
+  text: UiText["projectPanel"];
+  preflight: CardExportPreflight;
+  result: CardExportResult | null;
+  error: CardExportError | null;
+}) {
+  const statusLabel = preflight.status === "ready"
+    ? text.exportReady
+    : preflight.status === "warning" ? text.exportWarning : text.exportBlocking;
+  return (
+    <div className={`export-diagnostics is-${preflight.status}`} role="status" aria-live="polite">
+      <div className="section-heading"><p>{statusLabel}</p><span>{preflight.items.length}</span></div>
+      {preflight.items.length ? (
+        <ul>
+          {preflight.items.map((item, index) => (
+            <li className={`diagnostic-${item.severity}`} key={`${item.code}-${index}`}>
+              {diagnosticText(item.code, text)}{item.detail ? ` ${item.detail}` : ""}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {result ? (
+        <div className="export-result">
+          <strong>{result.fileName}</strong>
+          <span>{result.format.toUpperCase()} · {result.width} x {result.height} · {formatBytes(result.byteLength)} · {Math.round(result.durationMs)} ms</span>
+          <span>{exportTargetText(result, text)}</span>
+        </div>
+      ) : <p className="empty-state">{text.exportNoRun}</p>}
+      {error ? <p className="status-warning" role="alert">{diagnosticText(error.code, text)}</p> : null}
+    </div>
+  );
+}
+
+function exportTargetText(result: CardExportResult, text: UiText["projectPanel"]): string {
+  if (result.target.kind === "download") return text.exportDownloadTriggered;
+  if (result.target.kind === "directory") return text.exportDirectoryWritten(result.target.directoryName);
+  return text.exportGenerated;
+}
+
+function diagnosticText(code: ExportDiagnosticCode, text: UiText["projectPanel"]): string {
+  const messages: Record<ExportDiagnosticCode, string> = {
+    "canvas-unavailable": text.diagnosticCanvasUnavailable,
+    "artwork-not-ready": text.diagnosticArtworkNotReady,
+    "asset-pack-warning": text.diagnosticAssetPackWarning,
+    "program-texture": text.diagnosticProgramTexture,
+    "private-confirmation-required": text.diagnosticPrivateConfirmation,
+    "render-failed": text.diagnosticRenderFailed,
+    "encode-failed": text.diagnosticEncodeFailed,
+    "write-failed": text.diagnosticWriteFailed,
+    "download-failed": text.diagnosticDownloadFailed,
+  };
+  return messages[code];
+}
+
+function formatBytes(byteLength: number): string {
+  return byteLength < 1024 ? `${byteLength} B` : `${(byteLength / 1024).toFixed(1)} KB`;
 }
 
 export function downloadBlob(blob: Blob, fileName: string): void {

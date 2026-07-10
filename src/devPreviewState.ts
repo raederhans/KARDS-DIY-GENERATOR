@@ -38,6 +38,15 @@ export type DevPreviewSampleRequestState = {
   currentCardEditVersion: number;
 };
 
+export type AutomaticArtworkRequestState = {
+  isMounted: boolean;
+  requestId: number;
+  activeRequestId: number;
+  matchingKeyAtStart: string;
+  currentMatchingKey: string;
+  artworkOriginKind: "none" | "user" | "auto-reference";
+};
+
 export function applyCardUpdate(currentCard: CardSpec, update: CardUpdate): CardSpec {
   const normalizedCurrent = normalizeCardSpec(currentCard);
   return normalizeCardSpec(typeof update === "function" ? update(normalizedCurrent) : update);
@@ -89,4 +98,11 @@ export function shouldApplyDevPreviewSampleResult(state: DevPreviewSampleRequest
     state.requestId === state.activeRequestId &&
     state.cardEditVersionAtStart === state.currentCardEditVersion
   );
+}
+
+export function shouldApplyAutomaticArtworkResult(state: AutomaticArtworkRequestState): boolean {
+  return state.isMounted
+    && state.requestId === state.activeRequestId
+    && state.matchingKeyAtStart === state.currentMatchingKey
+    && state.artworkOriginKind !== "user";
 }

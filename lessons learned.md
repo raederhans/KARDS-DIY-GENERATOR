@@ -47,3 +47,6 @@
 - A release verifier only protects deployment when CI and every host call the same default verified build entry; a parallel CI-only verifier can silently drift away from the artifact actually uploaded.
 - Remote asset-pack limits must be enforced while streaming and accumulated across unique resources; checking bytes or pixels after every asset has loaded does not bound peak memory or network use.
 - Artwork export readiness is an identity contract, not a boolean loading flag: the decoded image must be tied to the exact current source so an older async decode cannot authorize a newer card export.
+- Stateful tab panels should stay mounted and use `hidden`; conditional unmounting silently discards filters, opened directories, and other workbench state while parent-level identifiers remain active.
+- File System Access permission upgrades for remembered handles must be requested directly from the user click before entering a Web Lock or awaiting file reads; the lock should still own the later read-modify-write transaction.
+- Automatic and explicit artwork loaders are concurrent state machines: preserve an artwork-specific revision for user edits, clear stale automatic art on failed rematches, and cancel automatic work only when an explicit result is successfully committed.

@@ -18,6 +18,64 @@ export type CardExportSource = {
   renderOptions?: RenderCardOptions;
 };
 
+export type ExportDiagnosticPhase = "preflight" | "render" | "encode" | "write" | "download";
+
+export type ExportDiagnosticCode =
+  | "canvas-unavailable"
+  | "artwork-not-ready"
+  | "asset-pack-warning"
+  | "program-texture"
+  | "private-confirmation-required"
+  | "render-failed"
+  | "encode-failed"
+  | "write-failed"
+  | "download-failed";
+
+export type ExportDiagnosticItem = {
+  phase: ExportDiagnosticPhase;
+  severity: "info" | "warning" | "blocking";
+  code: ExportDiagnosticCode;
+  detail?: string;
+};
+
+export type CardExportPreflight = {
+  status: "ready" | "warning" | "blocking";
+  items: ExportDiagnosticItem[];
+};
+
+export type CardExportTarget =
+  | { kind: "generated" }
+  | { kind: "directory"; status: "written"; directoryName: string }
+  | { kind: "download"; status: "triggered" };
+
+export type CardExportResult = {
+  blob: Blob;
+  fileName: string;
+  format: CardExportFormat;
+  mimeType: string;
+  width: number;
+  height: number;
+  byteLength: number;
+  durationMs: number;
+  normalizedOptions: CardExportOptions;
+  target: CardExportTarget;
+};
+
+export type CardExportDelivery =
+  | { kind: "directory"; directoryName: string; write: () => Promise<void> }
+  | { kind: "download"; download: () => void };
+
+export class CardExportError extends Error {
+  constructor(
+    public readonly phase: ExportDiagnosticPhase,
+    public readonly code: ExportDiagnosticCode,
+    cause?: unknown,
+  ) {
+    super(cause instanceof Error ? cause.message : "Card export failed.", { cause });
+    this.name = "CardExportError";
+  }
+}
+
 export const CARD_EXPORT_SCALES = [1, 2, 3] as const;
 
 export function getExportDimensions(scale: number): { width: number; height: number } {
@@ -52,25 +110,111 @@ export function normalizeExportOptions(options: CardExportOptions): CardExportOp
   };
 }
 
+export function getCardExportPreflight(input: {
+  canvasAvailable: boolean;
+  artworkReady: boolean;
+  assetPackWarnings: readonly string[];
+  usesProgramTexture: boolean;
+  requiresPrivateConfirmation: boolean;
+}): CardExportPreflight {
+  const items: ExportDiagnosticItem[] = [];
+  if (!input.canvasAvailable) {
+    items.push({ phase: "preflight", severity: "blocking", code: "canvas-unavailable" });
+  }
+  if (!input.artworkReady) {
+    items.push({ phase: "preflight", severity: "blocking", code: "artwork-not-ready" });
+  }
+  for (const warning of input.assetPackWarnings) {
+    items.push({ phase: "preflight", severity: "warning", code: "asset-pack-warning", detail: warning });
+  }
+  if (input.usesProgramTexture) {
+    items.push({ phase: "preflight", severity: "info", code: "program-texture" });
+  }
+  if (input.requiresPrivateConfirmation) {
+    items.push({ phase: "preflight", severity: "info", code: "private-confirmation-required" });
+  }
+  return {
+    status: items.some((item) => item.severity === "blocking")
+      ? "blocking"
+      : items.some((item) => item.severity === "warning") ? "warning" : "ready",
+    items,
+  };
+}
+
 export async function createCardExportBlob(
   sourceCanvas: HTMLCanvasElement,
   options: CardExportOptions,
   source?: CardExportSource,
 ): Promise<Blob> {
-  const normalizedOptions = normalizeExportOptions(options);
-  const exportCanvas = source
-    ? renderCardExportCanvas(source, normalizedOptions)
-    : renderAdjustedCanvas(sourceCanvas, normalizedOptions);
+  return (await createCardExportResult(sourceCanvas, options, source)).blob;
+}
 
-  if (normalizedOptions.format === "pdf") {
-    return createPdfBlob(exportCanvas, normalizedOptions.jpegQuality);
+export async function createCardExportResult(
+  sourceCanvas: HTMLCanvasElement,
+  options: CardExportOptions,
+  source?: CardExportSource,
+  fileName?: string,
+): Promise<CardExportResult> {
+  const startedAt = performance.now();
+  const normalizedOptions = normalizeExportOptions(options);
+  let exportCanvas: HTMLCanvasElement;
+  try {
+    exportCanvas = source
+      ? renderCardExportCanvas(source, normalizedOptions)
+      : renderAdjustedCanvas(sourceCanvas, normalizedOptions);
+  } catch (error) {
+    throw new CardExportError("render", "render-failed", error);
   }
 
-  return canvasToBlob(
-    exportCanvas,
-    getExportMimeType(normalizedOptions.format),
-    normalizedOptions.format === "jpg" ? normalizedOptions.jpegQuality : undefined,
-  );
+  let blob: Blob;
+  try {
+    blob = normalizedOptions.format === "pdf"
+      ? await createPdfBlob(exportCanvas, normalizedOptions.jpegQuality)
+      : await canvasToBlob(
+        exportCanvas,
+        getExportMimeType(normalizedOptions.format),
+        normalizedOptions.format === "jpg" ? normalizedOptions.jpegQuality : undefined,
+      );
+  } catch (error) {
+    throw new CardExportError("encode", "encode-failed", error);
+  }
+
+  return {
+    blob,
+    fileName: fileName ?? `card.${getExportExtension(normalizedOptions.format)}`,
+    format: normalizedOptions.format,
+    mimeType: getExportMimeType(normalizedOptions.format),
+    width: exportCanvas.width,
+    height: exportCanvas.height,
+    byteLength: blob.size,
+    durationMs: Math.max(0, performance.now() - startedAt),
+    normalizedOptions,
+    target: { kind: "generated" },
+  };
+}
+
+export async function completeCardExportDelivery(
+  result: CardExportResult,
+  delivery: CardExportDelivery,
+): Promise<CardExportResult> {
+  if (delivery.kind === "directory") {
+    try {
+      await delivery.write();
+    } catch (error) {
+      throw new CardExportError("write", "write-failed", error);
+    }
+    return {
+      ...result,
+      target: { kind: "directory", status: "written", directoryName: delivery.directoryName },
+    };
+  }
+
+  try {
+    delivery.download();
+  } catch (error) {
+    throw new CardExportError("download", "download-failed", error);
+  }
+  return { ...result, target: { kind: "download", status: "triggered" } };
 }
 
 function renderCardExportCanvas(source: CardExportSource, options: CardExportOptions): HTMLCanvasElement {
@@ -79,6 +223,13 @@ function renderCardExportCanvas(source: CardExportSource, options: CardExportOpt
     ...source.renderOptions,
     pixelScale: options.scale,
   });
+  const expectedDimensions = getExportDimensions(options.scale);
+  if (
+    exportCanvas.width !== expectedDimensions.width
+    || exportCanvas.height !== expectedDimensions.height
+  ) {
+    throw new Error("Card renderer did not produce the requested export dimensions.");
+  }
   return applyCanvasAdjustments(exportCanvas, options);
 }
 

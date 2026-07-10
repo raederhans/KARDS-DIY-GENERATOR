@@ -1,16 +1,41 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CARD } from "./cardModel";
 import {
+  AUTO_ARTWORK_STORAGE_KEY,
   DRAFT_STATE_STORAGE_KEY,
   loadDraftCard,
   loadDraftCardState,
+  loadAutoArtworkPreference,
   saveDraftCard,
+  saveAutoArtworkPreference,
   STORAGE_KEY,
   toAutosaveCard,
 } from "./storage";
 import type { CardSpec } from "./types";
 
 describe("card draft storage", () => {
+  it("keeps the automatic artwork toggle in a separate default-on preference", () => {
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+    };
+
+    expect(loadAutoArtworkPreference(storage)).toBe(true);
+    expect(saveAutoArtworkPreference(storage, false)).toBe(true);
+    expect(values.get(AUTO_ARTWORK_STORAGE_KEY)).toBe("false");
+    expect(loadAutoArtworkPreference(storage)).toBe(false);
+    expect(values.has(DRAFT_STATE_STORAGE_KEY)).toBe(false);
+  });
+
+  it("falls back to enabled when the automatic artwork preference is invalid or unavailable", () => {
+    expect(loadAutoArtworkPreference({ getItem: () => "invalid", setItem: () => undefined })).toBe(true);
+    expect(loadAutoArtworkPreference({
+      getItem: () => { throw new DOMException("Blocked", "SecurityError"); },
+      setItem: () => undefined,
+    })).toBe(true);
+  });
+
   it("keeps uploaded images out of automatic localStorage drafts", () => {
     const card: CardSpec = {
       ...DEFAULT_CARD,

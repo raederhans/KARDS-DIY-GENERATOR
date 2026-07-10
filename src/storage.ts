@@ -8,6 +8,7 @@ import type { CardSpec } from "./types";
 
 export const STORAGE_KEY = "card-forge:card:v1";
 export const DRAFT_STATE_STORAGE_KEY = "card-forge:draft-state:v2";
+export const AUTO_ARTWORK_STORAGE_KEY = "card-forge:auto-artwork:v1";
 
 export type DraftCardState = {
   card: CardSpec;
@@ -16,6 +17,24 @@ export type DraftCardState = {
 };
 
 type DraftStorage = Pick<Storage, "getItem" | "setItem">;
+
+export function loadAutoArtworkPreference(storage: DraftStorage): boolean {
+  try {
+    const stored = storage.getItem(AUTO_ARTWORK_STORAGE_KEY);
+    return stored === "false" ? false : true;
+  } catch {
+    return true;
+  }
+}
+
+export function saveAutoArtworkPreference(storage: DraftStorage, enabled: boolean): boolean {
+  try {
+    storage.setItem(AUTO_ARTWORK_STORAGE_KEY, String(enabled));
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function parseDraftState(serializedState: string): DraftCardState | null {
   try {

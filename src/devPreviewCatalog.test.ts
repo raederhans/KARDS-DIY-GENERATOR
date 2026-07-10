@@ -1,3 +1,5 @@
+// @ts-expect-error Vitest executes this contract test in Node while the app tsconfig excludes Node globals.
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CARD } from "./cardModel";
 import {
@@ -6,12 +8,15 @@ import {
   DEV_PREVIEW_HQ_SAMPLES,
   DEV_PREVIEW_REFERENCE_SAMPLES,
   DEV_PREVIEW_SET_SAMPLES,
+  filterDevPreviewSamples,
+  findUniqueAutomaticArtworkSample,
   getDefaultDevPreviewSample,
   getDevPreviewReferenceForCard,
   getDevPreviewSampleById,
   getDevPreviewSampleByKind,
   getDevPreviewSampleForCard,
   getDevPreviewSampleBySet,
+  sortDevPreviewSamples,
 } from "./devPreviewCatalog";
 import {
   applyCardUpdate,
@@ -19,10 +24,102 @@ import {
   resolveDevPreviewReferenceSelection,
   resolveDevPreviewTemplateSelection,
   shouldApplyDevPreviewSampleResult,
+  shouldApplyAutomaticArtworkResult,
 } from "./devPreviewState";
 import { SETS } from "./presets";
 
 describe("dev preview sample catalog", () => {
+  it("keeps required nation and rarity metadata aligned with sample JSON", () => {
+    for (const sample of DEV_PREVIEW_REFERENCE_SAMPLES) {
+      const card = JSON.parse(readFileSync(
+        new URL(`../public/reference-pack/v1/samples/${sample.id}.card.json`, import.meta.url),
+        "utf8",
+      ));
+      expect({ kind: sample.kind, nation: sample.nation, rarity: sample.rarity, set: sample.set }).toEqual({
+        kind: card.kind,
+        nation: card.nation,
+        rarity: card.rarity,
+        set: card.set,
+      });
+    }
+    expect(DEV_PREVIEW_HQ_SAMPLES.every((sample) => sample.nation && sample.rarity === "none")).toBe(true);
+  });
+
+  it("applies text and metadata filters with AND semantics", () => {
+    const filtered = filterDevPreviewSamples(
+      [...DEV_PREVIEW_REFERENCE_SAMPLES, ...DEV_PREVIEW_HQ_SAMPLES],
+      { query: "t-70", kind: "tank", nation: "soviet", rarity: "standard", set: "base" },
+    );
+    const noMatches = filterDevPreviewSamples(DEV_PREVIEW_REFERENCE_SAMPLES, {
+      query: "t-70",
+      kind: "tank",
+      nation: "britain",
+      rarity: "standard",
+      set: "base",
+    });
+
+    expect(filtered.map((sample) => sample.id)).toEqual(["t70"]);
+    expect(noMatches).toEqual([]);
+  });
+
+  it("sorts stable copies by match, localized name, or preset order", () => {
+    const samples = [
+      getDevPreviewSampleById("dingo")!,
+      getDevPreviewSampleById("t70")!,
+      getDevPreviewSampleById("a26_invader")!,
+    ];
+    const originalIds = samples.map((sample) => sample.id);
+    const currentCard = {
+      ...DEFAULT_CARD,
+      title: "T-70",
+      kind: "tank" as const,
+      nation: "soviet",
+      set: "base",
+      rarity: "standard",
+    };
+
+    expect(sortDevPreviewSamples(samples, currentCard, "match", "en").map((sample) => sample.id)[0]).toBe("t70");
+    expect(sortDevPreviewSamples(samples, currentCard, "name", "zh").map((sample) => sample.id)).toEqual([
+      "dingo",
+      "a26_invader",
+      "t70",
+    ]);
+    expect(sortDevPreviewSamples(samples, currentCard, "set", "en").map((sample) => sample.id)).toEqual([
+      "t70",
+      "a26_invader",
+      "dingo",
+    ]);
+    expect(samples.map((sample) => sample.id)).toEqual(originalIds);
+  });
+
+  it("returns only unique exact automatic artwork matches", () => {
+    const allSamples = [...DEV_PREVIEW_REFERENCE_SAMPLES, ...DEV_PREVIEW_HQ_SAMPLES];
+    const t70 = getDevPreviewSampleById("t70")!;
+    const washington = getDevPreviewSampleById("washington_hq")!;
+
+    expect(findUniqueAutomaticArtworkSample(allSamples, {
+      ...DEFAULT_CARD,
+      kind: t70.kind,
+      nation: t70.nation,
+      set: t70.set,
+      rarity: t70.rarity,
+    })?.id).toBe("t70");
+    expect(findUniqueAutomaticArtworkSample([...allSamples, { ...t70, id: "duplicate" }], {
+      ...DEFAULT_CARD,
+      kind: t70.kind,
+      nation: t70.nation,
+      set: t70.set,
+      rarity: t70.rarity,
+    })).toBeUndefined();
+    expect(findUniqueAutomaticArtworkSample(allSamples, {
+      ...DEFAULT_CARD,
+      kind: "hq",
+      nation: washington.nation,
+      set: "custom",
+      rarity: "elite",
+    })?.id).toBe("washington_hq");
+  });
+
   it("loads the bundled authorized reference pack", () => {
     expect(DEV_PREVIEW_ASSET_PACK_URL).toBe(
       "/reference-pack/v1/kards-asset-pack.json",
@@ -215,5 +312,21 @@ describe("dev preview sample catalog", () => {
     expect(shouldApplyDevPreviewSampleResult({ ...currentRequest, isMounted: false })).toBe(false);
     expect(shouldApplyDevPreviewSampleResult({ ...currentRequest, activeRequestId: 5 })).toBe(false);
     expect(shouldApplyDevPreviewSampleResult({ ...currentRequest, currentCardEditVersion: 3 })).toBe(false);
+  });
+
+  it("rejects stale automatic artwork but permits unrelated edits during loading", () => {
+    const current = {
+      isMounted: true,
+      requestId: 4,
+      activeRequestId: 4,
+      matchingKeyAtStart: "tank|soviet|base|standard",
+      currentMatchingKey: "tank|soviet|base|standard",
+      artworkOriginKind: "none" as const,
+    };
+
+    expect(shouldApplyAutomaticArtworkResult(current)).toBe(true);
+    expect(shouldApplyAutomaticArtworkResult({ ...current, activeRequestId: 5 })).toBe(false);
+    expect(shouldApplyAutomaticArtworkResult({ ...current, currentMatchingKey: "tank|anzac|base|standard" })).toBe(false);
+    expect(shouldApplyAutomaticArtworkResult({ ...current, artworkOriginKind: "user" })).toBe(false);
   });
 });

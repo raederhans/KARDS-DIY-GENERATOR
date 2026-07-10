@@ -14,6 +14,7 @@ export type CardLibraryEntry = {
   title: string;
   kind: string;
   nation: string;
+  rarity: string;
   set: string;
   updatedAt: string;
   card: CardSpec;
@@ -46,23 +47,40 @@ type WindowWithDirectoryPicker = Window & {
 };
 
 export function isDirectoryPickerAvailable(): boolean {
-  return typeof (window as WindowWithDirectoryPicker).showDirectoryPicker === "function";
+  return typeof window !== "undefined"
+    && typeof (window as WindowWithDirectoryPicker).showDirectoryPicker === "function";
 }
 
 export async function pickWritableDirectory(): Promise<LocalDirectoryHandle> {
+  return pickDirectory("readwrite");
+}
+
+export async function pickReadableDirectory(): Promise<LocalDirectoryHandle> {
+  return pickDirectory("read");
+}
+
+async function pickDirectory(mode: "read" | "readwrite"): Promise<LocalDirectoryHandle> {
   const picker = (window as WindowWithDirectoryPicker).showDirectoryPicker;
   if (!picker) {
     throw new Error("Directory export is not supported in this browser.");
   }
-  return picker({ mode: "readwrite" });
+  return picker({ mode });
 }
 
 export async function readLocalLibrary(directory: LocalDirectoryHandle): Promise<CardLibraryFile> {
-  await ensureReadWritePermission(directory);
-  const fileHandle = await directory.getFileHandle(LOCAL_LIBRARY_FILE_NAME, { create: true });
+  await ensurePermission(directory, "read");
+  let fileHandle: Awaited<ReturnType<LocalDirectoryHandle["getFileHandle"]>>;
+  try {
+    fileHandle = await directory.getFileHandle(LOCAL_LIBRARY_FILE_NAME);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return createEmptyLibrary();
+    }
+    throw error;
+  }
   const file = await fileHandle.getFile();
   if (file.size === 0) {
-    return createEmptyLibrary();
+    throw new Error("Local library file is empty or damaged.");
   }
   if (file.size > MAX_LOCAL_LIBRARY_FILE_BYTES) {
     throw new Error("Local library file is too large.");
@@ -71,7 +89,7 @@ export async function readLocalLibrary(directory: LocalDirectoryHandle): Promise
   return normalizeCardLibrary(JSON.parse(await file.text()));
 }
 
-export async function saveCardToLocalLibrary(
+export async function createCardInLocalLibrary(
   directory: LocalDirectoryHandle,
   card: CardSpec,
 ): Promise<CardLibraryFile> {
@@ -87,6 +105,90 @@ export async function saveCardToLocalLibrary(
   });
 }
 
+export async function updateCardInLocalLibrary(
+  directory: LocalDirectoryHandle,
+  entryId: string,
+  card: CardSpec,
+): Promise<CardLibraryFile> {
+  return withLocalLibraryWriteLock(async () => {
+    const library = await readLocalLibrary(directory);
+    const entryIndex = library.cards.findIndex((entry) => entry.id === entryId);
+    if (entryIndex === -1) {
+      throw new Error("Local library card was not found.");
+    }
+    const nextEntry = createCardLibraryEntry(card, entryId);
+    const nextLibrary: CardLibraryFile = {
+      version: 1,
+      updatedAt: nextEntry.updatedAt,
+      cards: [
+        ...library.cards.slice(0, entryIndex),
+        ...library.cards.slice(entryIndex + 1),
+        nextEntry,
+      ].slice(-MAX_LOCAL_LIBRARY_CARDS),
+    };
+    await writeLocalLibrary(directory, nextLibrary);
+    return nextLibrary;
+  });
+}
+
+export async function deleteCardFromLocalLibrary(
+  directory: LocalDirectoryHandle,
+  entryId: string,
+): Promise<CardLibraryFile> {
+  return withLocalLibraryWriteLock(async () => {
+    const library = await readLocalLibrary(directory);
+    const cards = library.cards.filter((entry) => entry.id !== entryId);
+    if (cards.length === library.cards.length) {
+      throw new Error("Local library card was not found.");
+    }
+    const nextLibrary: CardLibraryFile = {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      cards,
+    };
+    await writeLocalLibrary(directory, nextLibrary);
+    return nextLibrary;
+  });
+}
+
+export function isLocalLibraryWriteAvailable(): boolean {
+  return typeof navigator !== "undefined" && Boolean(navigator.locks);
+}
+
+export async function requestLocalLibraryWritePermission(
+  directory: LocalDirectoryHandle,
+): Promise<void> {
+  return requestLocalLibraryPermission(directory, "readwrite");
+}
+
+export async function requestLocalLibraryReadPermission(
+  directory: LocalDirectoryHandle,
+): Promise<void> {
+  return requestLocalLibraryPermission(directory, "read");
+}
+
+async function requestLocalLibraryPermission(
+  directory: LocalDirectoryHandle,
+  mode: "read" | "readwrite",
+): Promise<void> {
+  if (!directory.requestPermission) {
+    return;
+  }
+  const permission = await directory.requestPermission({ mode });
+  if (permission !== "granted") {
+    throw new Error("Local folder permission was not granted.");
+  }
+}
+
+export function reconcileActiveLibraryEntryId(
+  activeEntryId: string | null,
+  library: Pick<CardLibraryFile, "cards">,
+): string | null {
+  return activeEntryId && library.cards.some((entry) => entry.id === activeEntryId)
+    ? activeEntryId
+    : null;
+}
+
 function withLocalLibraryWriteLock<T>(operation: () => Promise<T>): Promise<T> {
   if (typeof navigator === "undefined" || !navigator.locks) {
     throw new Error("Local library saves require browser Web Locks support.");
@@ -99,7 +201,7 @@ export async function writeBlobToDirectory(
   fileName: string,
   blob: Blob,
 ): Promise<void> {
-  await ensureReadWritePermission(directory);
+  await ensurePermission(directory, "readwrite");
   const fileHandle = await directory.getFileHandle(fileName, { create: true });
   const writable = await fileHandle.createWritable();
   await writable.write(blob);
@@ -125,14 +227,15 @@ export async function loadSavedLibraryDirectoryHandle(): Promise<LocalDirectoryH
   }
 }
 
-export function createCardLibraryEntry(card: CardSpec): CardLibraryEntry {
+export function createCardLibraryEntry(card: CardSpec, id: string = crypto.randomUUID()): CardLibraryEntry {
   const normalizedCard = normalizeCardSpec(toAutosaveCard(card));
   const updatedAt = new Date().toISOString();
   return {
-    id: `${updatedAt}-${safeRecordId(normalizedCard.title)}`,
+    id,
     title: normalizedCard.title,
     kind: normalizedCard.kind,
     nation: normalizedCard.nation,
+    rarity: normalizedCard.rarity,
     set: normalizedCard.set,
     updatedAt,
     card: normalizedCard,
@@ -141,19 +244,30 @@ export function createCardLibraryEntry(card: CardSpec): CardLibraryEntry {
 
 export function normalizeCardLibrary(input: unknown): CardLibraryFile {
   if (!isRecord(input)) {
-    return createEmptyLibrary();
+    throw new Error("Local library has an invalid top-level structure.");
+  }
+  if (input.version !== 1) {
+    throw new Error("Local library version is not supported.");
+  }
+  if (!Array.isArray(input.cards)) {
+    throw new Error("Local library cards must be an array.");
   }
 
-  const rawCards = Array.isArray(input.cards) ? input.cards.slice(-MAX_LOCAL_LIBRARY_CARDS) : [];
+  const usedIds = new Set<string>();
+  const rawCards = input.cards.slice(-MAX_LOCAL_LIBRARY_CARDS);
   const cards = rawCards
     .filter(isRecord)
     .map((rawCard): CardLibraryEntry => {
       const card = toAutosaveCard(normalizeCardSpec(rawCard.card));
+      const rawId = typeof rawCard.id === "string" ? rawCard.id.trim() : "";
+      const id = rawId && !usedIds.has(rawId) ? rawId : crypto.randomUUID();
+      usedIds.add(id);
       return {
-        id: typeof rawCard.id === "string" && rawCard.id ? rawCard.id : createCardLibraryEntry(card).id,
+        id,
         title: typeof rawCard.title === "string" && rawCard.title ? rawCard.title : card.title,
         kind: card.kind,
         nation: card.nation,
+        rarity: card.rarity,
         set: card.set,
         updatedAt: typeof rawCard.updatedAt === "string" ? rawCard.updatedAt : new Date().toISOString(),
         card,
@@ -172,17 +286,17 @@ function writeLocalLibrary(directory: LocalDirectoryHandle, library: CardLibrary
   return writeBlobToDirectory(directory, LOCAL_LIBRARY_FILE_NAME, blob);
 }
 
-async function ensureReadWritePermission(directory: LocalDirectoryHandle): Promise<void> {
+async function ensurePermission(directory: LocalDirectoryHandle, mode: "read" | "readwrite"): Promise<void> {
   if (!directory.queryPermission || !directory.requestPermission) {
     return;
   }
 
-  const currentPermission = await directory.queryPermission({ mode: "readwrite" });
+  const currentPermission = await directory.queryPermission({ mode });
   if (currentPermission === "granted") {
     return;
   }
 
-  const nextPermission = await directory.requestPermission({ mode: "readwrite" });
+  const nextPermission = await directory.requestPermission({ mode });
   if (nextPermission !== "granted") {
     throw new Error("Local folder permission was not granted.");
   }
@@ -230,15 +344,10 @@ function createEmptyLibrary(): CardLibraryFile {
   };
 }
 
-function safeRecordId(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
-    .replace(/(^-|-$)/g, "") || "custom-card";
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNotFoundError(error: unknown): boolean {
+  return error instanceof Error && error.name === "NotFoundError";
 }
