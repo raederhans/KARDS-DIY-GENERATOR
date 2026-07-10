@@ -50,6 +50,7 @@ type ReferenceSort = import("./devPreviewCatalog").ReferenceSort;
 type TextureImageStatus = "loading" | "ready" | "error";
 
 const PAPER_TEXTURE_URL = `${import.meta.env.BASE_URL}textures/ambientcg-paper001-960.png`;
+const BRAND_MARK_URL = `${import.meta.env.BASE_URL}brand/card-forge-mark.png`;
 
 function App() {
   const [language, setLanguage] = useState<Language>(() => getInitialLanguage(window.localStorage));
@@ -625,7 +626,7 @@ function App() {
     <main className="app-shell">
       <header className="top-bar">
         <div>
-          <p className="brand-mark">CF</p>
+          <img className="brand-mark" src={BRAND_MARK_URL} alt="" aria-hidden="true" />
           <div>
             <h1>KARDS Card Forge</h1>
             <p>{text.appSubtitle}</p>

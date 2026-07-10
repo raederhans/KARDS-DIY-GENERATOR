@@ -101,15 +101,11 @@ button:disabled {
 }
 
 .brand-mark {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
+  width: 44px;
+  height: 44px;
   margin: 0;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  color: var(--accent-strong);
-  font: 800 14px Georgia, serif;
+  flex: 0 0 auto;
+  object-fit: contain;
 }
 
 .top-bar h1 {
