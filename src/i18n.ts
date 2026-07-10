@@ -9,172 +9,158 @@ export type Language = (typeof LANGUAGES)[number];
 export const UI_TEXT = {
   en: {
     documentTitle: "KARDS Card Forge",
-    documentDescription: "A static fan card-face editor for creating custom KARDS-style images.",
-    appSubtitle: "Custom KARDS-style card-face editor",
+    documentDescription: "Create, preview, and export custom KARDS-style cards in your browser.",
+    appSubtitle: "Design custom KARDS-style cards",
     languageToggle: "中文",
     languageToggleAria: "Switch language to Chinese",
     fieldPanel: {
-      aria: "Card fields",
-      heading: "Fields",
-      scope: "Single card",
+      aria: "Card editor",
       artwork: "Artwork",
-      artX: "Art X",
-      artY: "Art Y",
+      artX: "Horizontal position",
+      artY: "Vertical position",
       zoom: "Zoom",
       title: "Title",
-      titleAppearance: "Title typography",
+      titleAppearance: "Title style",
       fontSize: "Size",
-      horizontalScale: "Width",
-      verticalScale: "Height",
-      offsetX: "X",
-      offsetY: "Y",
-      titleBold: "Bold title",
+      horizontalScale: "Horizontal scale",
+      verticalScale: "Vertical scale",
+      offsetX: "Horizontal offset",
+      offsetY: "Vertical offset",
+      titleBold: "Bold",
       keywords: "Keywords",
-      keywordAppearance: "Keyword typography",
-      addKeyword: "Add",
+      keywordAppearance: "Keyword style",
+      addKeyword: "Add keyword",
       removeKeyword: (label: string) => `Remove ${label}`,
       body: "Body",
-      bodyAppearance: "Body typography",
-      addBodyEmphasis: "Insert emphasis",
-      addBodyBold: "Bold markers",
+      bodyAppearance: "Body style",
+      addBodyEmphasis: "Add emphasis",
+      addBodyBold: "Bold selected text",
       nation: "Nation",
-      type: "Type",
+      type: "Card type",
       rarity: "Rarity",
-      set: "Set mark",
-      cost: "Cost",
-      operation: "Op",
+      set: "Set",
+      cost: "Deployment",
+      operation: "Operation",
       attack: "Attack",
       defense: "Defense",
       hqDefense: "HQ defense",
-      officialReference: "Official reference",
-      identitySection: "Identity",
-      valuesSection: "Values",
-      toggleSection: (label: string) => `Toggle ${label}`,
-      invalidArtwork: "Please choose a PNG, JPEG, or WebP image under 5 MB.",
+      identitySection: "Card details",
+      valuesSection: "Card values",
+      toggleSection: (label: string) => `Expand or collapse ${label}`,
+      invalidArtwork: "Use a PNG, JPEG, or WebP image under 5 MB.",
     },
     canvas: {
-      aria: "Card canvas preview",
-      generatedAria: "Generated card preview",
-      generated: "Generated",
-      officialReferenceAlt: "Official reference card",
-      officialReference: "Official reference",
-      officialReferenceWithLabel: (label: string) => `Official reference: ${label}`,
-      hint: "Drag uploaded artwork inside the frame. Use the mouse wheel over artwork to zoom.",
+      aria: "Card preview",
+      generatedAria: "Current card preview",
+      generated: "Preview",
+      officialReferenceAlt: "Reference card",
+      officialReference: "Reference card",
+      officialReferenceWithLabel: (label: string) => `Reference card: ${label}`,
+      hint: "Drag inside the artwork area to reposition. Use the mouse wheel to zoom.",
     },
     projectPanel: {
-      aria: "Project and export controls",
-      heading: "Project",
-      scope: "Local only",
+      aria: "Card workspace",
+      heading: "Workspace",
+      scope: "Data stays on this device",
       tabAppearance: "Appearance",
       tabLibrary: "Library",
       tabExport: "Export",
       tabReference: "Reference",
-      exportWorkbench: "Export workbench",
-      textureControls: "Card texture",
-      textureCurrent: "CC0 paper",
-      textureFallback: "Program texture",
+      exportWorkbench: "Export settings",
+      textureControls: "Paper texture",
+      textureCurrent: "Paper texture",
+      textureFallback: "Generated texture",
       textureIntensity: "Strength",
       textureRandomness: "Randomness",
       textureMottle: "Mottle",
-      randomTexture: "Random texture",
+      randomTexture: "Try another texture",
       exportFormat: "Format",
-      exportSize: "Size",
+      exportSize: "Resolution",
       exposure: "Exposure",
       contrast: "Contrast",
-      chooseExportDirectory: "Choose Folder",
-      exportPrivateCard: "Export Private Card",
-      exportCard: "Export Card",
-      exportDirectorySelected: (name: string) => `Folder selected: ${name}`,
-      savedToDirectory: (name: string) => `Saved to ${name}`,
-      savedToDownloads: "Browser download triggered",
-      exportFailed: "Could not export this card.",
-      directoryUnavailable: "Could not open a local folder.",
-      directoryUnsupported: "Folder selection is unavailable; browser downloads will be used.",
-      projectJson: "Project JSON",
+      chooseExportDirectory: "Choose save folder",
+      exportCard: "Export card",
+      exporting: "Exporting…",
+      exportDirectorySelected: (name: string) => `Saving to: ${name}`,
+      directoryUnsupported: "Folder saving is unavailable. The browser will download the file instead.",
+      projectJson: "Project file",
       projectJsonScope: "current card",
-      saveJson: "Save Project JSON",
-      openJson: "Open Project JSON",
+      saveJson: "Download project",
+      openJson: "Open project",
       localLibrary: "Local card library",
-      chooseLibraryDirectory: "Choose Library Folder",
-      saveToLibrary: "Save Record",
-      libraryRemembered: (name: string) => `Remembered library folder: ${name}`,
-      libraryReady: (name: string, count: number) => `${name}: ${count} saved records`,
-      librarySaved: (name: string, count: number) => `${name}: saved, ${count} records`,
-      libraryUnavailable: "Could not update the local card library.",
-      libraryRememberFailed: "Saved the card, but could not remember this folder for next time.",
-      libraryNotOpened: "No local library is open.",
-      libraryReadOnly: "This browser cannot safely write the library; browsing remains available.",
-      openLibrary: "Open Library",
-      saveAsNew: "Save as New",
-      updateCurrent: "Update Current",
-      loadLibraryEntry: "Load",
+      chooseLibraryDirectory: "Choose another folder",
+      libraryRemembered: (name: string) => `Saved library folder: ${name}`,
+      libraryReady: (name: string, count: number) => `${name}: ${count} cards`,
+      librarySaved: (name: string, count: number) => `${name}: saved, ${count} cards`,
+      libraryRememberFailed: "The card was saved, but this folder could not be remembered.",
+      libraryNotOpened: "Open a card library to browse saved cards.",
+      libraryReadOnly: "Safe library writing is unavailable. You can still browse and load cards.",
+      openLibrary: "Open library",
+      saveAsNew: "Add as new card",
+      updateCurrent: "Update loaded card",
+      loadLibraryEntry: "Load card",
       deleteLibraryEntry: "Delete",
       libraryEmpty: "This library has no cards yet.",
-      libraryCurrent: "current",
+      libraryCurrent: "Loaded",
       libraryDeleteConfirm: (title: string) => `Permanently delete ${title}?`,
-      libraryDeleted: "Library record deleted.",
-      libraryUpdated: "Current library record updated.",
-      referenceTools: "Reference tools",
-      referenceOn: "visible",
-      referenceOff: "hidden",
-      showReference: "Show reference card",
-      comparePng: "Compare Image",
-      invalidReferenceImage: "Please choose a PNG, JPEG, or WebP reference image under 5 MB.",
-      sampleTemplate: "Load sample template",
-      loadingSampleTemplate: "Loading template...",
-      chooseSampleTemplate: "Choose a card or HQ template...",
-      cardTemplate: "Card",
-      hqTemplate: "HQ",
-      referenceSearch: "Search references",
-      referenceAll: "All",
-      referenceKind: "Kind",
+      libraryDeleted: "Card deleted from the library.",
+      libraryUpdated: "Loaded card updated.",
+      showReference: "Show reference beside preview",
+      comparePng: "Choose comparison image",
+      invalidReferenceImage: "Use a PNG, JPEG, or WebP comparison image under 5 MB.",
+      loadingSampleTemplate: "Loading card…",
+      referenceSearch: "Search by card name",
+      referenceAll: "Any",
+      referenceKind: "Card type",
       referenceNation: "Nation",
       referenceRarity: "Rarity",
       referenceSet: "Set",
       referenceSort: "Sort",
-      referenceSortMatch: "Current card match",
-      referenceSortName: "Localized name",
+      referenceSortMatch: "Best match",
+      referenceSortName: "Name",
       referenceSortSet: "Set order",
-      autoArtwork: "Automatically apply artwork",
-      applyArtwork: "Apply Artwork",
-      loadFullCard: "Load Full Card",
-      referenceNoResults: "No references match these filters.",
-      stylePack: "Reference style pack",
-      loadAssets: "Load a local pack",
-      resetCard: "Reset Card",
-      output: "Output",
-      artwork: "Artwork",
-      artworkEmbedded: "embedded in JSON",
-      artworkNotEmbedded: "not embedded",
-      cardScope: "Scope",
-      cardFaceOnly: "card face only",
+      autoArtwork: "Auto-fill uniquely matched artwork",
+      applyArtwork: "Use artwork only",
+      loadFullCard: "Load entire card (replaces current)",
+      referenceNoResults: "No matches. Change or clear a filter.",
+      stylePack: "Local style pack",
+      loadAssets: "Choose style pack folder",
+      resetCard: "Reset current card",
+      output: "Export",
+      artwork: "Project artwork",
+      artworkEmbedded: "included in project file",
+      artworkNotEmbedded: "not included",
+      cardScope: "Export area",
+      cardFaceOnly: "card face",
       assets: "Assets",
-      assetsLoaded: "reference pack loaded",
-      assetsPlaceholder: "placeholder",
-      manifest: "Style pack file",
-      imageFontCounts: (imageCount: number, fontCount: number) => `${imageCount} images / ${fontCount} fonts`,
-      averageDiff: "Avg diff",
+      assetsLoaded: "style pack loaded",
+      assetsPlaceholder: "built-in placeholders",
+      manifest: "Required file",
+      imageFontCounts: (imageCount: number, fontCount: number) => `${imageCount} images · ${fontCount} fonts`,
+      averageDiff: "Average pixel difference",
       overallDiff: "Overall diff",
       changed: "Changed pixels",
+      diffHint: "Lower values mean a closer match.",
       exportReady: "Ready",
       exportWarning: "Warnings",
       exportBlocking: "Blocked",
-      exportNoRun: "No export has run in this session.",
-      exportDownloadTriggered: "Browser download triggered",
+      diagnosticCount: (count: number) => `${count} items`,
+      exportNoRun: "No export yet.",
+      exportDownloadTriggered: "Download started in the browser.",
       exportDirectoryWritten: (name: string) => `Written to ${name}`,
       exportGenerated: "File generated",
-      diagnosticCanvasUnavailable: "The card canvas is unavailable.",
-      diagnosticArtworkNotReady: "The current artwork is still loading.",
-      diagnosticAssetPackWarning: "The style pack reported a warning.",
-      diagnosticProgramTexture: "The program texture will be used.",
-      diagnosticPrivateConfirmation: "This export requires private-use confirmation.",
-      diagnosticRenderFailed: "Rendering failed.",
-      diagnosticEncodeFailed: "File encoding failed.",
-      diagnosticWriteFailed: "Writing to the selected folder failed.",
-      diagnosticDownloadFailed: "Starting the browser download failed.",
-      privateCardConfirm: "This export includes pixels from your local style pack. Keep the exported file private?",
-      projectTooLarge: "This card project is too large to open. Please choose a JSON file under 8 MB.",
-      jsonOpenFailed: "This JSON file could not be opened as a card project.",
+      diagnosticCanvasUnavailable: "Preview is not ready. Refresh the page and try again.",
+      diagnosticArtworkNotReady: "Artwork is still loading. Wait before exporting.",
+      diagnosticAssetPackWarning: "Style pack warning:",
+      diagnosticProgramTexture: "A generated paper texture will be used.",
+      diagnosticPrivateConfirmation: "Export will ask you to confirm local style pack use.",
+      diagnosticRenderFailed: "Could not render the card. Try again.",
+      diagnosticEncodeFailed: "Could not create the export file. Try again.",
+      diagnosticWriteFailed: "Could not write to this folder. Check permission and try again.",
+      diagnosticDownloadFailed: "The browser blocked the download. Check download permission and try again.",
+      privateCardConfirm: "This export uses content from your local style pack. Continue?",
+      projectTooLarge: "This project file is over 8 MB. Choose a smaller file.",
+      jsonOpenFailed: "This file is not a valid card project. Check the file and try again.",
     },
     errors: {
       privatePreviewCatalog: "Could not load the reference catalog.",
@@ -186,176 +172,162 @@ export const UI_TEXT = {
   },
   zh: {
     documentTitle: "KARDS Card Forge 卡牌工坊",
-    documentDescription: "静态粉丝卡面编辑器，用于制作自定义 KARDS 风格图片。",
-    appSubtitle: "自定义 KARDS 风格卡面编辑器",
+    documentDescription: "在浏览器中制作、预览并导出自定义 KARDS 风格卡牌。",
+    appSubtitle: "制作自定义 KARDS 风格卡牌",
     languageToggle: "EN",
     languageToggleAria: "切换到英文界面",
     fieldPanel: {
-      aria: "卡牌字段",
-      heading: "字段",
-      scope: "单张卡牌",
+      aria: "卡牌编辑",
       artwork: "卡图",
-      artX: "卡图 X",
-      artY: "卡图 Y",
+      artX: "水平位置",
+      artY: "垂直位置",
       zoom: "缩放",
       title: "标题",
-      titleAppearance: "标题文字参数",
+      titleAppearance: "标题样式",
       fontSize: "字号",
-      horizontalScale: "横向",
-      verticalScale: "纵向",
-      offsetX: "X",
-      offsetY: "Y",
-      titleBold: "标题加粗",
+      horizontalScale: "水平缩放",
+      verticalScale: "垂直缩放",
+      offsetX: "水平偏移",
+      offsetY: "垂直偏移",
+      titleBold: "加粗",
       keywords: "词条",
-      keywordAppearance: "词条文字参数",
-      addKeyword: "添加",
+      keywordAppearance: "词条样式",
+      addKeyword: "添加词条",
       removeKeyword: (label: string) => `移除 ${label}`,
       body: "正文",
-      bodyAppearance: "正文文字参数",
-      addBodyEmphasis: "插入强调",
-      addBodyBold: "加粗符号",
+      bodyAppearance: "正文样式",
+      addBodyEmphasis: "添加强调",
+      addBodyBold: "加粗所选文字",
       nation: "阵营",
-      type: "类型",
+      type: "卡种",
       rarity: "稀有度",
       set: "卡包",
-      cost: "费用",
-      operation: "行动",
+      cost: "部署费用",
+      operation: "行动费用",
       attack: "攻击",
       defense: "防御",
       hqDefense: "总部防御",
-      officialReference: "官方参考",
-      identitySection: "属性",
-      valuesSection: "数值",
-      toggleSection: (label: string) => `折叠或展开${label}`,
-      invalidArtwork: "请选择 5 MB 以下的 PNG、JPEG 或 WebP 图片。",
+      identitySection: "卡牌信息",
+      valuesSection: "卡牌数值",
+      toggleSection: (label: string) => `展开或收起：${label}`,
+      invalidArtwork: "请使用 5 MB 以下的 PNG、JPEG 或 WebP 图片。",
     },
     canvas: {
-      aria: "卡面画布预览",
-      generatedAria: "生成的卡面预览",
-      generated: "生成图",
-      officialReferenceAlt: "官方参考卡图",
-      officialReference: "官方参考",
-      officialReferenceWithLabel: (label: string) => `官方参考：${label}`,
-      hint: "可在画框内拖动已上传卡图；鼠标滚轮悬停在卡图上时可缩放。",
+      aria: "卡牌预览",
+      generatedAria: "当前卡牌预览",
+      generated: "当前预览",
+      officialReferenceAlt: "参考卡",
+      officialReference: "参考卡",
+      officialReferenceWithLabel: (label: string) => `参考卡：${label}`,
+      hint: "在卡图区域拖动可调整位置，使用鼠标滚轮缩放。",
     },
     projectPanel: {
-      aria: "项目与导出控制",
-      heading: "项目",
-      scope: "仅本地",
+      aria: "卡牌工作台",
+      heading: "工作台",
+      scope: "数据仅保存在本机",
       tabAppearance: "外观",
       tabLibrary: "卡库",
       tabExport: "导出",
       tabReference: "参考",
-      exportWorkbench: "导出工作台",
-      textureControls: "卡面纹理",
-      textureCurrent: "CC0 纸纹",
-      textureFallback: "程序纹理",
+      exportWorkbench: "导出设置",
+      textureControls: "纸张纹理",
+      textureCurrent: "纸张纹理",
+      textureFallback: "生成纹理",
       textureIntensity: "强度",
       textureRandomness: "随机度",
       textureMottle: "斑驳",
-      randomTexture: "随机纹理",
+      randomTexture: "换一种纹理",
       exportFormat: "格式",
-      exportSize: "大小",
+      exportSize: "分辨率",
       exposure: "曝光",
       contrast: "对比度",
-      chooseExportDirectory: "选择文件夹",
-      exportPrivateCard: "导出私有卡面",
+      chooseExportDirectory: "选择保存位置",
       exportCard: "导出卡面",
-      exportDirectorySelected: (name: string) => `已选择文件夹：${name}`,
-      savedToDirectory: (name: string) => `已保存到 ${name}`,
-      savedToDownloads: "已触发浏览器下载",
-      exportFailed: "无法导出这张卡面。",
-      directoryUnavailable: "无法打开本地文件夹。",
-      directoryUnsupported: "当前浏览器不可选择文件夹，将使用浏览器下载。",
-      projectJson: "项目 JSON",
+      exporting: "正在导出……",
+      exportDirectorySelected: (name: string) => `保存位置：${name}`,
+      directoryUnsupported: "当前浏览器不能保存到文件夹，将改用浏览器下载。",
+      projectJson: "项目文件",
       projectJsonScope: "当前卡牌",
-      saveJson: "保存项目 JSON",
-      openJson: "打开项目 JSON",
-      localLibrary: "本地制卡库",
-      chooseLibraryDirectory: "选择库文件夹",
-      saveToLibrary: "保存记录",
-      libraryRemembered: (name: string) => `已记住库文件夹：${name}`,
-      libraryReady: (name: string, count: number) => `${name}：已有 ${count} 条记录`,
-      librarySaved: (name: string, count: number) => `${name}：已保存，共 ${count} 条记录`,
-      libraryUnavailable: "无法更新本地制卡库。",
-      libraryRememberFailed: "卡牌已保存，但无法为下次记住这个文件夹。",
-      libraryNotOpened: "尚未打开本地卡库。",
-      libraryReadOnly: "当前浏览器不支持安全写入；仍可浏览和载入卡牌。",
+      saveJson: "下载项目文件",
+      openJson: "打开项目文件",
+      localLibrary: "本地卡库",
+      chooseLibraryDirectory: "选择其他文件夹",
+      libraryRemembered: (name: string) => `已保存卡库位置：${name}`,
+      libraryReady: (name: string, count: number) => `${name}：${count} 张卡牌`,
+      librarySaved: (name: string, count: number) => `${name}：已保存，共 ${count} 张卡牌`,
+      libraryRememberFailed: "卡牌已保存，但无法记住这个文件夹。",
+      libraryNotOpened: "请打开卡库，浏览已保存的卡牌。",
+      libraryReadOnly: "当前浏览器不能安全写入卡库，但仍可浏览和载入卡牌。",
       openLibrary: "打开卡库",
-      saveAsNew: "另存为新记录",
-      updateCurrent: "更新当前记录",
-      loadLibraryEntry: "载入",
+      saveAsNew: "新增到卡库",
+      updateCurrent: "更新已载入卡牌",
+      loadLibraryEntry: "载入卡牌",
       deleteLibraryEntry: "删除",
       libraryEmpty: "这个卡库目前没有卡牌。",
-      libraryCurrent: "当前记录",
+      libraryCurrent: "已载入",
       libraryDeleteConfirm: (title: string) => `永久删除“${title}”？`,
-      libraryDeleted: "已删除卡库记录。",
-      libraryUpdated: "已更新当前卡库记录。",
-      referenceTools: "参考工具",
-      referenceOn: "显示中",
-      referenceOff: "已隐藏",
-      showReference: "显示参考卡图",
-      comparePng: "对比图片",
-      invalidReferenceImage: "请选择 5 MB 以下的 PNG、JPEG 或 WebP 参考图。",
-      sampleTemplate: "载入示例模板",
-      loadingSampleTemplate: "正在载入模板……",
-      chooseSampleTemplate: "选择普通卡牌或总部模板……",
-      cardTemplate: "普通卡牌",
-      hqTemplate: "总部",
-      referenceSearch: "搜索参考卡",
-      referenceAll: "全部",
+      libraryDeleted: "已从卡库删除这张卡牌。",
+      libraryUpdated: "已更新载入的卡牌。",
+      showReference: "并排显示参考卡",
+      comparePng: "选择对比图",
+      invalidReferenceImage: "请使用 5 MB 以下的 PNG、JPEG 或 WebP 对比图。",
+      loadingSampleTemplate: "正在载入卡牌……",
+      referenceSearch: "按卡名搜索",
+      referenceAll: "不限",
       referenceKind: "卡种",
-      referenceNation: "国家",
+      referenceNation: "阵营",
       referenceRarity: "稀有度",
-      referenceSet: "扩展包",
+      referenceSet: "卡包",
       referenceSort: "排序",
-      referenceSortMatch: "当前卡牌匹配",
-      referenceSortName: "本地化名称",
-      referenceSortSet: "扩展包顺序",
-      autoArtwork: "自动应用卡图",
-      applyArtwork: "应用卡图",
-      loadFullCard: "载入整卡",
-      referenceNoResults: "没有符合这些筛选条件的参考卡。",
-      stylePack: "参考风格包",
-      loadAssets: "加载本地包",
-      resetCard: "重置卡牌",
-      output: "输出",
-      artwork: "卡图",
-      artworkEmbedded: "已嵌入 JSON",
-      artworkNotEmbedded: "未嵌入",
-      cardScope: "范围",
-      cardFaceOnly: "仅卡面",
+      referenceSortMatch: "最佳匹配",
+      referenceSortName: "名称",
+      referenceSortSet: "卡包顺序",
+      autoArtwork: "唯一匹配时自动填充卡图",
+      applyArtwork: "仅应用卡图",
+      loadFullCard: "载入整张卡牌（覆盖当前）",
+      referenceNoResults: "没有匹配结果，请调整或清除筛选条件。",
+      stylePack: "本地风格包",
+      loadAssets: "选择风格包文件夹",
+      resetCard: "重置当前卡牌",
+      output: "导出规格",
+      artwork: "项目卡图",
+      artworkEmbedded: "已存入项目文件",
+      artworkNotEmbedded: "未存入项目文件",
+      cardScope: "导出范围",
+      cardFaceOnly: "卡面",
       assets: "素材",
-      assetsLoaded: "参考包已加载",
-      assetsPlaceholder: "占位素材",
-      manifest: "风格包文件",
-      imageFontCounts: (imageCount: number, fontCount: number) => `${imageCount} 张图片 / ${fontCount} 个字体`,
-      averageDiff: "平均差异",
-      overallDiff: "整体差异",
-      changed: "变化像素",
+      assetsLoaded: "风格包已加载",
+      assetsPlaceholder: "内置占位素材",
+      manifest: "必需文件",
+      imageFontCounts: (imageCount: number, fontCount: number) => `${imageCount} 张图片 · ${fontCount} 个字体`,
+      averageDiff: "平均像素差",
+      overallDiff: "综合差异",
+      changed: "变化像素占比",
+      diffHint: "数值越低，图片越接近。",
       exportReady: "可以导出",
-      exportWarning: "有提醒",
+      exportWarning: "请先检查",
       exportBlocking: "暂不可导出",
-      exportNoRun: "本次会话还没有执行导出。",
-      exportDownloadTriggered: "已触发浏览器下载",
+      diagnosticCount: (count: number) => `${count} 项`,
+      exportNoRun: "尚未导出。",
+      exportDownloadTriggered: "浏览器已开始下载。",
       exportDirectoryWritten: (name: string) => `已写入 ${name}`,
       exportGenerated: "文件已生成",
-      diagnosticCanvasUnavailable: "当前卡面 Canvas 不可用。",
-      diagnosticArtworkNotReady: "当前卡图仍在加载。",
-      diagnosticAssetPackWarning: "风格包报告了提醒。",
-      diagnosticProgramTexture: "本次将使用程序纹理。",
-      diagnosticPrivateConfirmation: "本次导出需要确认仅供私下使用。",
-      diagnosticRenderFailed: "卡面渲染失败。",
-      diagnosticEncodeFailed: "文件编码失败。",
-      diagnosticWriteFailed: "写入所选文件夹失败。",
-      diagnosticDownloadFailed: "启动浏览器下载失败。",
-      privateCardConfirm: "这次导出包含你本地风格包里的像素。确认只私下保存这个文件？",
-      projectTooLarge: "这个卡牌项目太大，无法打开。请选择 8 MB 以下的 JSON 文件。",
-      jsonOpenFailed: "这个 JSON 文件无法作为卡牌项目打开。",
+      diagnosticCanvasUnavailable: "预览尚未就绪，请刷新页面后重试。",
+      diagnosticArtworkNotReady: "卡图仍在加载，请稍候再导出。",
+      diagnosticAssetPackWarning: "风格包提醒：",
+      diagnosticProgramTexture: "本次将使用生成的纸张纹理。",
+      diagnosticPrivateConfirmation: "导出前需要确认使用本地风格包。",
+      diagnosticRenderFailed: "无法生成卡面，请重试。",
+      diagnosticEncodeFailed: "无法生成导出文件，请重试。",
+      diagnosticWriteFailed: "无法写入该文件夹，请检查权限后重试。",
+      diagnosticDownloadFailed: "浏览器阻止了下载，请检查下载权限后重试。",
+      privateCardConfirm: "这次导出会使用本地风格包内容。继续导出？",
+      projectTooLarge: "项目文件超过 8 MB，请选择更小的文件。",
+      jsonOpenFailed: "这不是有效的卡牌项目文件，请检查后重试。",
     },
     errors: {
       privatePreviewCatalog: "无法加载参考目录。",
-      localAssetPack: "无法加载本地素材包。",
+      localAssetPack: "无法加载本地风格包。",
       privateReferencePreview: "无法加载参考预览。",
       referenceCompare: "无法对比这张参考图。",
       loadCardUrl: (url: string) => `无法加载 ${url}。`,
@@ -498,140 +470,12 @@ export function translateKeywordLabel(language: Language, id: string, fallback: 
 
 export function localizeAssetPackName(language: Language, value: string): string {
   if (language === "zh" && value === "Local KARDS asset pack") {
-    return "本地 KARDS 素材包";
+    return "本地 KARDS 风格包";
   }
   return value;
 }
 
-export function localizeRuntimeMessage(language: Language, message: string): string {
-  if (language === "en") {
-    return message;
-  }
-
-  const missingImage = message.match(/^Missing image: (.+)$/);
-  if (missingImage) {
-    return `缺少图片：${missingImage[1]}`;
-  }
-
-  const missingFont = message.match(/^Missing font: (.+)$/);
-  if (missingFont) {
-    return `缺少字体：${missingFont[1]}`;
-  }
-
-  const couldNotLoadImage = message.match(/^Could not load image: (.+)$/);
-  if (couldNotLoadImage) {
-    return `无法加载图片：${couldNotLoadImage[1]}`;
-  }
-
-  const couldNotLoadFont = message.match(/^Could not load font: (.+)$/);
-  if (couldNotLoadFont) {
-    return `无法加载字体：${couldNotLoadFont[1]}`;
-  }
-
-  const couldNotReadImage = message.match(/^Could not read (.+) as an image\.$/);
-  if (couldNotReadImage) {
-    return `无法将 ${couldNotReadImage[1]} 读取为图片。`;
-  }
-
-  const couldNotLoadManifest = message.match(/^Could not load kards-asset-pack\.json from (.+)\.$/);
-  if (couldNotLoadManifest) {
-    return `无法从 ${couldNotLoadManifest[1]} 加载 kards-asset-pack.json。`;
-  }
-
-  const unknownRenderSlot = message.match(/^Unknown render asset slot: (.+)$/);
-  if (unknownRenderSlot) {
-    return `未知渲染素材槽位：${unknownRenderSlot[1]}`;
-  }
-
-  const assetSlotMissingFile = message.match(/^Asset slot (.+) is missing a file path\.$/);
-  if (assetSlotMissingFile) {
-    return `素材槽位 ${assetSlotMissingFile[1]} 缺少文件路径。`;
-  }
-
-  const unknownFontRole = message.match(/^Unknown font role: (.+)$/);
-  if (unknownFontRole) {
-    return `未知字体角色：${unknownFontRole[1]}`;
-  }
-
-  if (message === "Select a folder that contains kards-asset-pack.json.") {
-    return "请选择包含 kards-asset-pack.json 的文件夹。";
-  }
-
-  if (message === "kards-asset-pack.json must contain a JSON object.") {
-    return "kards-asset-pack.json 必须包含一个 JSON 对象。";
-  }
-
-  if (message === "kards-asset-pack.json must use version 1.") {
-    return "kards-asset-pack.json 必须使用版本 1。";
-  }
-
-  if (message === "kards-asset-pack.json images must be an array.") {
-    return "kards-asset-pack.json 的 images 必须是数组。";
-  }
-
-  if (message === "kards-asset-pack.json fonts must be an array.") {
-    return "kards-asset-pack.json 的 fonts 必须是数组。";
-  }
-
-  if (message === "kards-asset-pack.json requiresPrivateExportConfirm must be a boolean.") {
-    return "kards-asset-pack.json 的 requiresPrivateExportConfirm 必须是布尔值。";
-  }
-
-  if (message === "Every font entry needs both family and file.") {
-    return "每个字体条目都需要 family 和 file。";
-  }
-
-  if (
-    message === "Could not load the private preview catalog." ||
-    message === "Could not load the local reference catalog." ||
-    message === "Could not load the reference catalog."
-  ) {
-    return "无法加载参考目录。";
-  }
-
-  if (message === "Could not load the local asset pack.") {
-    return "无法加载本地素材包。";
-  }
-
-  if (
-    message === "Could not load the private reference preview." ||
-    message === "Could not load the local reference preview." ||
-    message === "Could not load the reference preview."
-  ) {
-    return "无法加载参考预览。";
-  }
-
-  if (message === "Could not compare this reference image.") {
-    return "无法对比这张参考图。";
-  }
-
-  const couldNotLoadUrl = message.match(/^Could not load (.+)\.$/);
-  if (couldNotLoadUrl) {
-    return `无法加载 ${couldNotLoadUrl[1]}。`;
-  }
-
-  if (message === "The card canvas is not available for pixel diff.") {
-    return "当前卡面画布不可用于像素对比。";
-  }
-
-  if (message === "The reference canvas is not available for pixel diff.") {
-    return "当前参考画布不可用于像素对比。";
-  }
-
-  if (message === "Image data dimensions must match before pixel diff can run.") {
-    return "像素对比前，两张图片的尺寸必须一致。";
-  }
-
-  if (message === "Image data dimensions must be positive before pixel diff can run.") {
-    return "像素对比前，图片尺寸必须为正数。";
-  }
-
-  if (message === "Image data arrays must contain RGBA values for every compared pixel.") {
-    return "像素对比数据必须为每个像素包含 RGBA 值。";
-  }
-
-  return message;
-}
+export { localizeRuntimeMessage } from "./runtimeMessages";
 
 function isLanguage(value: string | null): value is Language {
   return value === "zh" || value === "en";

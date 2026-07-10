@@ -1,97 +1,71 @@
 # KARDS Card Forge Roadmap
 
-## Current State
+## Current Baseline — v0.3.0
 
-KARDS Card Forge is a v0.2-level single-card card-face
-generator. The current app has working core editing, Canvas rendering, PNG/JPG/PDF
-export, high-resolution rerendered export, lightweight local drafts, a local
-card library path, bundled and local style-pack loading, a versioned reference
-catalog, reference comparison, and public deployment paths for Vercel and
-GitHub Pages.
+KARDS Card Forge is a local, static tool for creating one custom card at a
+time. The current release includes:
 
-The next stage should focus on stabilization, regression baselines, and small
-careful improvements. The project should stay a local static fan card-face tool,
-not grow into a gameplay or account platform.
+- Chinese and English editing, Canvas preview, and PNG/JPG/PDF export.
+- `1×`, `2×`, and `3×` rerendered output with exposure and contrast controls.
+- Project files, lightweight browser drafts, and a local card library with add,
+  load, update, and delete actions.
+- A versioned reference catalog with search, filters, stable sorting, comparison,
+  explicit artwork application, full-card loading, and safe automatic matching.
+- Bundled reference assets, generated fallbacks, optional local style packs,
+  export preflight, and structured export diagnostics.
+- Verified Vercel and GitHub Pages release paths.
 
-## Priority Roadmap
+The product boundary remains the same: a local single-card design tool, not a
+gameplay, account, deck, or network-content platform.
 
-### Completed Foundation: Repository And Release Trust
+## Next
 
-- `npm run validate` is the named repository gate for typecheck, Vitest, Python
-  private-tool contracts, production build, and final artifact verification.
-- The default `npm run build` verifies the exact `dist` directory it creates,
-  so GitHub Pages and Vercel cannot publish an unchecked rebuild.
-- `public/reference-pack/v1` is the versioned release allowlist for bundled
-  KARDS-derived/reference resources. Declared app support assets are tracked
-  separately; extracted, intermediate, local, and `.runtime` resources remain
-  private.
-- README, roadmap, worktree registry, and release notes must continue to match
-  the code and release state that actually exist.
+### 1. Stable Visual Review
 
-### Phase 1: Local Library Workbench
+- Record a small visual baseline for the main card types and representative
+  text lengths.
+- State what each baseline proves: layout, selected elements, or full-card
+  appearance.
+- Treat image drift as a review signal, not automatic proof of a bug.
 
-- Turn the current local library from a save log into a small workbench.
-- Add browsing, loading, updating, and deleting saved cards.
-- Keep File System Access permission behavior explicit and browser-local.
+### 2. Focused Accessibility
 
-### Phase 2: Presentation-Aware Visual Smoke Baseline After Stage 8
+- Test the complete editor with keyboard-only input and common screen-reader
+  paths.
+- Improve focus order, field instructions, and status announcements where the
+  current semantics are not enough.
+- Keep Chinese and English labels under the same tested text contract.
 
-- Treat Stage 8 as the current presentation-calibration line for type icons,
-  rarity pips, typography, set/reference switching, and related card-face
-  appearance fixes.
-- Establish a visual smoke baseline after the Stage 8 presentation work is
-  stable enough to compare against.
-- Make the baseline state what it proves: layout, presentation, selected
-  elements, or full-card appearance.
-- Treat baseline drift as a review signal, not as automatic proof of a product
-  bug.
+### 3. Renderer Maintenance
 
-### Phase 3: Small UX Audit
+- Tune rendering details only when a baseline can show the intended change.
+- Split large renderer or workspace modules by real responsibility when that
+  makes tests and ownership clearer.
+- Avoid a broad renderer rewrite while current output is stable.
 
-- Review artwork crop inputs and pointer behavior.
-- Improve keyword editing accessibility.
-- Clarify private style-pack wording and failure states.
-- Continue localizing user-facing errors instead of storing translated error
-  strings in state.
+## Later, If Evidence Supports It
 
-### Phase 4: Renderer Detail Tuning And Split
+- Better print presets for existing PDF export.
+- More portable local-library workflows that preserve the current JSON format.
+- Additional built-in reference metadata that fits the existing static catalog.
 
-- Tune card rendering details only after the visual baseline is stable.
-- Split renderer code by real responsibility when it reduces maintenance risk.
-- Avoid large renderer rewrites until tests can distinguish intended visual
-  changes from regressions.
+These are directions, not promised release items. Add them only after a clear
+user need and a testable acceptance rule exist.
 
-## Not In Scope For Now
+## Not Planned
 
-- Deck builder
-- Account system
-- Online sharing
-- Game rule or legality validation
-- Network image gallery
-- Official resource auto-downloader
+- Deck builder or game-rule validation
+- Account system or online sharing
+- Network image gallery or official-resource downloader
 - Large batch-generation workflow
 
-## Risk Register
+## Release Guardrails
 
-- Release allowlist drift: the bundled reference pack must stay within
-  `public/reference-pack/v1`, and every publish build must verify its exact
-  file closure before deployment.
-- Private path leakage risk: `.runtime` paths and user-local asset paths must not
-  appear in public bundles or publishable documentation.
-- Visual smoke baseline staleness: old baselines can hide real regressions or
-  flag intentional renderer changes as failures.
-- Maintenance risk in `ProjectPanel` and `cardRenderer`: both files keep
-  collecting behavior and should be split only when the baseline and tests make
-  the split safe.
-- Local library maturity risk: the current local library is closer to an append
-  save log than a complete CRUD workbench.
-
-## Acceptance Criteria For Roadmap Work
-
-- README and roadmap match the current code and do not conflict with each other.
-- Future agents can use the phase order above without guessing what to do next.
-- Publishable docs do not include private assets, real local absolute paths, or
-  `.runtime` file contents.
-- Vercel and GitHub Pages use the same default verified-build contract and
-  publish the `dist` directory checked by that command.
-- Planned features are described as planned, not as already implemented.
+- `npm run validate` remains the repository gate for tests, private-tool
+  contracts, typecheck, production build, and final artifact verification.
+- The public reference pack stays inside `public/reference-pack/v1` with an
+  exact allowlist.
+- Local paths, user-selected style packs, private calibration files, and
+  `.runtime` contents stay outside public bundles and publishable documentation.
+- README, roadmap, release notes, and the worktree registry must describe the
+  code and release state that actually exist.

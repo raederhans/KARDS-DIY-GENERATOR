@@ -177,6 +177,7 @@ export function ReferenceWorkbench({
           onChange={(event) => onReferenceFileSelect(event.target.files?.[0] ?? null, event.target)}
         />
       </label>
+      <p className="status-line">{text.diffHint}</p>
       <div className="diff-status" role="status" aria-live="polite">
         {referenceDiff ? (
           <>

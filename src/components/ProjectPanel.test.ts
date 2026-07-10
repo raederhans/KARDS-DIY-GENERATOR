@@ -18,7 +18,11 @@ import {
   parseImportedCardProject,
   safeFileName,
 } from "./ProjectPanel";
-import { clearStaleActiveLibraryEntry, LocalLibraryWorkbench } from "./LocalLibraryWorkbench";
+import {
+  clearStaleActiveLibraryEntry,
+  formatLibraryEntryMetadata,
+  LocalLibraryWorkbench,
+} from "./LocalLibraryWorkbench";
 import { ReferenceWorkbench } from "./ReferenceWorkbench";
 import { consumeSelectedFile, readBrowserFile } from "../browserFiles";
 import { isAllowedEmbeddedImageDataUrl } from "../limits";
@@ -159,8 +163,8 @@ describe("ProjectPanel four-tab workbench", () => {
       }),
     );
 
-    expect(markup).toContain("尚未打开本地卡库");
-    expect(markup).toContain("当前浏览器不支持安全写入");
+    expect(markup).toContain("请打开卡库，浏览已保存的卡牌");
+    expect(markup).toContain("当前浏览器不能安全写入卡库");
     expect(markup).toContain('disabled=""');
   });
 
@@ -183,6 +187,22 @@ describe("ProjectPanel four-tab workbench", () => {
       }],
     }, onActiveEntryChange);
     expect(onActiveEntryChange).not.toHaveBeenCalled();
+  });
+
+  it("shows localized card metadata instead of internal library IDs", () => {
+    const entry = {
+      id: "card-1",
+      title: DEFAULT_CARD.title,
+      kind: "tank",
+      nation: "us",
+      rarity: "standard",
+      set: "blood-and-iron",
+      updatedAt: "2026-07-09T00:00:00.000Z",
+      card: DEFAULT_CARD,
+    };
+
+    expect(formatLibraryEntryMetadata(entry, "zh")).toBe("坦克 · 美国 · 血与铁");
+    expect(formatLibraryEntryMetadata(entry, "en")).toBe("Tank · United States · Blood and Iron");
   });
 
   it("renders reference filters, selected-row actions, and auto-artwork control", () => {
@@ -213,9 +233,9 @@ describe("ProjectPanel four-tab workbench", () => {
     expect(markup).toContain('name="reference-search"');
     expect(markup).toContain('name="reference-kind-filter"');
     expect(markup).toContain('name="reference-sort"');
-    expect(markup).toContain("自动应用卡图");
-    expect(markup).toContain("应用卡图");
-    expect(markup).toContain("载入整卡");
+    expect(markup).toContain("唯一匹配时自动填充卡图");
+    expect(markup).toContain("仅应用卡图");
+    expect(markup).toContain("载入整张卡牌（覆盖当前）");
     expect(markup).toContain("T-70");
   });
 
@@ -223,11 +243,12 @@ describe("ProjectPanel four-tab workbench", () => {
     const preflight = getCardExportPreflight({
       canvasAvailable: true,
       artworkReady: true,
-      assetPackWarnings: ["missing font"],
+      assetPackWarnings: ["Missing font: fonts/body.ttf"],
       usesProgramTexture: true,
       requiresPrivateConfirmation: false,
     });
     const markup = renderToStaticMarkup(createElement(ExportDiagnostics, {
+      language: "zh",
       text: UI_TEXT.zh.projectPanel,
       preflight,
       result: {
@@ -245,9 +266,11 @@ describe("ProjectPanel four-tab workbench", () => {
       error: null,
     }));
 
-    expect(markup).toContain("有提醒");
+    expect(markup).toContain("请先检查");
     expect(markup).toContain("card.png");
-    expect(markup).toContain("已触发浏览器下载");
+    expect(markup).toContain("浏览器已开始下载");
+    expect(markup).toContain("缺少字体：fonts/body.ttf");
+    expect(markup).not.toContain("Missing font");
     expect(markup).not.toContain("已保存到下载目录");
   });
 });

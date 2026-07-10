@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "name": "My local KARDS style pack",
+  "rightsNotice": "Use only files you are allowed to use.",
+  "images": [
+    {
+      "slot": "nation-mark",
+      "file": "images/nations/unit/infantry/britain.png",
+      "nationId": "britain",
+      "kind": "infantry",
+      "template": "unit"
+    },
+    {
+      "slot": "type-icon-board",
+      "file": "images/types/unit-board.png",
+      "template": "unit"
+    },
+    {
+      "slot": "type-icon-glyph",
+      "file": "images/types/tank-glyph.png",
+      "kind": "tank"
+    },
+    {
+      "slot": "rarity-pip",
+      "file": "images/rarity/standard-pip.png",
+      "rarityId": "standard"
+    },
+    {
+      "slot": "set-mark",
+      "file": "images/sets/base.png",
+      "setId": "base"
+    }
+  ],
+  "fonts": [
+    {
+      "role": "title",
+      "family": "Card Header",
+      "file": "fonts/HeaderFont.ttf"
+    },
+    {
+      "role": "body",
+      "family": "Card Description",
+      "file": "fonts/DescriptionFont.ttf"
+    },
+    {
+      "role": "utility",
+      "family": "Card Utility",
+      "file": "fonts/UtilityFont.ttf"
+    }
+  ]
+}

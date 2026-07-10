@@ -52,3 +52,4 @@
 - Automatic and explicit artwork loaders are concurrent state machines: preserve an artwork-specific revision for user edits, clear stale automatic art on failed rematches, and cancel automatic work only when an explicit result is successfully committed.
 - Before diagnosing Vercel authentication as missing, reuse the project's last verified pinned CLI version; different temporary CLI versions can read local login/config state differently even when the same account remains authenticated.
 - Browser screenshot previews can display transient corruption even when the saved PNG is unchanged; compare artifact hashes or decode the file before blaming the page compositor.
+- User-facing copy is one contract across action labels, runtime errors, README onboarding, and current roadmap text; keep raw state stable, translate at the render boundary, and archive completed evidence without rewriting its historical paths.

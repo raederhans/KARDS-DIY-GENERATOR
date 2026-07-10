@@ -1,5 +1,22 @@
 # Worktree Registry
 
+## User-facing copy and documentation audit
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: simplify all current user-facing UI text, README onboarding, and explanatory documentation
+- Base branch/base commit: `main`, `2ac6783`
+- Current branch/HEAD: `main`, initially aligned with `origin/main`
+- Task goal: make first-time use, common actions, errors, safety limits, and maintainer instructions direct and easy to scan without changing behavior or legal meaning
+- Status: integrated directly on `main` and pushed to `origin/main`; task records archived under `docs/archive/user-facing-copy-audit/`
+- Main changed files: `src/i18n.ts`, `src/runtimeMessages.ts`, `src/components/FieldPanel.test.ts`, `src/components/FieldPanel.tsx`, `src/components/LocalLibraryWorkbench.tsx`, `src/components/ProjectPanel.tsx`, `src/components/ProjectPanel.test.ts`, `src/components/ReferenceWorkbench.tsx`, `src/i18n.test.ts`, `index.html`, `README.md`, `docs/active/roadmap.md`, `docs/reference/asset-pack-manifest.example.json`, archived style-replication evidence, task records, lessons, and registry
+- Shared hotspots: localization keys and tests, action labels, error rendering, README commands, active roadmap and release/safety guidance
+- Validation: focused copy tests passed 40/40 and TypeScript passed; final `npm run validate` passed 16 files / 240 tests, 13 Python contracts, TypeScript, production build, and strict dist/private-boundary verification; three independent reviews were completed and confirmed findings were fixed
+- Tests not run: visual desktop/narrow-screen browser smoke was attempted but localhost interaction was blocked by the in-app browser security policy; no bypass was attempted, and component SSR/full-gate evidence passed
+- Potential overlap: only the main checkout exists; no file overlap with another worktree. Semantic risk is yellow because copy changes can alter action meaning even when code behavior is unchanged.
+- Recommended integration order: completed in dependency order—terminology and message rendering, current docs, focused checks, independent reviews, then full validation
+- Next action: none; final main/origin alignment is verified during closeout
+- Documentation lifecycle: completed `docs/active/kards-style-replication/` evidence moved unchanged to `docs/archive/kards-style-replication/`; its current manifest example now lives under `docs/reference/`. Older registry entries retain their original paths as historical evidence.
+
 ## KARDS v0.3.0 release and Vercel production deployment
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

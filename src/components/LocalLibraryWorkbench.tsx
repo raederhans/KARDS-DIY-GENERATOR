@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Language, UiText } from "../i18n";
-import { localizeRuntimeMessage } from "../i18n";
+import { localizeRuntimeMessage, translatePresetLabel } from "../i18n";
 import {
   createCardInLocalLibrary,
   deleteCardFromLocalLibrary,
@@ -19,6 +19,7 @@ import {
   type LocalDirectoryHandle,
 } from "../localLibrary";
 import type { CardSpec } from "../types";
+import { CARD_KINDS, NATIONS, SETS } from "../presets";
 
 type LibraryNotice =
   | { kind: "remembered"; name: string }
@@ -247,7 +248,7 @@ export function LocalLibraryWorkbench({
                 <article className={entry.id === activeEntryId ? "library-entry is-active" : "library-entry"} key={entry.id}>
                   <div>
                     <strong>{entry.title}</strong>
-                    <span>{entry.kind} · {entry.nation} · {entry.set}</span>
+                    <span>{formatLibraryEntryMetadata(entry, language)}</span>
                     {entry.id === activeEntryId ? <em>{text.libraryCurrent}</em> : null}
                   </div>
                   <div className="library-entry-actions">
@@ -264,6 +265,17 @@ export function LocalLibraryWorkbench({
       ) : <p className="empty-state">{text.libraryNotOpened}</p>}
     </div>
   );
+}
+
+export function formatLibraryEntryMetadata(entry: CardLibraryEntry, language: Language): string {
+  const kind = CARD_KINDS.find((item) => item.id === entry.kind)?.label ?? entry.kind;
+  const nation = NATIONS.find((item) => item.id === entry.nation)?.label ?? entry.nation;
+  const set = SETS.find((item) => item.id === entry.set)?.label ?? entry.set;
+  return [
+    translatePresetLabel(language, "kind", entry.kind, kind),
+    translatePresetLabel(language, "nation", entry.nation, nation),
+    translatePresetLabel(language, "set", entry.set, set),
+  ].join(" · ");
 }
 
 export function clearStaleActiveLibraryEntry(

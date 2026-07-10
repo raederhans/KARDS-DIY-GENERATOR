@@ -331,6 +331,7 @@ export function ProjectPanel({
     try {
       const directory = await pickWritableDirectory();
       setExportDirectory(directory);
+      setExportError(null);
     } catch (error) {
       setExportError(new CardExportError("write", "write-failed", error));
     }
@@ -420,7 +421,7 @@ export function ProjectPanel({
             <div className="project-section export-workbench">
               <div className="section-heading">
                 <p>{text.exportWorkbench}</p>
-                <span>{exportDimensions.width} x {exportDimensions.height}</span>
+                <span>{exportDimensions.width} × {exportDimensions.height}</span>
               </div>
               <div className="control-grid">
                 <label>
@@ -436,7 +437,7 @@ export function ProjectPanel({
                   <select name="card-export-scale" value={exportScale} onChange={(event) => setExportScale(Number(event.target.value))}>
                     {CARD_EXPORT_SCALES.map((scale) => {
                       const dimensions = getExportDimensions(scale);
-                      return <option key={scale} value={scale}>{scale}x · {dimensions.width} x {dimensions.height}</option>;
+                      return <option key={scale} value={scale}>{scale}× · {dimensions.width} × {dimensions.height}</option>;
                     })}
                   </select>
                 </label>
@@ -446,12 +447,13 @@ export function ProjectPanel({
               <div className="export-stack two-up">
                 <button type="button" disabled={!directoryPickerAvailable || isExportPending} onClick={chooseExportDirectory}>{text.chooseExportDirectory}</button>
                 <button type="button" className="primary-action" disabled={exportPreflight.status === "blocking" || isExportPending} onClick={exportCard}>
-                  {assetPackStatus?.requiresPrivateExportConfirm ? text.exportPrivateCard : text.exportCard}
+                  {isExportPending ? text.exporting : text.exportCard}
                 </button>
               </div>
+              {exportDirectory ? <p className="status-line">{text.exportDirectorySelected(exportDirectory.name)}</p> : null}
               {!directoryPickerAvailable ? <p className="status-warning">{text.directoryUnsupported}</p> : null}
             </div>
-            <ExportDiagnostics text={text} preflight={exportPreflight} result={exportResult} error={exportError} />
+            <ExportDiagnostics language={language} text={text} preflight={exportPreflight} result={exportResult} error={exportError} />
         </WorkbenchTabPanel>
 
         <WorkbenchTabPanel activeTab={activeTab} tab="reference">
@@ -483,7 +485,7 @@ export function ProjectPanel({
           <button type="button" className="danger-action" onClick={onCardReset}>{text.resetCard}</button>
         </div>
         <div className="summary-list">
-          <p><span>{text.output}</span><strong>{exportDimensions.width} x {exportDimensions.height} {exportFormat.toUpperCase()}</strong></p>
+          <p><span>{text.output}</span><strong>{exportDimensions.width} × {exportDimensions.height} {exportFormat.toUpperCase()}</strong></p>
           <p><span>{text.artwork}</span><strong>{card.artwork.source === "upload" ? text.artworkEmbedded : text.artworkNotEmbedded}</strong></p>
           <p><span>{text.cardScope}</span><strong>{text.cardFaceOnly}</strong></p>
           <p><span>{text.assets}</span><strong>{assetPackStatus ? text.assetsLoaded : text.assetsPlaceholder}</strong></p>
@@ -494,11 +496,13 @@ export function ProjectPanel({
 }
 
 export function ExportDiagnostics({
+  language,
   text,
   preflight,
   result,
   error,
 }: {
+  language: Language;
   text: UiText["projectPanel"];
   preflight: CardExportPreflight;
   result: CardExportResult | null;
@@ -509,12 +513,12 @@ export function ExportDiagnostics({
     : preflight.status === "warning" ? text.exportWarning : text.exportBlocking;
   return (
     <div className={`export-diagnostics is-${preflight.status}`} role="status" aria-live="polite">
-      <div className="section-heading"><p>{statusLabel}</p><span>{preflight.items.length}</span></div>
+      <div className="section-heading"><p>{statusLabel}</p><span>{text.diagnosticCount(preflight.items.length)}</span></div>
       {preflight.items.length ? (
         <ul>
           {preflight.items.map((item, index) => (
             <li className={`diagnostic-${item.severity}`} key={`${item.code}-${index}`}>
-              {diagnosticText(item.code, text)}{item.detail ? ` ${item.detail}` : ""}
+              {diagnosticText(item.code, text)}{item.detail ? ` ${localizeRuntimeMessage(language, item.detail)}` : ""}
             </li>
           ))}
         </ul>
@@ -522,7 +526,7 @@ export function ExportDiagnostics({
       {result ? (
         <div className="export-result">
           <strong>{result.fileName}</strong>
-          <span>{result.format.toUpperCase()} · {result.width} x {result.height} · {formatBytes(result.byteLength)} · {Math.round(result.durationMs)} ms</span>
+          <span>{result.format.toUpperCase()} · {result.width} × {result.height} · {formatBytes(result.byteLength)} · {Math.round(result.durationMs)} ms</span>
           <span>{exportTargetText(result, text)}</span>
         </div>
       ) : <p className="empty-state">{text.exportNoRun}</p>}

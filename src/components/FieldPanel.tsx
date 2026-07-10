@@ -589,7 +589,7 @@ export function FieldPanel({
                   onPointerCancel={(event) => handleKeywordPointerCancel(event, keywordId)}
                 >
                   <span>{label}</span>
-                  <strong aria-hidden="true">x</strong>
+                  <strong aria-hidden="true">×</strong>
                 </button>
               );
             })}

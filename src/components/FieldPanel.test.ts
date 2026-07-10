@@ -69,6 +69,33 @@ describe("FieldPanel collapsible sections", () => {
 });
 
 describe("FieldPanel value fields", () => {
+  it("uses direct and consistent labels in both languages", () => {
+    const chinese = renderToStaticMarkup(createElement(FieldPanel, {
+      card: DEFAULT_CARD,
+      language: "zh",
+      text: UI_TEXT.zh.fieldPanel,
+      onCardChange: vi.fn(),
+      onCardKindChange: vi.fn(),
+    }));
+    const english = renderToStaticMarkup(createElement(FieldPanel, {
+      card: DEFAULT_CARD,
+      language: "en",
+      text: UI_TEXT.en.fieldPanel,
+      onCardChange: vi.fn(),
+      onCardKindChange: vi.fn(),
+    }));
+
+    expect(chinese).toContain("水平位置");
+    expect(chinese).toContain("标题样式");
+    expect(chinese).toContain("卡种");
+    expect(chinese).toContain("卡包");
+    expect(chinese).toContain("加粗所选文字");
+    expect(english).toContain("Horizontal position");
+    expect(english).toContain("Title style");
+    expect(english).toContain("Card type");
+    expect(english).toContain("Bold selected text");
+  });
+
   it("shows only HQ defense for headquarters cards", () => {
     const markup = renderToStaticMarkup(
       createElement(FieldPanel, {
