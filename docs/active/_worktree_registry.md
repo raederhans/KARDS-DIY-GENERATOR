@@ -1,5 +1,21 @@
 # Worktree Registry
 
+## KARDS v0.3.0 release and Vercel production deployment
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: publish the completed local workbench as GitHub Release v0.3.0 and update Vercel Production
+- Base branch/base commit: `main`, `5945e7405832b30f6eca0c7915b94ac5f56ad56c`
+- Current branch/HEAD: `main`, initially aligned with `origin/main`
+- Task goal: ship the verified workbench, local-library, reference matching, and export diagnostics changes without changing the existing release or authorization boundaries
+- Status: in-progress
+- Main changed files: `package.json`, `package-lock.json`, release task records, registry; no product runtime change beyond the already-integrated feature commits
+- Shared hotspots: release version metadata, Git tags/releases, Vercel production alias, GitHub Pages/CI publication
+- Validation: local release gate passed 16 Vitest files / 233 tests, 13 Python contracts, typecheck, standard build, strict dist/reference-pack boundary, Pages-mode verified build, final standard-root verified build, and npm audit with 0 vulnerabilities; remote CI, release-asset checks, Vercel inspection, and live probes remain pending
+- Tests not run: remote publication checks are intentionally pending until the exact candidate commit is pushed
+- Potential overlap: only main checkout exists; `main...origin/main = 0/0` at task start. Risk: green for worktrees, yellow for external publication
+- Recommended integration order: version commit and validation, push/CI, Vercel production deployment, annotated tag and GitHub Release, then archive records
+- Next action: commit and push the verified v0.3.0 candidate, then gate tagging and publication on exact-commit CI
+
 ## KARDS local workbench and export diagnostics
 
 - Worktree name/path: `kards-local-workbench-20260709`, `C:\Users\raede\.codex\worktrees\kards-local-workbench-20260709`
