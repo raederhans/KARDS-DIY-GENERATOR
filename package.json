@@ -19,6 +19,7 @@
   "dependencies": {
     "@fontsource/libre-franklin": "^5.2.8",
     "@fontsource/yantramanav": "^5.2.7",
+    "@vercel/speed-insights": "^2.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
