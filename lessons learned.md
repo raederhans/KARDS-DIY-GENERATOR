@@ -50,3 +50,4 @@
 - Stateful tab panels should stay mounted and use `hidden`; conditional unmounting silently discards filters, opened directories, and other workbench state while parent-level identifiers remain active.
 - File System Access permission upgrades for remembered handles must be requested directly from the user click before entering a Web Lock or awaiting file reads; the lock should still own the later read-modify-write transaction.
 - Automatic and explicit artwork loaders are concurrent state machines: preserve an artwork-specific revision for user edits, clear stale automatic art on failed rematches, and cancel automatic work only when an explicit result is successfully committed.
+- Before diagnosing Vercel authentication as missing, reuse the project's last verified pinned CLI version; different temporary CLI versions can read local login/config state differently even when the same account remains authenticated.

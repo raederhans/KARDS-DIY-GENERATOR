@@ -17,12 +17,12 @@ Publish the completed local workbench feature as GitHub Release `v0.3.0` and upd
 - [x] Verify clean local/remote main, release history, GitHub authentication, Vercel project linkage, and production rollback baseline.
 - [x] Update version metadata and release records.
 - [x] Run `npm run validate`, Pages-mode build, dependency audit, and release-boundary checks.
-- [ ] Commit and push the v0.3.0 release candidate with Lore trailers.
-- [ ] Confirm GitHub CI/Pages results for the exact candidate commit.
-- [ ] Deploy and verify Vercel Production.
-- [ ] Create and push annotated tag `v0.3.0`.
-- [ ] Publish and verify GitHub Release assets and checksums.
-- [ ] Archive records and confirm main, origin, tag, Release, and Vercel are aligned.
+- [x] Commit and push the v0.3.0 release candidate with Lore trailers.
+- [x] Confirm GitHub CI/Pages results for the exact candidate commit.
+- [x] Deploy and verify Vercel Production.
+- [x] Create and push annotated tag `v0.3.0`.
+- [x] Publish and verify GitHub Release assets and checksums.
+- [x] Archive records and confirm main, origin, tag, Release, and Vercel are aligned.
 
 ## Live Process Ownership
 

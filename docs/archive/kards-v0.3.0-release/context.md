@@ -11,7 +11,7 @@
 - GitHub CLI authentication is active with repository and workflow access.
 - Vercel project: `kards-card-forge`, project `prj_r7seUm18SrJauC6amLVTbdyqdRdi`, team `team_eIlnAkWWtnVBIHiS71WHP099`.
 - Vercel rollback baseline: Production deployment `dpl_2LzMkgqa1uZ2aQhCZszu4tsf4U7k`, Ready, sourced from v0.2.0 commit `6ae5b6fa`.
-- Global Vercel CLI is absent and the temporary CLI has no local OAuth credentials; deployment will use the authenticated Vercel project connector without writing tokens or dependencies.
+- Global Vercel CLI is absent. A first check with an older temporary CLI incorrectly appeared unauthenticated; the previously verified pinned `npx vercel@55.0.0` session is authenticated and was reused without writing tokens or dependencies.
 
 ## Local Release Verification
 
@@ -21,3 +21,14 @@
 - A separate `KARDS_GITHUB_PAGES=true npm run build:verified` passed and confirmed the Pages base-path output and the same publication boundary.
 - `npm audit --audit-level=moderate --json` reported zero vulnerabilities at all severities across 157 dependencies.
 - A final standard-root `npm run build:verified` passed after the Pages-mode build, leaving `dist/` in the intended release/Vercel layout.
+
+## Remote Publication
+
+- Release candidate commit: `fc68bcf9407b7d63f10457136fe82f53499270cb` on `main`.
+- GitHub CI run `29068193670` and Deploy GitHub Pages run `29068193647` both completed successfully with that exact `headSha`; the published Pages app shell, manifest, sample, and reference PNG also returned HTTP 200.
+- Vercel preview `dpl_EWq5zFJotzjHjP1NBiiMpopDZFCu` was built from the candidate and verified before promotion.
+- Vercel Production `dpl_CBs8J1u2Gk9Jo4iJXTLpvAxffN6L` is Ready at `https://kards-card-forge.vercel.app`, reports the exact candidate SHA, and was promoted from the verified preview.
+- Stable Vercel probes returned HTTP 200 for the app shell, manifest, sample card, normal reference PNG, and HQ PNG. Remote JS/CSS asset names matched the final local `dist/index.html`, both PNG signatures were valid, and no runtime errors were reported in the post-deploy window.
+- Annotated tag `v0.3.0` resolves to the candidate commit.
+- GitHub Release: `https://github.com/raederhans/KARDS/releases/tag/v0.3.0`; it is published, not a draft or prerelease.
+- Release artifacts were expanded and checked before upload, downloaded again after publication, and matched their local SHA-256 values.

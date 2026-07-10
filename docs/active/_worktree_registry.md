@@ -5,16 +5,16 @@
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
 - Thread/task: publish the completed local workbench as GitHub Release v0.3.0 and update Vercel Production
 - Base branch/base commit: `main`, `5945e7405832b30f6eca0c7915b94ac5f56ad56c`
-- Current branch/HEAD: `main`, initially aligned with `origin/main`
+- Current branch/HEAD: release candidate `fc68bcf9407b7d63f10457136fe82f53499270cb`; annotated tag `v0.3.0` remains fixed on the candidate, while `main` advances through this docs-only closeout
 - Task goal: ship the verified workbench, local-library, reference matching, and export diagnostics changes without changing the existing release or authorization boundaries
-- Status: in-progress
+- Status: integrated and published
 - Main changed files: `package.json`, `package-lock.json`, release task records, registry; no product runtime change beyond the already-integrated feature commits
 - Shared hotspots: release version metadata, Git tags/releases, Vercel production alias, GitHub Pages/CI publication
-- Validation: local release gate passed 16 Vitest files / 233 tests, 13 Python contracts, typecheck, standard build, strict dist/reference-pack boundary, Pages-mode verified build, final standard-root verified build, and npm audit with 0 vulnerabilities; remote CI, release-asset checks, Vercel inspection, and live probes remain pending
-- Tests not run: remote publication checks are intentionally pending until the exact candidate commit is pushed
+- Validation: local release gate passed 16 Vitest files / 233 tests, 13 Python contracts, typecheck, standard and Pages builds, strict dist/reference-pack verification, and npm audit with 0 vulnerabilities; exact-candidate GitHub CI `29068193670` and Pages `29068193647` passed, with Pages app/resource probes returning HTTP 200; release archives expanded cleanly and their re-downloaded SHA-256 values matched; Vercel Production `dpl_CBs8J1u2Gk9Jo4iJXTLpvAxffN6L` is Ready on the exact candidate SHA with stable app/resource probes and no post-deploy runtime errors
+- Tests not run: no release-specific browser visual smoke; the runtime feature had already passed its limited browser smoke before integration, while this release pass changed only metadata and records
 - Potential overlap: only main checkout exists; `main...origin/main = 0/0` at task start. Risk: green for worktrees, yellow for external publication
-- Recommended integration order: version commit and validation, push/CI, Vercel production deployment, annotated tag and GitHub Release, then archive records
-- Next action: commit and push the verified v0.3.0 candidate, then gate tagging and publication on exact-commit CI
+- Recommended integration order: completed in the recorded order; retain the previous production deployment `dpl_2LzMkgqa1uZ2aQhCZszu4tsf4U7k` as the rollback candidate
+- Next action: none after the docs-only closeout is pushed and final main/origin alignment is verified; records are archived under `docs/archive/kards-v0.3.0-release/`
 
 ## KARDS local workbench and export diagnostics
 
