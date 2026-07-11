@@ -20,6 +20,8 @@ describe("HelpPage", () => {
     expect(markup).toContain("本地卡库文件夹将无法打开");
     expect(markup).toContain("卡库为只读状态");
     expect(markup).toContain("文件只在本机处理");
+    expect(markup).toContain("向 Vercel Speed Insights 发送页面性能指标");
+    expect(markup).toContain("不包含卡牌内容或本地文件");
     expect(markup).toContain("关闭帮助并返回编辑器");
     expect(markup).not.toContain('hidden=""');
   });
@@ -34,6 +36,8 @@ describe("HelpPage", () => {
     expect(markup).toContain("Make your first card");
     expect(markup).toContain("Selecting a reference card changes only the comparison card");
     expect(markup).toContain("Load entire card replaces the current card");
+    expect(markup).toContain("sends page-performance metrics to Vercel Speed Insights");
+    expect(markup).toContain("do not include card content or local files");
     expect(markup).toContain('hidden=""');
   });
 });

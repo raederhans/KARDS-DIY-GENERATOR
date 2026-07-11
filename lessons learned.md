@@ -57,3 +57,4 @@
 - Exact-SHA multi-host releases need the repository record frozen before the candidate commit; keep deployment IDs and artifact checksums in external release evidence so Pages, Vercel, Sites, the tag, and Release do not drift through a post-publication docs commit.
 - Keep temporary release-verification source expansions outside recursive test discovery, or remove them after checksum checks; otherwise duplicated test trees can produce false failures against intentionally filtered artifacts.
 - During a Vercel spend-management incident, repeated `sts_credentials_fetch_failed` errors can mean the project was paused even when billing remains active; confirm the incident and project state, call the official unpause endpoint, then redeploy the unchanged artifact.
+- Release-candidate registry rows should use commit-neutral wording before publication; after integration, compare them with tag and worktree truth, and update only records that still describe pending work.

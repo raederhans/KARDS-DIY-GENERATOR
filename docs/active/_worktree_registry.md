@@ -2,19 +2,19 @@
 
 ## KARDS Card Forge v1.0.0 final release
 
-- Worktree name/path: `kards-v1-final-release-20260710`, `C:\Users\raede\.codex\worktrees\kards-v1-final-release-20260710`
+- Worktree name/path: former `kards-v1-final-release-20260710` worktree at `C:\Users\raede\.codex\worktrees\kards-v1-final-release-20260710`; removed after integration
 - Thread/task: add a Simplified Chinese README, establish limited-fork software licensing with separate resource rights, and publish final release `v1.0.0`
 - Base branch/base commit: `main`, `4a49d36992d43037fcb60dbd2733f287a3e8a534`
-- Current branch/HEAD: `codex/kards-v1-final-release`, based on `4a49d36992d43037fcb60dbd2733f287a3e8a534`; final SHA is the release candidate commit containing this frozen record
+- Current branch/HEAD: release candidate `e60cfe9df6c718f63f62d6540a98a15c15ec2ebf` is contained in `main` and remains the target of annotated tag `v1.0.0`; current `main` has since advanced through post-release operational commits
 - Task goal: publish a stable final feature baseline without granting rights to KARDS-derived, third-party, branded, or user-supplied resources
-- Status: finalized release candidate, ready for fast-forward integration; external publication evidence is authoritative in the GitHub Release and final operator report so no post-candidate repository commit is required
+- Status: integrated and published; GitHub Release `v1.0.0` is public with the code-only archive and checksum asset, and the former release worktree is no longer registered by Git
 - Main changed files: `README.md`, `README.zh-CN.md`, `LICENSE`, `RESOURCE-RIGHTS.md`, `public/THIRD-PARTY-NOTICES.txt`, `public/reference-pack/v1/RIGHTS-NOTICE.txt`, `package.json`, `package-lock.json`, `src/i18n.ts`, `src/components/HelpPage.test.ts`, `.openai/hosting.json`, `tools/prepare_sites_dist.mjs`, roadmap, archived release records, lessons, and registry
 - Shared hotspots: public licensing contract, README onboarding, package version and scripts, release artifacts, Git tags/releases, Pages, Vercel Production, and Sites hosting metadata
 - Validation: official PolyForm plaintext matched exactly; focused Vitest passed 2 files / 9 tests; `npm run validate` passed 17 files / 242 tests plus 13 Python contracts, typecheck, production build, and strict dist verification; Pages and Sites builds passed; dependency audit reported 0 vulnerabilities; the primary agent exclusively owns all external publication processes
 - Tests not run: browser automation was intentionally omitted because automated component, renderer, build, and artifact checks cover the changed behavior; remote GitHub/Pages/Vercel/Sites/Release gates run only after the immutable candidate is pushed
-- Potential overlap: main checkout remains clean; direct file overlap is green, licensing semantics are yellow after initial independent review, and external publication remains red until exact-SHA verification completes
+- Potential overlap: only the main checkout remains; worktree overlap is green and the earlier external-publication gate is closed
 - Recommended integration order: license/resource scope first, Chinese README second, version/release metadata third, then local verification, reviews, integration, and external publication
-- Next action: fast-forward the single candidate into clean `main`, push it, publish every target against that SHA, then remove the integrated worktree; no registry rewrite follows publication
+- Next action: none for the release worktree; preserve tag `v1.0.0` on `e60cfe9df6c718f63f62d6540a98a15c15ec2ebf`
 
 ## User-facing copy and documentation audit
 

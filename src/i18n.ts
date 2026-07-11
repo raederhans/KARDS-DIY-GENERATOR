@@ -53,7 +53,7 @@ export const UI_TEXT = {
       referenceTitle: "Reference actions have different effects",
       referenceBody: "Selecting a reference card changes only the comparison card. Use artwork only changes the artwork. Load entire card replaces the current card.",
       privacyTitle: "Your files stay local",
-      privacyBody: "The app does not upload your card, artwork, project files, card library, or local style pack. Your browser may ask for folder permission when you open or save files.",
+      privacyBody: "The app does not upload your card, artwork, project files, card library, or local style pack. On Vercel preview and production, it sends page-performance metrics to Vercel Speed Insights; these metrics do not include card content or local files. Your browser may ask for folder permission when you open or save files.",
       tipsTitle: "If something does not work",
       tips: [
         "Wait for artwork to finish loading before exporting.",
@@ -265,7 +265,7 @@ export const UI_TEXT = {
       referenceTitle: "参考操作的效果不同",
       referenceBody: "选择参考卡只会切换对比卡；“仅应用卡图”只替换卡图；“载入整张卡牌”会覆盖当前卡牌。",
       privacyTitle: "文件只在本机处理",
-      privacyBody: "应用不会上传卡牌、卡图、项目文件、卡库或本地风格包。打开或保存文件时，浏览器可能会请求文件夹权限。",
+      privacyBody: "应用不会上传卡牌、卡图、项目文件、卡库或本地风格包。在 Vercel 预览版和正式版中，应用会向 Vercel Speed Insights 发送页面性能指标；这些指标不包含卡牌内容或本地文件。打开或保存文件时，浏览器可能会请求文件夹权限。",
       tipsTitle: "遇到问题时",
       tips: [
         "卡图加载完成后再导出。",
