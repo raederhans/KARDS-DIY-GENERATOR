@@ -7,6 +7,8 @@ import { readBrowserFile } from "../browserFiles";
 import {
   FieldPanel,
   FieldPanelSection,
+  createBodyBoldFeedback,
+  getCurrentBodyBoldFeedback,
   hasDraggedFiles,
   isImportableArtworkFile,
   normalizeArtworkCropInput,
@@ -68,6 +70,27 @@ describe("FieldPanel collapsible sections", () => {
   });
 });
 
+describe("FieldPanel body bold feedback", () => {
+  it("distinguishes applied selections from empty bold markers", () => {
+    expect(createBodyBoldFeedback("alpha", "**alpha**", 0, 5)).toEqual({
+      kind: "applied",
+      body: "**alpha**",
+    });
+    expect(createBodyBoldFeedback("alpha", "alpha****", 5, 5)).toEqual({
+      kind: "ready",
+      body: "alpha****",
+    });
+  });
+
+  it("clears feedback after a no-op or an external body change", () => {
+    const feedback = createBodyBoldFeedback("alpha", "**alpha**", 0, 5);
+
+    expect(createBodyBoldFeedback("alpha", "alpha", 0, 5)).toBeNull();
+    expect(getCurrentBodyBoldFeedback(feedback, "**alpha**")).toBe("applied");
+    expect(getCurrentBodyBoldFeedback(feedback, "replacement body")).toBeNull();
+  });
+});
+
 describe("FieldPanel value fields", () => {
   it("uses direct and consistent labels in both languages", () => {
     const chinese = renderToStaticMarkup(createElement(FieldPanel, {
@@ -90,10 +113,15 @@ describe("FieldPanel value fields", () => {
     expect(chinese).toContain("卡种");
     expect(chinese).toContain("卡包");
     expect(chinese).toContain("加粗所选文字");
+    expect(chinese).toContain('aria-describedby="body-bold-feedback"');
+    expect(chinese).toContain('id="body-bold-feedback"');
+    expect(chinese).toContain('role="status"');
+    expect(chinese).toContain("星标是格式标记；局部加粗效果显示在卡牌预览中。");
     expect(english).toContain("Horizontal position");
     expect(english).toContain("Title style");
     expect(english).toContain("Card type");
     expect(english).toContain("Bold selected text");
+    expect(english).toContain("Stars are formatting markers; local bold appears in the card preview.");
   });
 
   it("shows only HQ defense for headquarters cards", () => {

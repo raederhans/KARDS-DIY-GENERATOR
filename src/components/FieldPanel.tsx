@@ -61,6 +61,35 @@ type KeywordDragState = {
   didMove: boolean;
 };
 
+export type BodyBoldFeedbackKind = "applied" | "ready";
+
+export type BodyBoldFeedback = {
+  kind: BodyBoldFeedbackKind;
+  body: string;
+} | null;
+
+export function createBodyBoldFeedback(
+  currentBody: string,
+  resultBody: string,
+  selectionStart: number,
+  selectionEnd: number,
+): BodyBoldFeedback {
+  if (resultBody === currentBody) {
+    return null;
+  }
+  return {
+    kind: selectionStart === selectionEnd ? "ready" : "applied",
+    body: resultBody,
+  };
+}
+
+export function getCurrentBodyBoldFeedback(
+  feedback: BodyBoldFeedback,
+  currentBody: string,
+): BodyBoldFeedbackKind | null {
+  return feedback?.body === currentBody ? feedback.kind : null;
+}
+
 export function FieldPanel({
   card,
   language,
@@ -71,12 +100,19 @@ export function FieldPanel({
   const [keywordDrag, setKeywordDrag] = useState<KeywordDragState | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<CollapsedFieldPanelSections>({});
   const [isArtworkDragActive, setIsArtworkDragActive] = useState(false);
+  const [bodyBoldFeedback, setBodyBoldFeedback] = useState<BodyBoldFeedback>(null);
   const suppressKeywordClickRef = useRef(false);
   const bodyTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const artworkDragDepthRef = useRef(0);
   const kind = getKind(card.kind);
   const selectedKeywordIds = resolveCardKeywordIds(card);
   const availableKeywords = KEYWORD_PRESETS.filter((keyword) => canAddKeywordId(selectedKeywordIds, keyword.id));
+  const currentBodyBoldFeedback = getCurrentBodyBoldFeedback(bodyBoldFeedback, card.body);
+  const bodyBoldFeedbackText = currentBodyBoldFeedback === "applied"
+    ? text.bodyBoldApplied
+    : currentBodyBoldFeedback === "ready"
+      ? text.bodyBoldReady
+      : text.bodyBoldHint;
 
   function update(next: Partial<CardSpec>) {
     onCardChange((currentCard) => ({ ...currentCard, ...next }));
@@ -262,6 +298,7 @@ export function FieldPanel({
     const selectionEnd = textarea?.selectionEnd ?? selectionStart;
     const result = insertBodyTextAtSelection(currentBody, insertion, selectionStart, selectionEnd, BODY_MAX_LENGTH);
     update({ body: result.value });
+    setBodyBoldFeedback(null);
     window.requestAnimationFrame(() => {
       textarea?.focus();
       textarea?.setSelectionRange(result.cursor, result.cursor);
@@ -275,6 +312,7 @@ export function FieldPanel({
     const selectionEnd = textarea?.selectionEnd ?? selectionStart;
     const result = wrapBodySelectionWithBold(currentBody, selectionStart, selectionEnd, BODY_MAX_LENGTH);
     update({ body: result.value });
+    setBodyBoldFeedback(createBodyBoldFeedback(currentBody, result.value, selectionStart, selectionEnd));
     window.requestAnimationFrame(() => {
       textarea?.focus();
       textarea?.setSelectionRange(result.cursor, result.cursor);
@@ -658,7 +696,13 @@ export function FieldPanel({
         <div className="field-block body-field">
           <span>{text.body}</span>
           <div className="body-effect-buttons" aria-label={text.addBodyEmphasis}>
-            <button type="button" className="body-effect-button" onClick={addBodyBoldMarkers} aria-label={text.addBodyBold}>
+            <button
+              type="button"
+              className="body-effect-button"
+              onClick={addBodyBoldMarkers}
+              aria-label={text.addBodyBold}
+              aria-describedby="body-bold-feedback"
+            >
               {text.addBodyBold}
             </button>
             {BODY_EFFECT_PRESETS.map((preset) => (
@@ -673,8 +717,14 @@ export function FieldPanel({
             value={card.body}
             rows={5}
             maxLength={BODY_MAX_LENGTH}
-            onChange={(event) => update({ body: event.target.value })}
+            onChange={(event) => {
+              setBodyBoldFeedback(null);
+              update({ body: event.target.value });
+            }}
           />
+          <p id="body-bold-feedback" className="status-line" role="status" aria-live="polite">
+            {bodyBoldFeedbackText}
+          </p>
         </div>
         <div className="text-appearance-grid" aria-label={text.bodyAppearance}>
           <TextAppearanceRange
