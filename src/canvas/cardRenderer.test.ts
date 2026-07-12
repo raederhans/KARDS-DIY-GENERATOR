@@ -995,6 +995,28 @@ describe("card renderer output", () => {
     });
   });
 
+  it("draws clean set marks at the original 30 by 28 bottom-right anchor", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const setImage = { width: 30, height: 28 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([{ slot: "set-mark", setId: DEFAULT_CARD.set, image: setImage }]);
+
+    renderCard(canvas, DEFAULT_CARD, null, { assets, disablePrintWear: true });
+
+    const setDraw = calls.drawImageStyles.find((call) => call.image === setImage);
+    expect(setDraw).toMatchObject({ centerX: 473, centerY: 680, width: 30, height: 28 });
+  });
+
+  it("keeps legacy 28 by 28 set marks right-aligned without stretching", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const setImage = { width: 28, height: 28 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([{ slot: "set-mark", setId: DEFAULT_CARD.set, image: setImage }]);
+
+    renderCard(canvas, DEFAULT_CARD, null, { assets, disablePrintWear: true });
+
+    const setDraw = calls.drawImageStyles.find((call) => call.image === setImage);
+    expect(setDraw).toMatchObject({ centerX: 474, centerY: 680, width: 28, height: 28 });
+  });
+
   it("does not draw rarity marks when rarity is none", () => {
     const { canvas, calls } = createFakeCanvas();
     const rarityImage = { width: 56, height: 20 } as CanvasImageSource;

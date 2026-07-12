@@ -23,6 +23,25 @@ DEFAULT_KARDS_INSTALL = Path(r"C:\Program Files (x86)\Steam\steamapps\common\KAR
 
 CURRENT_SMOKE_SAFE_SLOTS = {"nation-mark", "type-icon", "rarity-pip", "set-mark"}
 FORBIDDEN_OUTPUT_SEGMENTS = {"public", "dist", "src"}
+SET_MARK_CANVAS_SIZE = (30, 28)
+SET_MARK_BASELINE_Y = 26
+
+KARDSGEN_SET_MARK_SOURCES = {
+    "allegiance": "set/png/Allegiance.png",
+    "base": "set/png/Base.png",
+    "blood-and-iron": "set/png/Blood.png",
+    "breakthrough": "set/png/Breakthrough.png",
+    "brothers-in-arms": "set/png/Brothers.png",
+    "covert-ops": "set/png/Covert.png",
+    "homefront": "set/png/Homefront.png",
+    "legions": "set/png/Legions.png",
+    "naval-warfare": "set/png/Naval.png",
+    "oceania-storm": "set/png/Oceania.png",
+    "special": "set/png/FanMade.png",
+    "theaters-of-war": "set/png/Theaters.png",
+    "winter-war": "set/png/Winter.png",
+    "world-at-war": "set/png/World.png",
+}
 
 KARDSGEN_LOADABLE_ASSETS = [
     ("frame", "frame.png", "frame"),
@@ -115,7 +134,12 @@ def main() -> None:
     kards_assets_root = repos_root / "KARDS-Assets"
     craftsoul_root = repos_root / "kards-image-tool"
 
-    source_inventory["kardsGen"] = process_kardsgen(kardsgen_root, output_dir, extracted_assets)
+    source_inventory["kardsGen"] = process_kardsgen(
+        kardsgen_root,
+        output_dir,
+        extracted_assets,
+        renderer_manifest_images,
+    )
     source_inventory["kardsAssets"] = process_kards_assets(
         kards_assets_root,
         output_dir,
@@ -234,6 +258,7 @@ def copy_stage5_clean_assets(
         "calibrationReportExists": calibration_report_path.exists(),
         "sampleFilesCopied": 0,
         "copiedImages": 0,
+        "setMarksDelegatedToKardsGen": 0,
         "status": "missing",
     }
     if not manifest_path.exists():
@@ -244,6 +269,9 @@ def copy_stage5_clean_assets(
         slot = entry.get("slot")
         file_name = entry.get("file")
         if slot not in CURRENT_SMOKE_SAFE_SLOTS or not file_name:
+            continue
+        if slot == "set-mark" and entry.get("setId") in KARDSGEN_SET_MARK_SOURCES:
+            inventory["setMarksDelegatedToKardsGen"] += 1
             continue
         source_path = resolve_pack_file(stage5_pack, file_name)
         if not source_path.exists():
@@ -290,7 +318,12 @@ def copy_stage5_clean_assets(
     return inventory
 
 
-def process_kardsgen(root: Path, output_dir: Path, extracted_assets: list[dict[str, Any]]) -> dict[str, Any]:
+def process_kardsgen(
+    root: Path,
+    output_dir: Path,
+    extracted_assets: list[dict[str, Any]],
+    renderer_manifest_images: list[dict[str, str]],
+) -> dict[str, Any]:
     material_root = root / "Material"
     canonical_material_root = root / "KardsGen" / "Material"
     source_root = material_root if material_root.exists() else canonical_material_root
@@ -301,11 +334,11 @@ def process_kardsgen(root: Path, output_dir: Path, extracted_assets: list[dict[s
         "license": "MIT for software; official-style/material rights remain source-specific",
         "rendererSlotCandidateCount": 0,
         "referenceCopyCount": 0,
+        "promotedSetMarkCount": 0,
         "fileCounts": {},
     }
     if not source_root.exists():
-        inventory["status"] = "missing"
-        return inventory
+        raise SystemExit(f"KardsGen material is required for clean set marks: {source_root}")
 
     material_files = [
         path for path in source_root.rglob("*") if path.is_file() and path.suffix.lower() in {".png", ".jpg", ".jpeg", ".svg"}
@@ -361,8 +394,71 @@ def process_kardsgen(root: Path, output_dir: Path, extracted_assets: list[dict[s
             )
             inventory["referenceCopyCount"] += 1
 
+    inventory["promotedSetMarkCount"] = promote_kardsgen_set_marks(
+        source_root,
+        output_dir,
+        extracted_assets,
+        renderer_manifest_images,
+    )
+
     inventory["status"] = "copied-private-reference-candidates"
     return inventory
+
+
+def normalize_kardsgen_set_mark(source: Image.Image) -> Image.Image:
+    mark = source.convert("RGBA")
+    canvas_width = SET_MARK_CANVAS_SIZE[0]
+    if mark.width > canvas_width or mark.height > SET_MARK_BASELINE_Y:
+        raise ValueError(
+            f"KardsGen set mark exceeds the {canvas_width}x{SET_MARK_BASELINE_Y} anchored area: {mark.size}"
+        )
+
+    output = Image.new("RGBA", SET_MARK_CANVAS_SIZE, (0, 0, 0, 0))
+    output.alpha_composite(mark, (canvas_width - mark.width, SET_MARK_BASELINE_Y - mark.height))
+    return output
+
+
+def promote_kardsgen_set_marks(
+    source_root: Path,
+    output_dir: Path,
+    extracted_assets: list[dict[str, Any]],
+    renderer_manifest_images: list[dict[str, str]],
+) -> int:
+    sources = {
+        set_id: source_root / relative_path
+        for set_id, relative_path in KARDSGEN_SET_MARK_SOURCES.items()
+    }
+    missing = [str(path) for path in sources.values() if not path.is_file()]
+    if missing:
+        raise SystemExit("Missing required KardsGen set marks: " + ", ".join(missing))
+
+    for set_id, source_path in sources.items():
+        with Image.open(source_path) as source:
+            normalized = normalize_kardsgen_set_mark(source)
+        target_path = output_dir / "images" / "stage5-clean" / "set-mark" / f"{set_id}.png"
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        normalized.save(target_path)
+        renderer_manifest_images.append({
+            "slot": "set-mark",
+            "setId": set_id,
+            "file": relpath(target_path, output_dir),
+        })
+        extracted_assets.append(
+            asset_record(
+                asset_id=f"kardsgen:set-mark:{set_id}",
+                category="renderer-smoke-safe-slot",
+                source_route="kardsgen-clean-set-material",
+                source_path=source_path,
+                output_path=target_path,
+                output_root=output_dir,
+                source_status="external-fan-tool-material",
+                renderer_readiness="renderer-ready-clean-set-mark",
+                rights="KardsGen repository MIT; KARDS-derived marks remain reference-pack restricted",
+                slot="set-mark",
+                notes="Placed at KardsGen's native bottom-right anchor without card-paper extraction.",
+            )
+        )
+    return len(sources)
 
 
 def process_kards_assets(

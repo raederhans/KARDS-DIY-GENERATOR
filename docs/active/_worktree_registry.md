@@ -1,5 +1,21 @@
 # Worktree Registry
 
+## Set-mark extraction cleanup
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: audit and clean low-quality right-bottom card-set emblem cutouts
+- Base branch/base commit: `main`, `15ac497d3c469bb35843cd345e93370b7592aa2c`
+- Current branch/HEAD: `main`, same commit at task start
+- Task goal: remove verified background and crop contamination from all authorized set marks without erasing thin set-specific artwork
+- Status: ready-for-integration; implementation, three independent reviews, and full validation complete
+- Main changed files: `tools/kards_multisource_extraction.py`, `tools/kards_private_calibration_contract_test.py`, `src/canvas/cardRenderer.ts`, `src/canvas/cardRenderer.test.ts`, 14 authorized `public/reference-pack/v1/images/set-mark/*.png`, third-party notice, task records, and registry
+- Shared hotspots: Stage6 renderer-manifest generation, authorized set-mark assets, Canvas set-mark geometry, and the shared Python contract suite
+- Validation: Python contracts 25/25; renderer tests 57/57; full `npm run validate` passed 17 Vitest files / 244 tests plus typecheck, Vite build, private-tool checks, and dist boundary; Stage6/public hashes 15/15; HTTP probes 15/15; checkerboard review and three independent reviews clean. Primary agent exclusively owns Vite and all live test/build processes.
+- Tests not run: exhaustive perceptual comparison against every user-supplied theme/skin
+- Potential overlap: green; one worktree only. Semantic risk is yellow because extraction, public closure, manifest routing, and renderer selection must agree.
+- Recommended integration order: evidence, RED contract, minimal generator/publication fix, visual audit, focused checks, independent review, full validation, commit/push
+- Next action: archive the completed task record, create the functional commit, push `main`, then record the integrated hash
+
 ## Faction icon extraction cleanup
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

@@ -455,8 +455,13 @@ function drawSet(
   }
 
   ctx.save();
-  const setRect = { x: layout.setAnchor.x - 28, y: layout.setAnchor.y - 26, width: 28, height: 28 };
-  if (drawAsset(ctx, options, "set-mark", setRect, assetContext)) {
+  const setImage = options.assets?.resolveImage("set-mark", assetContext);
+  if (setImage) {
+    const sourceSize = getCanvasImageSize(setImage, { x: 0, y: 0, width: 30, height: 28 });
+    const scale = Math.min(1, 30 / sourceSize.width, 28 / sourceSize.height);
+    const width = Math.round(sourceSize.width * scale);
+    const height = Math.round(sourceSize.height * scale);
+    ctx.drawImage(setImage, layout.setAnchor.x - width, layout.setAnchor.y - 26, width, height);
     ctx.restore();
     return;
   }

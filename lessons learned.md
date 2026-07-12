@@ -59,3 +59,4 @@
 - During a Vercel spend-management incident, repeated `sts_credentials_fetch_failed` errors can mean the project was paused even when billing remains active; confirm the incident and project state, call the official unpause endpoint, then redeploy the unchanged artifact.
 - Release-candidate registry rows should use commit-neutral wording before publication; after integration, compare them with tag and worktree truth, and update only records that still describe pending work.
 - Nation-mark extraction must fail closed and end at a reference-derived silhouette; returning an opaque source crop or deleting generic small components can publish card artwork or erase legitimate emblem details.
+- When a clean standalone set mark already exists, publish its pinned transparent source at the original right-bottom anchor instead of re-extracting it from card paper; missing mapped sources must fail closed, and legacy custom dimensions must remain unstretched.

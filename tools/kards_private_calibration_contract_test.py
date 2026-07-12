@@ -13,6 +13,7 @@ from PIL import Image, ImageDraw
 TOOLS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS_DIR))
 
+import kards_multisource_extraction as multisource
 from kards_multisource_extraction import copy_stage5_clean_assets
 from kards_private_calibration import (
     add_manifest_crop,
@@ -351,6 +352,154 @@ class PrivateCalibrationContractTest(unittest.TestCase):
             with self.subTest(relative_path=relative_path), Image.open(nation_root / relative_path) as source:
                 alpha = source.convert("RGBA").getchannel("A")
                 self.assertEqual(len(alpha_components(alpha)), 1)
+
+    def test_stage6_normalizes_clean_set_marks_to_the_original_bottom_right_anchor(self) -> None:
+        source = Image.new("RGBA", (18, 17), (0, 0, 0, 0))
+        ImageDraw.Draw(source).rectangle((0, 0, 17, 16), fill=(150, 145, 132, 255))
+
+        output = multisource.normalize_kardsgen_set_mark(source)
+
+        self.assertEqual(output.size, (30, 28))
+        self.assertEqual(output.getchannel("A").getbbox(), (12, 9, 30, 26))
+
+    def test_stage6_delegates_clean_set_marks_instead_of_copying_card_crops(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            stage5_pack = root / "stage5"
+            output_dir = root / "stage6"
+            source_dir = stage5_pack / "images" / "set-mark"
+            source_dir.mkdir(parents=True)
+            Image.new("RGBA", (28, 28), (0, 0, 0, 0)).save(source_dir / "only-spawnable.png")
+            delegated_entries = [
+                {"slot": "set-mark", "setId": set_id, "file": f"images/set-mark/{set_id}.png"}
+                for set_id in multisource.KARDSGEN_SET_MARK_SOURCES
+            ]
+            (stage5_pack / "kards-asset-pack.json").write_text(
+                json.dumps({
+                    "images": delegated_entries + [
+                        {"slot": "set-mark", "setId": "only-spawnable", "file": "images/set-mark/only-spawnable.png"}
+                    ],
+                }),
+                encoding="utf-8",
+            )
+            extracted_assets: list[dict[str, object]] = []
+            renderer_manifest_images: list[dict[str, str]] = []
+
+            inventory = copy_stage5_clean_assets(
+                stage5_pack,
+                output_dir,
+                extracted_assets,
+                renderer_manifest_images,
+            )
+
+            self.assertEqual(inventory["setMarksDelegatedToKardsGen"], len(delegated_entries))
+            self.assertEqual(inventory["copiedImages"], 1)
+            self.assertEqual([entry["setId"] for entry in renderer_manifest_images], ["only-spawnable"])
+            for entry in delegated_entries:
+                self.assertFalse((output_dir / "images" / "stage5-clean" / "set-mark" / Path(entry["file"]).name).exists())
+
+    def test_stage6_promotes_clean_set_mark_with_source_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source_root = root / "KardsGen"
+            source_path = source_root / "set" / "png" / "Homefront.png"
+            source_path.parent.mkdir(parents=True)
+            Image.new("RGBA", (20, 18), (154, 149, 137, 255)).save(source_path)
+            extracted_assets: list[dict[str, object]] = []
+            renderer_manifest_images: list[dict[str, str]] = []
+
+            with patch.object(
+                multisource,
+                "KARDSGEN_SET_MARK_SOURCES",
+                {"homefront": "set/png/Homefront.png"},
+            ):
+                promoted = multisource.promote_kardsgen_set_marks(
+                    source_root,
+                    root / "output",
+                    extracted_assets,
+                    renderer_manifest_images,
+                )
+
+            self.assertEqual(promoted, 1)
+            self.assertEqual(renderer_manifest_images, [{
+                "slot": "set-mark",
+                "setId": "homefront",
+                "file": "images/stage5-clean/set-mark/homefront.png",
+            }])
+            self.assertEqual(extracted_assets[0]["sourceRoute"], "kardsgen-clean-set-material")
+            self.assertEqual(extracted_assets[0]["sourcePath"], str(source_path))
+            self.assertEqual(extracted_assets[0]["sourceStatus"], "external-fan-tool-material")
+            self.assertEqual(extracted_assets[0]["rendererReadiness"], "renderer-ready-clean-set-mark")
+            self.assertEqual(extracted_assets[0]["slot"], "set-mark")
+            with Image.open(root / "output" / renderer_manifest_images[0]["file"]) as promoted_image:
+                self.assertEqual(promoted_image.size, (30, 28))
+
+    def test_stage6_rejects_incomplete_clean_set_mark_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir, patch.object(
+            multisource,
+            "KARDSGEN_SET_MARK_SOURCES",
+            {"homefront": "set/png/Homefront.png"},
+        ):
+            with self.assertRaisesRegex(SystemExit, "Missing required KardsGen set marks"):
+                multisource.promote_kardsgen_set_marks(
+                    Path(temp_dir),
+                    Path(temp_dir) / "output",
+                    [],
+                    [],
+                )
+
+    def test_authorized_set_marks_use_clean_antialiased_subjects(self) -> None:
+        pack_root = TOOLS_DIR.parent / "public" / "reference-pack" / "v1"
+        set_root = pack_root / "images" / "set-mark"
+        visible_set_ids = {
+            "allegiance",
+            "base",
+            "blood-and-iron",
+            "breakthrough",
+            "brothers-in-arms",
+            "covert-ops",
+            "homefront",
+            "legions",
+            "naval-warfare",
+            "oceania-storm",
+            "special",
+            "theaters-of-war",
+            "winter-war",
+            "world-at-war",
+        }
+        expected_paths = {
+            set_id: f"images/set-mark/{set_id}.png"
+            for set_id in visible_set_ids | {"only-spawnable"}
+        }
+        manifest = json.loads((pack_root / "kards-asset-pack.json").read_text(encoding="utf-8"))
+        set_entries = [
+            entry
+            for entry in manifest["images"]
+            if entry["slot"] == "set-mark"
+        ]
+        published = {
+            entry["setId"]: entry["file"]
+            for entry in set_entries
+        }
+
+        self.assertEqual(set(multisource.KARDSGEN_SET_MARK_SOURCES), visible_set_ids)
+        self.assertEqual(len(set_entries), 15)
+        self.assertEqual(len({entry["setId"] for entry in set_entries}), 15)
+        self.assertEqual(len({entry["file"] for entry in set_entries}), 15)
+        self.assertEqual(published, expected_paths)
+        for set_id in sorted(visible_set_ids):
+            with self.subTest(set_id=set_id), Image.open(set_root / f"{set_id}.png") as source:
+                alpha = source.convert("RGBA").getchannel("A")
+                alpha_values = list(alpha.get_flattened_data())
+                self.assertEqual(source.size, (30, 28))
+                self.assertEqual(alpha.getbbox()[3], 26)
+                self.assertEqual(len(alpha_components(alpha)), 1)
+                self.assertGreaterEqual(alpha_values.count(0), 300)
+                self.assertTrue(any(0 < value < 255 for value in alpha_values))
+                self.assertGreaterEqual(sum(value >= 8 for value in alpha_values), 100)
+
+        with Image.open(set_root / "only-spawnable.png") as source:
+            self.assertEqual(source.convert("RGBA").getchannel("A").getbbox(), None)
 
     def test_set_mark_extraction_clears_paper_background(self) -> None:
         rect = (8, 8, 28, 28)
