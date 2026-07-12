@@ -21,7 +21,7 @@ Improve the right-bottom card-set emblems by removing verified card-paper, crop-
 - [x] Implement the minimal extraction correction and regenerate authorized outputs.
 - [x] Compare transparent contact sheets and stable Canvas samples.
 - [x] Run three independent final reviews and the full validation gate.
-- [ ] Commit/push with a Lore-protocol commit, update registry/lessons, and archive the task.
+- [x] Commit/push with a Lore-protocol commit, update registry/lessons, and archive the task.
 
 ## Constraints
 
