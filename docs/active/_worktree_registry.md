@@ -1,5 +1,21 @@
 # Worktree Registry
 
+## Attack reticle fidelity
+
+- Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: audit and correct fighter, bomber, and artillery attack-reticle fidelity
+- Base branch/base commit: `main`, `048bd085b3f2127bcdea7689da78632562a209df`
+- Current branch/HEAD: `main`; closure uses the current Lore commit as the recovery reference
+- Task goal: match nine authorized original-card references for the shared attack-value reticle geometry, print colors, asset routing, fallback drawing, and paper-wear behavior
+- Status: integrated; sole main checkout, included in the closure commit and pushed at task completion
+- Main changed files: `src/canvas/cardRenderer.ts`, `src/canvas/layout.ts`, their existing tests, `tools/kards_private_calibration.py`, `tools/kards_multisource_extraction.py`, the existing Python contract test, archived task records, lessons, and registry
+- Shared hotspots: Canvas stat-board renderer, paper-wear protection, private calibration/extraction dimensions, and named validation entrypoints; no public bitmap or manifest was added
+- Validation: TDD RED/GREEN observed; focused renderer/layout 66/66; 26 Python contracts; TypeScript; final `npm run validate` passed 17 Vitest files / 255 tests, production build, and strict dist/private boundary; system-Edge screenshots for all three kinds; three independent final reviews found no P0–P3
+- Tests not run: no blocking gate omitted; restricted source-bitmap antialiasing and card-specific print noise are intentionally not reproduced pixel for pixel
+- Potential overlap: green; one worktree only. The former semantic risk across renderer, wear, and extraction was closed by the shared vertical-slice tests and full validation.
+- Recommended integration order: already integrated directly on the sole `main` checkout; no merge, rebase, or cherry-pick is required
+- Next action: retain the archived evidence and the external design audit; the primary agent continues to own the running Vite server on port 5173
+
 ## Full-card reference fidelity
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

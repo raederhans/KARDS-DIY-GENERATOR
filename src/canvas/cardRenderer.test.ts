@@ -700,6 +700,8 @@ describe("card renderer output", () => {
     const plainStyle = calls.fillTextStyles.find((call) => call.text === ": draw a card");
     expect(emphasizedStyle?.font).toContain("800 24px");
     expect(plainStyle?.font).toContain("500 24px");
+    expect(emphasizedStyle?.fillStyle).toBe("#4f514c");
+    expect(plainStyle?.fillStyle).toBe("#4f514c");
     expect(calls.fillText.some(([text]) => String(text).includes("**"))).toBe(false);
   });
 
@@ -890,35 +892,79 @@ describe("card renderer output", () => {
     expect(defenseBoardPath?.points.some((point) => point.kind === "quadraticCurveTo")).toBe(true);
   });
 
-  it("uses reticle fallback boards for fighter, bomber, and artillery attack values", () => {
+  it("uses one square reticle geometry for fighter, bomber, and artillery attack values", () => {
     const specialAttackKinds: CardSpec["kind"][] = ["fighter", "bomber", "artillery"];
 
     for (const kind of specialAttackKinds) {
       const { canvas, calls } = createFakeCanvas();
 
-      renderCard(canvas, { ...DEFAULT_CARD, kind }, null);
+      renderCard(canvas, { ...DEFAULT_CARD, kind }, null, { disablePrintWear: true });
 
-      const reticlePath = calls.paths.find((path) =>
-        path.points.some((point) => point.kind === "moveTo" && point.x === 125 && point.y === 470),
+      const reticleDisk = calls.paths.find((path) =>
+        path.points.some(
+          (point) => point.kind === "arc" && point.x === 129 && point.y === 515 && point.radius === 39,
+        ),
       );
-      const textureClip = calls.clips.find((clip) => clip.fillRule === "evenodd");
+      const reticleRing = calls.strokes.find((stroke) =>
+        stroke.points.some(
+          (point) => point.kind === "arc" && point.x === 129 && point.y === 515 && point.radius === 43,
+        ),
+      );
 
-      expect(reticlePath?.points).toEqual(
+      expect(reticleDisk?.fillStyle).toBe("#373933");
+      expect(reticleRing).toMatchObject({ lineWidth: 8, strokeStyle: "#b9b7a2" });
+      expect(calls.fillRectStyles).toEqual(
         expect.arrayContaining([
-          { kind: "lineTo", x: 125, y: 477 },
-          { kind: "lineTo", x: 135, y: 477 },
-          { kind: "lineTo", x: 167, y: 504 },
-          { kind: "lineTo", x: 167, y: 514 },
+          expect.objectContaining({ x: 125, y: 468, width: 8, height: 14, fillStyle: "#b9b7a2" }),
+          expect.objectContaining({ x: 125, y: 548, width: 8, height: 14, fillStyle: "#b9b7a2" }),
+          expect.objectContaining({ x: 82, y: 511, width: 14, height: 8, fillStyle: "#b9b7a2" }),
+          expect.objectContaining({ x: 162, y: 511, width: 14, height: 8, fillStyle: "#b9b7a2" }),
         ]),
       );
-      expect(reticlePath?.points).not.toContainEqual({ kind: "moveTo", x: 130, y: 472 });
-      expect(textureClip?.points).toEqual(
+      expect(calls.fillText).toContainEqual([String(DEFAULT_CARD.stats.attack), 129, 515]);
+      expect(calls.fillTextStyles).toEqual(
         expect.arrayContaining([
-          { kind: "moveTo", x: 125, y: 470 },
-          { kind: "lineTo", x: 167, y: 504 },
-          { kind: "lineTo", x: 167, y: 514 },
+          expect.objectContaining({ text: String(DEFAULT_CARD.stats.attack), fillStyle: "#c1c3bc" }),
         ]),
       );
+    }
+  });
+
+  it("does not cut a clean reticle-shaped hole out of the paper wear layer", () => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, { ...DEFAULT_CARD, kind: "fighter" }, null);
+
+    const textureClip = calls.clips.find((clip) => clip.fillRule === "evenodd");
+    const reticleClipPoints = textureClip?.points.filter((point) => {
+      if (point.kind === "arc") {
+        return point.x >= 82 && point.x <= 176 && point.y >= 468 && point.y <= 562;
+      }
+      if (point.kind === "arcTo") {
+        return point.x1 >= 82 && point.x1 <= 176 && point.y1 >= 468 && point.y1 <= 562;
+      }
+      return point.x >= 82 && point.x <= 176 && point.y >= 468 && point.y <= 562;
+    });
+
+    expect(reticleClipPoints).toEqual([]);
+  });
+
+  it("draws the dedicated reticle asset at its native square slot for all three special attack kinds", () => {
+    const reticleImage = { width: 94, height: 94 } as CanvasImageSource;
+    const assets = createStaticAssetResolver([{ slot: "special-attack-board", image: reticleImage }]);
+
+    for (const kind of ["fighter", "bomber", "artillery"] satisfies CardSpec["kind"][]) {
+      const { canvas, calls } = createFakeCanvas();
+
+      renderCard(canvas, { ...DEFAULT_CARD, kind }, null, { assets, disablePrintWear: true });
+
+      expect(calls.drawImageStyles.find((call) => call.image === reticleImage)).toMatchObject({
+        centerX: 129,
+        centerY: 515,
+        width: 94,
+        height: 94,
+      });
+      expect(calls.fillText).toContainEqual([String(DEFAULT_CARD.stats.attack), 129, 515]);
     }
   });
 
@@ -1084,6 +1130,7 @@ describe("card renderer output", () => {
 
 type CanvasPathPoint =
   | { kind: "moveTo" | "lineTo"; x: number; y: number }
+  | { kind: "arc"; x: number; y: number; radius: number; startAngle: number; endAngle: number }
   | { kind: "quadraticCurveTo"; cpx: number; cpy: number; x: number; y: number }
   | { kind: "arcTo"; x1: number; y1: number; x2: number; y2: number; radius: number }
   | { kind: "rect"; x: number; y: number; width: number; height: number };
@@ -1101,6 +1148,7 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     operations: Array<{ kind: "drawImage" | "fillText"; value: unknown }>;
     fills: Array<{ fillStyle: unknown; rotation: number }>;
     paths: Array<{ fillStyle: unknown; points: CanvasPathPoint[]; globalCompositeOperation: string }>;
+    strokes: Array<{ strokeStyle: unknown; lineWidth: number; points: CanvasPathPoint[] }>;
     clips: Array<{ fillRule: CanvasFillRule | undefined; points: CanvasPathPoint[] }>;
     scales: Array<[number, number]>;
     layerCanvases: Array<ReturnType<typeof createFakeCanvas>>;
@@ -1116,6 +1164,7 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     operations: [],
     fills: [],
     paths: [],
+    strokes: [],
     clips: [],
     scales: [],
     layerCanvases: [],
@@ -1124,6 +1173,8 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
   const gradient = { addColorStop() {} };
   let font = "400 24px Arial, sans-serif";
   let fillStyle = "";
+  let strokeStyle = "";
+  let lineWidth = 1;
   let globalCompositeOperation = "source-over";
   let transform = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0, clipDepth: 0 };
   const transformStack: Array<typeof transform> = [];
@@ -1145,7 +1196,12 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     set globalCompositeOperation(value: string) {
       globalCompositeOperation = value;
     },
-    strokeStyle: "",
+    get strokeStyle() {
+      return strokeStyle;
+    },
+    set strokeStyle(value: string) {
+      strokeStyle = value;
+    },
     get font() {
       return font;
     },
@@ -1154,7 +1210,12 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     },
     textAlign: "left",
     textBaseline: "alphabetic",
-    lineWidth: 1,
+    get lineWidth() {
+      return lineWidth;
+    },
+    set lineWidth(value: number) {
+      lineWidth = value;
+    },
     lineCap: "butt",
     globalAlpha: 1,
     save() {
@@ -1177,7 +1238,9 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
         calls.paths.push({ fillStyle, points: currentPath, globalCompositeOperation });
       }
     },
-    stroke() {},
+    stroke() {
+      calls.strokes.push({ strokeStyle, lineWidth, points: [...currentPath] });
+    },
     rect(x: number, y: number, width: number, height: number) {
       currentPath.push({ kind: "rect", x, y, width, height });
     },
@@ -1186,6 +1249,9 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     },
     lineTo(x: number, y: number) {
       currentPath.push({ kind: "lineTo", x, y });
+    },
+    arc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
+      currentPath.push({ kind: "arc", x, y, radius, startAngle, endAngle });
     },
     quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
       currentPath.push({ kind: "quadraticCurveTo", cpx, cpy, x, y });

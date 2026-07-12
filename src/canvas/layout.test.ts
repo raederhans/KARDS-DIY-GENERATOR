@@ -20,6 +20,7 @@ describe("card face layout", () => {
     const splitter = layout.splitter!;
 
     expect(layout.attackBoard).toEqual({ x: 88, y: 468, width: 82, height: 82 });
+    expect(layout.specialAttackBoard).toEqual({ x: 82, y: 468, width: 94, height: 94 });
     expect(layout.typeIcon).toEqual({ x: 208, y: 473, width: 84, height: 82 });
     expect(layout.defenseBoard).toEqual({ x: 330, y: 473, width: 82, height: 82 });
     expect(layout.rarity).toEqual({ x: 222, y: 675, width: 56, height: 20 });

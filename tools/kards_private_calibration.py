@@ -81,7 +81,7 @@ UNIT_LAYOUT = {
     "rarity": (222, 675, 56, 20),
     "set-mark": (460, 666, 28, 28),
     "attack-board": (88, 468, 82, 82),
-    "special-attack-board": (82, 468, 96, 82),
+    "special-attack-board": (82, 468, 94, 94),
     "defense-board": (330, 473, 82, 82),
     "type-icon": (208, 473, 84, 72),
 }

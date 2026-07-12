@@ -63,7 +63,7 @@ const UNIT_LAYOUT: CardFaceLayout = {
   rarity: { x: 222, y: 675, width: 56, height: 20 },
   setAnchor: { x: 488, y: 692 },
   attackBoard: { x: 88, y: 468, width: 82, height: 82 },
-  specialAttackBoard: { x: 82, y: 468, width: 96, height: 82 },
+  specialAttackBoard: { x: 82, y: 468, width: 94, height: 94 },
   defenseBoard: { x: 330, y: 473, width: 82, height: 82 },
   typeIcon: { x: 208, y: 473, width: 84, height: 82 },
   text: { keywordY: 580, bodyY: 616, bodyBottomY: 650, maxWidth: 390, lineHeight: 28, maxLines: 3 },

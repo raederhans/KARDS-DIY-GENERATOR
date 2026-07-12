@@ -43,6 +43,12 @@ const TYPE_ICON_PAPER = PAPER;
 const TYPE_ICON_PAPER_RGB = { r: 216, g: 210, b: 189 };
 const TYPE_ICON_BOARD_DARK = "#41433d";
 const COST_BOARD_DARK = "#3f423b";
+const RETICLE_DARK = "#373933";
+const RETICLE_RING = "#b9b7a2";
+const RETICLE_VALUE = "#c1c3bc";
+const RETICLE_RING_WIDTH = 8;
+const RETICLE_NOTCH_WIDTH = 8;
+const RETICLE_NOTCH_DEPTH = 14;
 const NEUTRAL_ARTWORK_CROP: CardSpec["artwork"]["crop"] = { x: 0, y: 0, scale: 1 };
 const ACTIVATED = "#ce8a31";
 const CJK_RE = /[\u3400-\u9fff\uf900-\ufaff]/;
@@ -57,6 +63,7 @@ const TYPE_ICON_GLYPH_PLACEMENT: Partial<Record<CardKind, { offsetX?: number; of
 type TextMeasureContext = Pick<CanvasRenderingContext2D, "font" | "measureText">;
 
 type StatBoardShape = "shield" | "inverted-shield" | "reticle" | "hq-shield";
+type WearProtectedStatBoardShape = Exclude<StatBoardShape, "reticle">;
 
 type ResolvedRenderFonts = Required<CardRenderFontSet>;
 
@@ -76,7 +83,7 @@ type PrintWearSettings = {
 
 type PrintWearProtectedRegion =
   | { kind: "rect"; rect: Rect }
-  | { kind: "stat-board"; rect: Rect; shape: StatBoardShape }
+  | { kind: "stat-board"; rect: Rect; shape: WearProtectedStatBoardShape }
   | { kind: "round-rect"; rect: Rect; radius: number };
 
 export function renderCard(
@@ -523,7 +530,7 @@ function drawValues(
       options,
       assetContext,
       fonts,
-      7,
+      specialAttack ? 0 : 7,
       getAttackBoardShape(card.kind),
     );
   }
@@ -709,17 +716,21 @@ function drawStatBoard(
   ctx.save();
   const hasAsset = drawAsset(ctx, options, assetSlot, rect, assetContext);
   if (!hasAsset) {
-    ctx.fillStyle = DARK;
-    ctx.beginPath();
-    drawStatBoardFallbackPath(ctx, rect, shape);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
-    ctx.lineWidth = shape === "hq-shield" ? 9 : 3;
-    ctx.stroke();
+    if (shape === "reticle") {
+      drawReticleBoardFallback(ctx, rect);
+    } else {
+      ctx.fillStyle = DARK;
+      ctx.beginPath();
+      drawStatBoardFallbackPath(ctx, rect, shape);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(223, 222, 196, 0.75)";
+      ctx.lineWidth = shape === "hq-shield" ? 9 : 3;
+      ctx.stroke();
+    }
   }
 
-  ctx.fillStyle = LIGHT;
+  ctx.fillStyle = shape === "reticle" ? RETICLE_VALUE : LIGHT;
   const valueText = formatCardFaceValue(value);
   const valueStyle =
     shape === "hq-shield"
@@ -742,7 +753,41 @@ function drawStatBoard(
   ctx.restore();
 }
 
-function drawStatBoardFallbackPath(ctx: CanvasRenderingContext2D, rect: Rect, shape: StatBoardShape): void {
+function drawReticleBoardFallback(ctx: CanvasRenderingContext2D, rect: Rect): void {
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+  const outerRadius = Math.min(rect.width, rect.height) / 2 - RETICLE_RING_WIDTH / 2;
+  const darkDiskRadius = outerRadius - RETICLE_RING_WIDTH / 2;
+
+  ctx.fillStyle = RETICLE_DARK;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, darkDiskRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = RETICLE_RING;
+  ctx.lineWidth = RETICLE_RING_WIDTH;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = RETICLE_RING;
+  ctx.fillRect(centerX - RETICLE_NOTCH_WIDTH / 2, rect.y, RETICLE_NOTCH_WIDTH, RETICLE_NOTCH_DEPTH);
+  ctx.fillRect(
+    centerX - RETICLE_NOTCH_WIDTH / 2,
+    rect.y + rect.height - RETICLE_NOTCH_DEPTH,
+    RETICLE_NOTCH_WIDTH,
+    RETICLE_NOTCH_DEPTH,
+  );
+  ctx.fillRect(rect.x, centerY - RETICLE_NOTCH_WIDTH / 2, RETICLE_NOTCH_DEPTH, RETICLE_NOTCH_WIDTH);
+  ctx.fillRect(
+    rect.x + rect.width - RETICLE_NOTCH_DEPTH,
+    centerY - RETICLE_NOTCH_WIDTH / 2,
+    RETICLE_NOTCH_DEPTH,
+    RETICLE_NOTCH_WIDTH,
+  );
+}
+
+function drawStatBoardFallbackPath(ctx: CanvasRenderingContext2D, rect: Rect, shape: WearProtectedStatBoardShape): void {
   const left = rect.x + 6;
   const right = rect.x + rect.width - 6;
   const centerX = rect.x + rect.width / 2;
@@ -751,35 +796,6 @@ function drawStatBoardFallbackPath(ctx: CanvasRenderingContext2D, rect: Rect, sh
   const upperShoulderY = rect.y + 18;
   const lowerShoulderY = rect.y + rect.height - 18;
   const radius = 6;
-
-  if (shape === "reticle") {
-    const reticleLeft = rect.x + 4;
-    const reticleRight = rect.x + rect.width - 4;
-    const reticleTop = rect.y + 2;
-    const reticleBottom = rect.y + rect.height - 2;
-    const centerY = rect.y + rect.height / 2;
-    const notchHalf = 5;
-    const notchDepth = 7;
-
-    ctx.moveTo(centerX - notchHalf, reticleTop);
-    ctx.lineTo(centerX - notchHalf, reticleTop + notchDepth);
-    ctx.lineTo(centerX + notchHalf, reticleTop + notchDepth);
-    ctx.lineTo(centerX + notchHalf, reticleTop);
-    ctx.quadraticCurveTo(reticleRight, reticleTop, reticleRight, centerY - notchHalf);
-    ctx.lineTo(reticleRight - notchDepth, centerY - notchHalf);
-    ctx.lineTo(reticleRight - notchDepth, centerY + notchHalf);
-    ctx.lineTo(reticleRight, centerY + notchHalf);
-    ctx.quadraticCurveTo(reticleRight, reticleBottom, centerX + notchHalf, reticleBottom);
-    ctx.lineTo(centerX + notchHalf, reticleBottom - notchDepth);
-    ctx.lineTo(centerX - notchHalf, reticleBottom - notchDepth);
-    ctx.lineTo(centerX - notchHalf, reticleBottom);
-    ctx.quadraticCurveTo(reticleLeft, reticleBottom, reticleLeft, centerY + notchHalf);
-    ctx.lineTo(reticleLeft + notchDepth, centerY + notchHalf);
-    ctx.lineTo(reticleLeft + notchDepth, centerY - notchHalf);
-    ctx.lineTo(reticleLeft, centerY - notchHalf);
-    ctx.quadraticCurveTo(reticleLeft, reticleTop, centerX - notchHalf, reticleTop);
-    return;
-  }
 
   if (shape === "hq-shield") {
     const shoulderY = rect.y + rect.height * 0.58;
@@ -1309,9 +1325,8 @@ function getPrintWearProtectedRegions(layout: CardFaceLayout, kind: CardKind): P
   if (layout.template === "hq" && layout.hqDefenseBoard) {
     regions.push({ kind: "stat-board", rect: layout.hqDefenseBoard, shape: "hq-shield" });
   } else if (isUnitKind(kind)) {
-    const attackBoard = isSpecialAttackKind(kind) && layout.specialAttackBoard ? layout.specialAttackBoard : layout.attackBoard;
-    if (attackBoard) {
-      regions.push({ kind: "stat-board", rect: attackBoard, shape: getAttackBoardShape(kind) });
+    if (!isSpecialAttackKind(kind) && layout.attackBoard) {
+      regions.push({ kind: "stat-board", rect: layout.attackBoard, shape: "inverted-shield" });
     }
     if (layout.defenseBoard) {
       regions.push({ kind: "stat-board", rect: layout.defenseBoard, shape: "shield" });

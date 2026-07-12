@@ -14,6 +14,7 @@ TOOLS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS_DIR))
 
 import kards_multisource_extraction as multisource
+import kards_private_calibration as calibration
 from kards_multisource_extraction import copy_stage5_clean_assets
 from kards_private_calibration import (
     add_manifest_crop,
@@ -26,6 +27,10 @@ from kards_private_calibration import (
 
 
 class PrivateCalibrationContractTest(unittest.TestCase):
+    def test_special_attack_board_keeps_its_native_square_geometry(self) -> None:
+        self.assertEqual(calibration.UNIT_LAYOUT["special-attack-board"], (82, 468, 94, 94))
+        self.assertEqual(multisource.EXPECTED_RENDER_SLOT_SIZE["special-attack-board"], (94, 94))
+
     def test_authorized_high_rarity_assets_are_complete_marks(self) -> None:
         rarity_dir = TOOLS_DIR.parent / "public" / "reference-pack" / "v1" / "images" / "rarity-pip"
         with Image.open(rarity_dir / "standard-pip.png") as standard_source:

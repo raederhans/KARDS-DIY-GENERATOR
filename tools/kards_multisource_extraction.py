@@ -67,7 +67,7 @@ EXPECTED_RENDER_SLOT_SIZE = {
     "command-border": (500, 64),
     "attack-board": (82, 82),
     "defense-board": (82, 82),
-    "special-attack-board": (96, 82),
+    "special-attack-board": (94, 94),
     "hq-defense-board": (168, 112),
 }
 
