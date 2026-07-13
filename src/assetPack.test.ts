@@ -124,6 +124,38 @@ describe("local asset pack loader", () => {
     expect(deletedFonts).toHaveLength(1);
   });
 
+  it("accepts Republic of China and Chinese Communist nation-mark selectors", async () => {
+    const pack = await loadAssetPackFromFiles([
+      createFile(
+        "kards-asset-pack.json",
+        JSON.stringify({
+          version: 1,
+          images: [
+            { slot: "nation-mark", nationId: "roc", kind: "fighter", template: "unit", file: "images/roc-fighter.png" },
+            { slot: "nation-mark", nationId: "ccp", kind: "artillery", template: "unit", file: "images/ccp-artillery.png" },
+          ],
+        }),
+        "pack/kards-asset-pack.json",
+      ),
+      createFile("roc-fighter.png", pngHeader(), "pack/images/roc-fighter.png", "image/png"),
+      createFile("ccp-artillery.png", pngHeader(), "pack/images/ccp-artillery.png", "image/png"),
+    ]);
+
+    expect(pack.imageCount).toBe(2);
+    expect(pack.resolveImage("nation-mark", {
+      ...assetContext,
+      nationId: "roc",
+      kind: "fighter",
+    })).toBeInstanceOf(FakeImage);
+    expect(pack.resolveImage("nation-mark", {
+      ...assetContext,
+      nationId: "ccp",
+      kind: "artillery",
+    })).toBeInstanceOf(FakeImage);
+
+    pack.dispose();
+  });
+
   it("rejects oversized local and URL manifests before loading their entries", async () => {
     const oversizedManifest = JSON.stringify({
       version: 1,

@@ -1,5 +1,22 @@
 # Worktree Registry
 
+## Chinese factions and unit marks
+
+- Worktree name/path: sole main checkout, `C:\Users\raede\Documents\KARDS`
+- Thread/task: add Republic of China and Chinese Communist factions with unit-kind nation marks
+- Base branch/base commit: `main`, `84918a9fe09161b01372f8b4bb1e23f280429ab6`
+- Current branch/HEAD: `codex/chinese-factions`, based at `84918a9fe09161b01372f8b4bb1e23f280429ab6`
+- Task goal: add two selectable factions, coherent card palettes, and distinct infantry/tank, aircraft, and artillery marks in the existing top-right slot; preserve faction selection on HQ while adding no HQ marks
+- Status: ready-for-integration
+- Main changed files: `src/presets.ts`, `src/i18n.ts`, the public reference-pack manifest and 14 nation-mark PNGs, existing model/UI/renderer/asset/dist-boundary tests, rights notices, and task records
+- Shared hotspots: nation presets, card normalization, editor selectors, public asset-pack manifest, nation-mark PNG closure, renderer asset selection, existing validation entrypoints
+- Validation: focused six-suite run passed, 6 files and 144 tests; browser-backed selector and representative card-mark inspection passed; full `npm run validate` passed 17 files / 263 tests, 26 private-tool tests, typecheck, Vite build, and dist verification
+- Tests not run: no exhaustive perceptual sweep of every mark on every card template
+- Potential overlap: green because `git worktree list` shows only this checkout; public manifest and renderer test harness are shared hotspots but have no competing writer
+- Recommended integration order: Lore commit on the task branch, fast-forward `main`, focused post-merge gate, push, registry closeout, and branch cleanup
+- Delivery package: `docs/active/chinese-factions/task.md`
+- Next action: commit and integrate; all three independent review findings are closed
+
 ## KARDS v1.1.0 release
 
 - Worktree name/path: main checkout, `C:\Users\raede\Documents\KARDS`

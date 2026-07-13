@@ -588,6 +588,104 @@
       "kind": "order",
       "template": "command",
       "file": "images/nation-mark/command/order/neutral.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "roc",
+      "kind": "infantry",
+      "template": "unit",
+      "file": "images/nation-mark/unit/infantry/roc.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "roc",
+      "kind": "tank",
+      "template": "unit",
+      "file": "images/nation-mark/unit/tank/roc.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "roc",
+      "kind": "fighter",
+      "template": "unit",
+      "file": "images/nation-mark/unit/fighter/roc.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "roc",
+      "kind": "bomber",
+      "template": "unit",
+      "file": "images/nation-mark/unit/bomber/roc.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "roc",
+      "kind": "artillery",
+      "template": "unit",
+      "file": "images/nation-mark/unit/artillery/roc.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "roc",
+      "kind": "order",
+      "template": "command",
+      "file": "images/nation-mark/command/order/roc.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "roc",
+      "kind": "countermeasure",
+      "template": "command",
+      "file": "images/nation-mark/command/countermeasure/roc.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "ccp",
+      "kind": "infantry",
+      "template": "unit",
+      "file": "images/nation-mark/unit/infantry/ccp.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "ccp",
+      "kind": "tank",
+      "template": "unit",
+      "file": "images/nation-mark/unit/tank/ccp.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "ccp",
+      "kind": "fighter",
+      "template": "unit",
+      "file": "images/nation-mark/unit/fighter/ccp.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "ccp",
+      "kind": "bomber",
+      "template": "unit",
+      "file": "images/nation-mark/unit/bomber/ccp.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "ccp",
+      "kind": "artillery",
+      "template": "unit",
+      "file": "images/nation-mark/unit/artillery/ccp.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "ccp",
+      "kind": "order",
+      "template": "command",
+      "file": "images/nation-mark/command/order/ccp.png"
+    },
+    {
+      "slot": "nation-mark",
+      "nationId": "ccp",
+      "kind": "countermeasure",
+      "template": "command",
+      "file": "images/nation-mark/command/countermeasure/ccp.png"
     }
   ],
   "fonts": []

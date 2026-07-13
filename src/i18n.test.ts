@@ -45,6 +45,8 @@ describe("i18n", () => {
     expect(UI_TEXT.en.projectPanel.textureFallback).toBe("Generated texture");
     expect(translatePresetLabel("zh", "kind", "tank", "Tank")).toBe("坦克");
     expect(translatePresetLabel("zh", "nation", "us", "United States")).toBe("美国");
+    expect(translatePresetLabel("zh", "nation", "roc", "Republic of China")).toBe("中华民国");
+    expect(translatePresetLabel("zh", "nation", "ccp", "Chinese Communist Forces")).toBe("中共");
     expect(translatePresetLabel("zh", "set", "blood-and-iron", "Blood and Iron")).toBe("血与铁");
     expect(translatePresetLabel("en", "kind", "tank", "Tank")).toBe("Tank");
     expect(translatePresetLabel("zh", "kind", "future-kind", "Future Kind")).toBe("Future Kind");

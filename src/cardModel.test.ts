@@ -30,6 +30,10 @@ describe("sanitizeInteger", () => {
 });
 
 describe("normalizeCardSpec", () => {
+  it.each(["roc", "ccp"])("preserves the supported %s faction id", (nation) => {
+    expect(normalizeCardSpec({ ...DEFAULT_CARD, nation }).nation).toBe(nation);
+  });
+
   it("preserves valid card data and normalizes imported project files", () => {
     const card = normalizeCardSpec({
       version: 1,

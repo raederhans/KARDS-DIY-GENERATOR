@@ -127,6 +127,8 @@ describe("FieldPanel value fields", () => {
     expect(chinese).toContain("卡种");
     expect(chinese).toContain("卡包");
     expect(chinese).toContain("加粗所选文字");
+    expect(chinese).toContain('<option value="roc">中华民国</option>');
+    expect(chinese).toContain('<option value="ccp">中共</option>');
     expect(chinese).toContain('aria-describedby="body-bold-feedback"');
     expect(chinese).toContain('id="body-bold-feedback"');
     expect(chinese).toContain('role="status"');
@@ -135,6 +137,8 @@ describe("FieldPanel value fields", () => {
     expect(english).toContain("Title style");
     expect(english).toContain("Card type");
     expect(english).toContain("Bold selected text");
+    expect(english).toContain('<option value="roc">Republic of China</option>');
+    expect(english).toContain('<option value="ccp">Chinese Communist Forces</option>');
     expect(english).toContain("Stars are formatting markers; local bold appears in the card preview.");
   });
 
@@ -163,6 +167,8 @@ describe("FieldPanel value fields", () => {
     expect(markup).not.toContain('name="card-keyword-add"');
     expect(markup.match(/<select[^>]*name="card-rarity"[^>]*>/)?.[0]).toContain('disabled=""');
     expect(markup.match(/<select[^>]*name="card-set"[^>]*>/)?.[0]).toContain('disabled=""');
+    expect(markup).toContain('<option value="roc">中华民国</option>');
+    expect(markup).toContain('<option value="ccp">中共</option>');
   });
 
   it("keeps ordinary unit values without showing HQ defense", () => {

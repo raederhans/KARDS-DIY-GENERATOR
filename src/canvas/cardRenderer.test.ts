@@ -380,6 +380,19 @@ describe("card renderer output", () => {
     expect(calls.strokeRect).not.toContainEqual([14, 15, 74, 74]);
   });
 
+  it.each([
+    { nation: "roc", accent: "#4b626e", deep: "#1b2930" },
+    { nation: "ccp", accent: "#76554a", deep: "#321d19" },
+  ])("uses the $nation uniform palette for unit cards", ({ nation, accent, deep }) => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, { ...DEFAULT_CARD, nation }, null, { disablePrintWear: true });
+
+    expect(calls.fillRectStyles).toContainEqual({ x: 98, y: 13, width: 390, height: 86, fillStyle: accent });
+    expect(calls.gradients.flatMap((gradient) => gradient.stops)).toContainEqual([0.45, deep]);
+    expect(calls.fillTextStyles.find((call) => call.text === DEFAULT_CARD.title)?.fillStyle).toBe("#cfd5c2");
+  });
+
   it("keeps an independent unit header seam above the artwork", () => {
     const { canvas, calls } = createFakeCanvas();
 
@@ -1151,6 +1164,7 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     strokes: Array<{ strokeStyle: unknown; lineWidth: number; points: CanvasPathPoint[] }>;
     clips: Array<{ fillRule: CanvasFillRule | undefined; points: CanvasPathPoint[] }>;
     scales: Array<[number, number]>;
+    gradients: Array<{ stops: Array<[number, string]> }>;
     layerCanvases: Array<ReturnType<typeof createFakeCanvas>>;
   } = {
     clearRect: [],
@@ -1167,10 +1181,9 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     strokes: [],
     clips: [],
     scales: [],
+    gradients: [],
     layerCanvases: [],
   };
-
-  const gradient = { addColorStop() {} };
   let font = "400 24px Arial, sans-serif";
   let fillStyle = "";
   let strokeStyle = "";
@@ -1302,6 +1315,13 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
       calls.operations.push({ kind: "fillText", value: args[0] });
     },
     createLinearGradient() {
+      const gradient = {
+        stops: [] as Array<[number, string]>,
+        addColorStop(offset: number, color: string) {
+          this.stops.push([offset, color]);
+        },
+      };
+      calls.gradients.push(gradient);
       return gradient;
     },
     measureText(text: string) {

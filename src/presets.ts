@@ -51,6 +51,22 @@ export const NATIONS: NationPreset[] = [
     deep: "#2a1814",
   },
   {
+    id: "roc",
+    label: "Republic of China",
+    shortLabel: "ROC",
+    emblem: "sun",
+    accent: "#4b626e",
+    deep: "#1b2930",
+  },
+  {
+    id: "ccp",
+    label: "Chinese Communist Forces",
+    shortLabel: "CCP",
+    emblem: "star",
+    accent: "#76554a",
+    deep: "#321d19",
+  },
+  {
     id: "japan",
     label: "Japan",
     shortLabel: "JP",

@@ -373,3 +373,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+7. Chinese faction nation-mark source geometry
+
+Files:
+- public/reference-pack/v1/images/nation-mark/**/roc.png
+- public/reference-pack/v1/images/nation-mark/**/ccp.png
+
+ROC roundel source:
+https://commons.wikimedia.org/wiki/File:Roundel_of_the_Republic_of_China.svg
+License: public domain (simple geometry).
+
+Chinese Red Army flag source:
+https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9C%8B%E5%B7%A5%E8%BE%B2%E7%B4%85%E8%BB%8D%E8%BB%8D%E6%97%97.svg
+License: public domain (released by the source author).
+
+Chinese air-force roundel silhouette reference:
+https://commons.wikimedia.org/wiki/File:Roundel_of_China.svg
+License: public domain (simple geometry).
+
+Transformations: the sources were cropped, recolored, distressed, and composited with original vector backplates, wings, rings, and artillery shapes. The CCP marks retain only generic star or wing silhouettes; hammer-and-sickle details and the later "八一" text were not retained. These files are not official reproductions. Public-domain copyright status does not grant trademark, official-insignia, or other non-copyright rights that may apply in a particular jurisdiction.

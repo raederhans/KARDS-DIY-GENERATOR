@@ -4,3 +4,10 @@ KARDS and the included reference materials remain owned by their respective righ
 Use of this pack is limited to the deployed KARDS Card Forge application and grants no ownership or redistribution rights.
 
 This directory is excluded from the repository software license. Fork maintainers must remove it before redistribution or deployment unless they have independently obtained every required permission.
+
+Provenance clarification (the usage and redistribution restrictions above still apply): the ROC and CCP nation-mark files listed below are original KARDS Card Forge composites built from public-domain source geometry and project-authored vector shapes:
+
+- images/nation-mark/**/roc.png
+- images/nation-mark/**/ccp.png
+
+Source and transformation details are recorded in public/THIRD-PARTY-NOTICES.txt. Public-domain copyright status does not grant trademark, official-insignia, or other non-copyright rights that may apply in a particular jurisdiction.

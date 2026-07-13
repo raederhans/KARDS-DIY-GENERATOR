@@ -476,6 +476,8 @@ const PRESET_LABELS: Record<Language, Record<string, Record<string, string>>> = 
       britain: "英国",
       germany: "德国",
       soviet: "苏联",
+      roc: "中华民国",
+      ccp: "中共",
       japan: "日本",
       france: "法国",
       italy: "意大利",
