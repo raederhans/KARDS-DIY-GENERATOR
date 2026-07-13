@@ -31,6 +31,10 @@ const CHINESE_FACTION_MARKS = [
   ["ccp", "countermeasure", "command", "images/nation-mark/command/countermeasure/ccp.png"],
 ];
 
+function normalizeLineEndings(text) {
+  return text.replace(/\r\n?/g, "\n");
+}
+
 describe("dist private boundary contracts", () => {
   it("recognizes forbidden private markers", () => {
     expect(findMarker("assets/.runtime/private.json")).toBe(".runtime");
@@ -55,8 +59,8 @@ describe("dist private boundary contracts", () => {
   });
 
   it("ships the Speed Insights Apache 2.0 license with the deployed notices", () => {
-    const notices = fs.readFileSync(THIRD_PARTY_NOTICES_PATH, "utf8");
-    const upstreamLicense = fs.readFileSync(SPEED_INSIGHTS_LICENSE_PATH, "utf8").trim();
+    const notices = normalizeLineEndings(fs.readFileSync(THIRD_PARTY_NOTICES_PATH, "utf8"));
+    const upstreamLicense = normalizeLineEndings(fs.readFileSync(SPEED_INSIGHTS_LICENSE_PATH, "utf8")).trim();
 
     expect(notices).toContain("@vercel/speed-insights 2.0.0");
     expect(notices).toContain("Copyright 2023 Vercel, Inc.");

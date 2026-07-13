@@ -46,3 +46,10 @@
 - Final focused run passed: 6 files and 144 tests.
 - Full `npm run validate` passed: 17 Vitest files / 263 tests, 26 private-tool contract tests, TypeScript checks, Vite production build, and the dist private-boundary verifier.
 - Fresh `git fetch origin main` confirmed `main`, `origin/main`, and the task base are still the same commit: `84918a9fe09161b01372f8b4bb1e23f280429ab6`.
+
+## 2026-07-13 — integration verification
+
+- Feature commit `bee36ac` fast-forwarded cleanly into `main` after `git pull --ff-only` confirmed the remote was unchanged.
+- The first post-merge focused run exposed a Windows-only false failure in the existing Apache-license closure assertion: Git checked the edited notice out with CRLF while the installed upstream license remained LF, and the test compared the entire text byte-for-byte.
+- The comparison now normalizes line endings on both inputs before checking the exact upstream license text. No notice content or product behavior changed.
+- Post-fix verification passed: the notice test passed 6/6 and the full focused faction suite passed 6 files / 144 tests.
