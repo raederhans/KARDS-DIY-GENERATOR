@@ -40,4 +40,14 @@
 - Full `npm run validate` passed 17 Vitest files / 263 tests, 26 Python private-tool contracts, TypeScript checks, the standard Vite production build, and strict dist/reference-pack verification.
 - A GitHub Pages-mode `build:verified` passed and emitted the repository-subpath build; a final standard-root `build:verified` then passed so local `dist/` remains in Vercel-comparable form.
 - `npm audit --audit-level=moderate` reported zero vulnerabilities.
-- External candidate CI/Pages, Vercel exact-SHA status, code-only archive expansion, annotated tag, GitHub Release, and asset re-download remain pending until the immutable candidate is pushed.
+- At this freeze point, external candidate CI/Pages, Vercel exact-SHA status, code-only archive expansion, annotated tag, GitHub Release, and asset re-download were still pending; the publication-closure section below records their final results.
+
+## 2026-07-13 — publication closure
+
+- The Lore candidate `8033291f9fd1b462e209b0422fca8186a3cd8ecf` was pushed to `origin/main`; GitHub CI run `29299190162` and Pages run `29299190169` both completed successfully for that SHA.
+- Vercel Production deployment `dpl_2xZrcZyBiWZwkNLP4A5EV2b5g8hw` is `READY`, `PROMOTED`, and records the same Git SHA in both `gitSource.sha` and `meta.githubCommitSha`.
+- The renamed repository's Pages URL is `https://raederhans.github.io/KARDS-DIY-GENERATOR/`; Pages and Vercel returned HTTP 200 for the manifest, notices, one ROC fighter mark, and one CCP artillery mark. PNG bytes matched exactly; text matched after normalizing checkout line endings.
+- The code-only ZIP was generated from the candidate, expanded, and scanned. It contains 176 entries, includes the required license/notices/package files, and contains none of `public/reference-pack/v1/**`, `public/brand/**`, `public/artwork/**`, `public/favicon.svg`, or `.openai/**`.
+- Archive SHA-256: `7f9644f867a7801242e4db1c6e098de121b7bb02b631642659b3e07a0864a2d3`. GitHub reports the same asset digest, and a fresh Release download reproduced the checksum and exclusion scan.
+- Annotated tag `v1.2.0` resolves locally and remotely to the candidate. The public Release is `https://github.com/raederhans/KARDS-DIY-GENERATOR/releases/tag/v1.2.0`, with the code-only ZIP and `SHA256SUMS.txt` attached.
+- All blocking `WATCH` conditions are closed. Remaining non-blocking improvements are decoded-pixel comparison in mark tests and immutable source-revision pinning for the public-domain geometry provenance.

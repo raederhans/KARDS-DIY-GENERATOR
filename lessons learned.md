@@ -66,3 +66,4 @@
 - Decide stat-board shape and style from measured full-card pixels across every affected card kind, not from a quick visual glance or an extracted label; artillery's circular reticle was easy to misclassify until the shared bounds, center, and colors were compared across nine references.
 - Every new production dependency and bundled public asset changes the release closure: ship the dependency's exact license text, classify asset rights explicitly, and update code-only archive exclusions before tagging.
 - New nation-mark families need exact non-HQ selectors because missing kinds can reuse another same-nation image; lock the required ground/air/artillery differences without forcing every same-branch PNG to remain pixel-unique forever.
+- After a GitHub repository rename, update the local `origin` before publishing; redirects can hide stale repository names and produce misleading Pages, Release, or deployment evidence.

@@ -20,11 +20,11 @@ Audit the complete `v1.1.0..HEAD` candidate and publish one exact-SHA `v1.2.0` G
 - [x] Fix only verified release blockers and re-review the final diff.
 - [x] Bump package metadata and prepare bilingual release notes.
 - [x] Run focused tests, full validation, Pages-mode build, dependency audit, and archive-boundary checks.
-- [ ] Commit and push one immutable release candidate with Lore trailers.
-- [ ] Verify GitHub CI, Pages, and Vercel against the exact candidate SHA.
-- [ ] Build, expand, checksum, and inspect the code-only archive.
-- [ ] Create annotated tag `v1.2.0`, publish the GitHub Release, and re-download its assets.
-- [ ] Verify public resources, archive the release records, and confirm local/remote/tag/Release alignment.
+- [x] Commit and push one immutable release candidate with Lore trailers.
+- [x] Verify GitHub CI, Pages, and Vercel against the exact candidate SHA.
+- [x] Build, expand, checksum, and inspect the code-only archive.
+- [x] Create annotated tag `v1.2.0`, publish the GitHub Release, and re-download its assets.
+- [x] Verify public resources, archive the release records, and confirm local/remote/tag/Release alignment.
 
 ## Live Process Ownership
 

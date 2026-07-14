@@ -5,16 +5,18 @@
 - Worktree name/path: sole main checkout, `C:\Users\raede\Documents\KARDS`
 - Thread/task: audit `v1.1.0..HEAD` and publish GitHub Release `v1.2.0`
 - Base branch/base commit: `main`, `496f83eaca361ee4363c537a8edebbca83a9a476`
-- Current branch/HEAD: `main`; version `1.2.0` and release-record edits are in progress before the immutable candidate commit
+- Current branch/HEAD: `main`; immutable release candidate and tag `v1.2.0` are `8033291f9fd1b462e209b0422fca8186a3cd8ecf`, followed only by the records-only closeout
 - Task goal: review and publish the two Chinese factions and their non-HQ unit-kind marks as one exact-SHA release without weakening resource-rights or distribution boundaries
-- Status: ready-for-integration
-- Main changed files: `package.json`, `package-lock.json`, records under `docs/active/kards-v1.2.0-release/`, and final registry closeout; product changes are already integrated in `v1.1.0..496f83e`
+- Status: integrated and published
+- Main changed files: `src/presets.ts`, `src/i18n.ts`, the public manifest and 14 ROC/CCP mark PNGs, existing tests, rights notices, package metadata, archived release records, lessons, and this registry
 - Shared hotspots: package version, release notes, registry, code-only archive exclusions, GitHub tag/Release, Pages, and Vercel Production
-- Validation: baseline alignment, diff check, static code/manifest review, visual contact-sheet review, 144 focused tests, code reviewer `APPROVE`, architect `WATCH` with no blocker, source-license verification, full `npm run validate` (263 Vitest tests, 26 private-tool contracts, TypeScript, build, dist verification), Pages-mode plus final standard build, and dependency audit with zero vulnerabilities passed
-- Tests not run: post-push CI/Pages/Vercel, code-only archive expansion, annotated tag/Release, and Release asset re-download
+- Validation: 144 focused tests; code reviewer `APPROVE`; architect `WATCH` closed by the required archive scan; full `npm run validate` passed 263 Vitest tests, 26 Python contracts, TypeScript, build, and dist verification; Pages-mode plus standard builds passed; dependency audit found zero vulnerabilities; GitHub CI `29299190162`, Pages `29299190169`, Vercel Production `dpl_2xZrcZyBiWZwkNLP4A5EV2b5g8hw`, public resource probes, tag checks, code-only expansion, GitHub digest, and fresh Release download all passed
+- Tests not run: no blocking gate omitted; no exhaustive perceptual sweep of every new mark on every card template
 - Potential overlap: green; `git worktree list` shows only this checkout, and independent reviewers are read-only
-- Recommended integration order: review, version/notes, local gates, one Lore candidate commit, push, exact-SHA remote checks, code-only archive, annotated tag/Release, final registry archive
-- Next action: commit and push one immutable candidate, then execute exact-SHA remote publication and artifact checks
+- Recommended integration order: complete; keep tag and Release fixed on `8033291f9fd1b462e209b0422fca8186a3cd8ecf`, and allow only the records-only closeout to advance `main`
+- Delivery package: `docs/archive/kards-v1.2.0-release/task.md`
+- Release: `https://github.com/raederhans/KARDS-DIY-GENERATOR/releases/tag/v1.2.0`; code-only ZIP SHA-256 `7f9644f867a7801242e4db1c6e098de121b7bb02b631642659b3e07a0864a2d3`
+- Next action: none; preserve the candidate tag and archived evidence
 
 ## Chinese factions and unit marks
 
