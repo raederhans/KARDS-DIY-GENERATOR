@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "references": {
+    "24th_uan": {
+      "source": "24th_uan.avif",
+      "sha256": "57aefe37e91426642dd5c397aefd72b1074813827349409fb7ae50d341f04172"
+    },
+    "37mm_bofors_gun": {
+      "source": "37mm_bofors_gun.avif",
+      "sha256": "d4f92259ca6a9831b76ae1bbdfb37f56410b84ebb6657a8c4b7a39d5af89ed98"
+    },
+    "45_mm_antitank_gun": {
+      "source": "45_mm_antitank_gun.avif",
+      "sha256": "49f9f8512fde57ad5add3011dde2a41c091e360b4a2ca544f88584d3baf3a688"
+    },
+    "4e_brigade": {
+      "source": "4e_brigade.avif",
+      "sha256": "87fc94b7363e7e3501ad9d4211fd8d0a261e46fdb52bc2640701be6ef298d016"
+    },
+    "641st_rifles": {
+      "source": "641st_rifles.avif",
+      "sha256": "0fb2f78d8a37df704c11f28faa53827d8b1c2955cf150d4bfafb8ef44aca4eda"
+    },
+    "6_pounder": {
+      "source": "6_pounder.avif",
+      "sha256": "8400f38884e3b596924b46469798198f9f7091639da7bf6b06b9c02b77d98783"
+    },
+    "6th_brigade_nz_vet": {
+      "source": "6th_brigade_nz_vet.avif",
+      "sha256": "f01fc4061d3f4655977d474d9544e268260f4cc04d982c8026b7affb8c91cd04"
+    },
+    "76th_napoli": {
+      "source": "76th_napoli.avif",
+      "sha256": "55de51c761fef84803889754dd73c98818ef9caac9db791b3531ce22f4bf82e6"
+    },
+    "980_volksgrenadier": {
+      "source": "980_volksgrenadier.avif",
+      "sha256": "7f7ebc7f5de0b729c7e52d897758c42905d80c91960a68318d7b316961ff2fc4"
+    },
+    "a26_invader": {
+      "source": "a26_invader.avif",
+      "sha256": "e269fbe8eb87013d28ac4340ebcf3d5ef717dce55789b7311647ce8825874000"
+    },
+    "b29_superfortress": {
+      "source": "b29_superfortress.avif",
+      "sha256": "f534c18c9373120dbb9f964e1a6166edd2400fdaf22cdf496213b88dd9078139"
+    },
+    "blackout": {
+      "source": "blackout.avif",
+      "sha256": "8a151d873222f18740b703b02ccdcc95c13b8bccd37e35fb3b683264a0c48879"
+    },
+    "cannone_da_47": {
+      "source": "cannone_da_47.avif",
+      "sha256": "e86d241e7488dfcd80ca81c1c770c8be4ee78ba0c2ad23df28bcd912b9844610"
+    },
+    "careless_talk": {
+      "source": "careless_talk.avif",
+      "sha256": "64643a1a8f5ba94497707d5aa41d8823df69720205946b8340e3eb99980b4615"
+    },
+    "cup_of_tea": {
+      "source": "cup_of_tea.avif",
+      "sha256": "5c5cc5bd61709ae5147e342443255c22b68b84adfbc1f6bb157a50704e90dcf6"
+    },
+    "decisive_defense": {
+      "source": "decisive_defense.avif",
+      "sha256": "32c18befab7dfd102f3effa3e1a4fa55c09bb092549d73a34e95e216f2c03023"
+    },
+    "dingo": {
+      "source": "dingo.avif",
+      "sha256": "e8b5aac70662a3285432285d4f8214dd30802786b3518afb7789d2e6404eca36"
+    },
+    "farman_f_222": {
+      "source": "farman_f_222.avif",
+      "sha256": "c410b6b848a453681654b9be66770442b74ac9a6c77a09a049fefe650dc7edc1"
+    },
+    "fiat_br_20": {
+      "source": "fiat_br_20.avif",
+      "sha256": "85472599d308da7cad9fe15205798ca811b8dec47404fdd45c2c78b98fb5b475"
+    },
+    "fokker_d_xxi": {
+      "source": "fokker_d_xxi.avif",
+      "sha256": "82235dd1ec4f9fed775cf9d6e90e21182a3da412c1a1b4499b7520e56001bc13"
+    },
+    "french_75": {
+      "source": "french_75.avif",
+      "sha256": "389e4ed9d94d4623d2308f76e43262f57f4355081d05b5c9b7a012e41a4cef10"
+    },
+    "friendly_fire": {
+      "source": "friendly_fire.avif",
+      "sha256": "85d6d8d5e3b2779dd99c2a6596e5225f2591057f2b7c381cb2bced77c0aed1ad"
+    },
+    "front_formation": {
+      "source": "front_formation.avif",
+      "sha256": "4d1ef0207db535e4f58c78982d59acc54d7c39eb628a1ad5fc14d7c5d4306d2a"
+    },
+    "g4m1_betty": {
+      "source": "g4m1_betty.avif",
+      "sha256": "fdb0c92e860490b504ec40491bc24046e30d71595c8fbf1e9f29e5dc4de47e61"
+    },
+    "gordon_highlanders": {
+      "source": "gordon_highlanders.avif",
+      "sha256": "4e6e1395b1363b302020aedeff83562655c80b0ba7bb49ec74e51f35e44de612"
+    },
+    "hampden_mk_i": {
+      "source": "hampden_mk_i.avif",
+      "sha256": "4caddf0cb1065f182f52bd0ffe5a3cae7bd440c69f071b2617c03cdefa9f4c74"
+    },
+    "heroes_of_the_soviet_union": {
+      "source": "heroes_of_the_soviet_union.avif",
+      "sha256": "f322230f46b6f831b284ee89d5308a4067ea19f36b0eb0d25d1c6d77ef69e8cb"
+    },
+    "hold_the_line": {
+      "source": "hold_the_line.avif",
+      "sha256": "953429a92af724784ac27ad3d511b641129c5e6576bee6ecc2ca07b95edf5181"
+    },
+    "honor": {
+      "source": "honor.avif",
+      "sha256": "4b198cfba4c4c1a4bb212536139ed03b9c4b53d9c2b09100553b7be116d0bb5d"
+    },
+    "hotchkiss_h35": {
+      "source": "hotchkiss_h35.avif",
+      "sha256": "3d5faa95935c00c99ba596b0883b50ca258f31d64b7b895deead5fcfc6ed4a2b"
+    },
+    "humber_mk_ii": {
+      "source": "humber_mk_ii.avif",
+      "sha256": "86e75e259e7438b26013b49e0c2d0f5d2811b6176122953abf66f750cbacfa9c"
+    },
+    "i16_ishak": {
+      "source": "i16_ishak.avif",
+      "sha256": "224928398548ccf443da5317864da7b420a96082a0300e7f434a74e6762d2031"
+    },
+    "il2m_pl": {
+      "source": "il2m_pl.avif",
+      "sha256": "c27ac0aa77b66ce245f1f3c63be961b0df5cae84aa44130237737b9b6adfdcfe"
+    },
+    "in_the_navy": {
+      "source": "in_the_navy.avif",
+      "sha256": "952a05c21c65b2dba5d6c46abf59dbe58ed263d2cb2031238e2d4294d86107a0"
+    },
+    "interception": {
+      "source": "interception.avif",
+      "sha256": "fef70ff2e390a6b17eb140ab1b7eb1f41748ad772611df20d415d5eb0cf2ad33"
+    },
+    "jet_prototype": {
+      "source": "jet_prototype.avif",
+      "sha256": "526a51af61d863197706019c4c8a18b9b3918e50c097294e086cb7c83b2bef15"
+    },
+    "ju_87_b_stuka": {
+      "source": "ju_87_b_stuka.avif",
+      "sha256": "ad0d121f7619dd0a299bf4a5a3b0bbdef8488418fe1a902b0292f5e4969a5557"
+    },
+    "katalina": {
+      "source": "katalina.avif",
+      "sha256": "451b5ce9221f829871a7eada4a47e30f97c541e4003694718f9ccb106f1395e3"
+    },
+    "kikka": {
+      "source": "kikka.avif",
+      "sha256": "7039a8b1604b4c7b74f88ae6f83683721e98d2e7075dc3b6b72cdb1f7cef0814"
+    },
+    "l640": {
+      "source": "l640.avif",
+      "sha256": "163bfba66e7ddd6595d7f20039cef04c6b3956b182bf84293c87aa80bd2d2576"
+    },
+    "light_detachment_15": {
+      "source": "light_detachment_15.avif",
+      "sha256": "bf0e4a2815a993ec446744d516bacb089a8832cc1ce12f72212fc15fcb889177"
+    },
+    "m2a4": {
+      "source": "m2a4.avif",
+      "sha256": "ef9c2447498f61a3fa4a32851ba53a549cf6a668fe6fc446828d443e82a3cba2"
+    },
+    "m_s_406": {
+      "source": "m_s_406.avif",
+      "sha256": "be21ce006d8d3ac49054c56b87b5a89fcc0c3c065654818974b746b3bffa93ef"
+    },
+    "macchi_c_200": {
+      "source": "macchi_c_200.avif",
+      "sha256": "d9b4626193a76b6316a9ca340504ea3f4477cffe14bcc7f228190890679693ab"
+    },
+    "maus": {
+      "source": "maus.avif",
+      "sha256": "16ba526c8f5a785adf556e91b8064f15dea09f6be8c0f98b5efadc2a1df090e1"
+    },
+    "mito_regiment": {
+      "source": "mito_regiment.avif",
+      "sha256": "da79fe21009bfe5d859849ee73de77ccd5a47b0be3085db2cce19588a2a6d83c"
+    },
+    "model_25": {
+      "source": "model_25.avif",
+      "sha256": "1e55da06f1752b1355e0e9bb6510ea86178f31267277eaba98d917efff902dba"
+    },
+    "p40_warhawk": {
+      "source": "p40_warhawk.avif",
+      "sha256": "bd78f22bfcacc5165670b086adfdf3c5ec1f104d3f30e36bd7e8fabf2cbe85d9"
+    },
+    "pak_36_fi": {
+      "source": "pak_36_fi.avif",
+      "sha256": "cc026fa9d65a64d3163ab14a4daff27dd3500f9f1f298378b78b7164169d6d06"
+    },
+    "plan": {
+      "source": "plan.avif",
+      "sha256": "8a6806bdf8aa5fa73c5e2f0b07456576cf73bc7f7d284f86dfe8589b5c4ac922"
+    },
+    "plan_d": {
+      "source": "plan_d.avif",
+      "sha256": "daa47e209e4fb51ac767605c989678e8bc56dd2496feb5c5045429d1142f3b28"
+    },
+    "plan_west": {
+      "source": "plan_west.avif",
+      "sha256": "a5c94f1d4180574def60ce260f8c37d2076fdb72eabb3561b64b57b2a8541294"
+    },
+    "pzl_p_7": {
+      "source": "pzl_p_7.avif",
+      "sha256": "cc5096de8a6048c30f7b78b8afab81bbf20e2e513dfb1e388f5991433fa17e3b"
+    },
+    "raaf_lightning_f4": {
+      "source": "raaf_lightning_f4.avif",
+      "sha256": "ee9d90cf95392259a8a5e48a0be591f8503dba0410d958c81c4a46dfd37771f0"
+    },
+    "routed_troops": {
+      "source": "routed_troops.avif",
+      "sha256": "404d89637d75a55c1351d344034b1fd117d505d311e6fb5b57b1b33706a2db80"
+    },
+    "royal_scots": {
+      "source": "royal_scots.avif",
+      "sha256": "0280f62c4924476cc131a6c782ae21f41b025952fca16ec89dad206ce9c8900d"
+    },
+    "salpa_line": {
+      "source": "salpa_line.avif",
+      "sha256": "1fc4a3fd0f2c0e34fff0e608a2925caca0e5fd01dcf820d678e0958918596a70"
+    },
+    "sdf": {
+      "source": "sdf.avif",
+      "sha256": "ac9f89b433c67d24cb73950ba6bfa58fb054ace13a9b96fc01b8d2789ac6cb00"
+    },
+    "spitfire_mk_v": {
+      "source": "spitfire_mk_v.avif",
+      "sha256": "4147e6480b4b7f440ee3c49a14681d041c147f613da9ee3fbab4f0ff635c7ed1"
+    },
+    "t19_howitzer": {
+      "source": "t19_howitzer.avif",
+      "sha256": "34de7c813afc662aa45e6f9960032014c3722b6090aff17d04b04575f90989d6"
+    },
+    "t26_fi": {
+      "source": "t26_fi.avif",
+      "sha256": "9fa4157ba92737cc8e7b5afd26c60581d5cc2bcdd786de93eeca1097fb36f409"
+    },
+    "t70": {
+      "source": "t70.avif",
+      "sha256": "3c825b6370073c93a158abb6ac63b83d4c329221245a452767320a474f81c947"
+    },
+    "task_force_44": {
+      "source": "task_force_44.avif",
+      "sha256": "ada8d23a6d8c440fdefe00b93491b04a026f0a7c680c2de56c6c0e5858b242df"
+    },
+    "the_regulars_vet": {
+      "source": "the_regulars_vet.avif",
+      "sha256": "45c4abd214b82fc645d05044c4a0ae0809e136da03ee7553409f0de60a45d3e9"
+    },
+    "tks": {
+      "source": "tks.avif",
+      "sha256": "5e283ded243c03b8b9e3fff8619e878858332bbf8c882534e519d42aefd0f002"
+    },
+    "type_88_aa_gun": {
+      "source": "type_88_aa_gun.avif",
+      "sha256": "3a150cbf53b97a90db0b78af5accfe8582393a4b16436a6c4d45a21d75e630b7"
+    },
+    "usace": {
+      "source": "usace.avif",
+      "sha256": "23ce92d1f73f26446531095aa21f6ce7ecc975f1e04a37ad072c52a315f0b0ce"
+    },
+    "vanguard": {
+      "source": "vanguard.avif",
+      "sha256": "af6d68a4c86171764f93e898b286cb3258ac8090f44f42805f39a1c5b45e0497"
+    },
+    "wespe": {
+      "source": "wespe.avif",
+      "sha256": "cf83e8ab7afe0ceb646abfefe01468fb5d67a4cc726e0a9a46b94cfc76242ec1"
+    }
+  }
+}

@@ -8,8 +8,8 @@ import {
   pickReadableDirectory,
   readLocalLibrary,
   reconcileActiveLibraryEntryId,
+  requestDirectoryWritePermission,
   requestLocalLibraryReadPermission,
-  requestLocalLibraryWritePermission,
   saveLibraryDirectoryHandle,
   updateCardInLocalLibrary,
   type LocalDirectoryHandle,
@@ -179,7 +179,7 @@ describe("local card library records", () => {
       requestPermission,
     } as unknown as LocalDirectoryHandle;
 
-    await expect(requestLocalLibraryWritePermission(directory)).resolves.toBeUndefined();
+    await expect(requestDirectoryWritePermission(directory)).resolves.toBeUndefined();
     expect(requestPermission).toHaveBeenCalledWith({ mode: "readwrite" });
   });
 

@@ -155,7 +155,7 @@ export function isLocalLibraryWriteAvailable(): boolean {
   return typeof navigator !== "undefined" && Boolean(navigator.locks);
 }
 
-export async function requestLocalLibraryWritePermission(
+export async function requestDirectoryWritePermission(
   directory: LocalDirectoryHandle,
 ): Promise<void> {
   return requestLocalLibraryPermission(directory, "readwrite");

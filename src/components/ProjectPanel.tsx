@@ -5,6 +5,7 @@ import {
   CardExportError,
   completeCardExportDelivery,
   createCardExportResult,
+  getCardAdjustmentFilter,
   getCardExportPreflight,
   getExportDimensions,
   getExportExtension,
@@ -19,6 +20,7 @@ import {
   LOCAL_LIBRARY_FILE_NAME,
   isDirectoryPickerAvailable,
   pickWritableDirectory,
+  requestDirectoryWritePermission,
   writeBlobToDirectory,
   type CardLibraryEntry,
   type LocalDirectoryHandle,
@@ -93,6 +95,40 @@ type ProjectPanelProps = {
 export type WorkbenchTab = "appearance" | "library" | "export" | "reference";
 
 const WORKBENCH_TABS: WorkbenchTab[] = ["appearance", "library", "export", "reference"];
+
+export function applyCardPreviewAdjustment(
+  canvas: HTMLCanvasElement,
+  exposure: number,
+  contrast: number,
+): () => void {
+  const previousFilter = canvas.style.filter;
+  canvas.style.filter = getCardAdjustmentFilter(exposure, contrast);
+  return () => {
+    canvas.style.filter = previousFilter;
+  };
+}
+
+export async function requestCardExportDirectoryWritePermission(
+  directory: LocalDirectoryHandle,
+  requestPermission: typeof requestDirectoryWritePermission = requestDirectoryWritePermission,
+): Promise<void> {
+  try {
+    await requestPermission(directory);
+  } catch (error) {
+    throw new CardExportError("write", "write-failed", error);
+  }
+}
+
+export async function createCardExportAfterDirectoryPermission<T>(
+  directory: LocalDirectoryHandle | null,
+  createResult: () => Promise<T>,
+  requestPermission: typeof requestDirectoryWritePermission = requestDirectoryWritePermission,
+): Promise<T> {
+  if (directory) {
+    await requestCardExportDirectoryWritePermission(directory, requestPermission);
+  }
+  return createResult();
+}
 
 export function WorkbenchTabList({
   activeTab,
@@ -229,6 +265,15 @@ export function ProjectPanel({
     setCanvasAvailable(Boolean(canvasRef.current));
   }, [canvasRef]);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    return applyCardPreviewAdjustment(canvas, exportExposure, exportContrast);
+  }, [canvasRef, exportContrast, exportExposure]);
+
   async function exportCard() {
     if (exportPendingRef.current) {
       return;
@@ -250,7 +295,7 @@ export function ProjectPanel({
     setExportError(null);
     const fileName = `${safeFileName(card.title)}.${getExportExtension(exportFormat)}`;
     try {
-      const result = await createCardExportResult(canvas, {
+      const result = await createCardExportAfterDirectoryPermission(exportDirectory, () => createCardExportResult(canvas, {
         format: exportFormat,
         scale: exportScale,
         exposure: exportExposure,
@@ -260,7 +305,7 @@ export function ProjectPanel({
         card,
         artworkImage,
         renderOptions,
-      }, fileName);
+      }, fileName));
       if (attemptId !== exportAttemptRef.current) {
         return;
       }

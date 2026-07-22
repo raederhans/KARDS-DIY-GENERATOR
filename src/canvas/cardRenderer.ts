@@ -34,7 +34,7 @@ const DEFAULT_NUMERIC_FONT = `${NUMERIC_CARD_FONT}, ${CJK_CARD_FONT}, sans-serif
 const DEFAULT_TEXT_FONT = DEFAULT_TITLE_FONT;
 const HQ_DEFENSE_FONT_SIZE = 104;
 const HQ_DEFENSE_SCALE_X = 0.85;
-const HQ_DEFENSE_Y_OFFSET = -12;
+const HQ_DEFENSE_Y_OFFSET = 0;
 const HQ_DEFENSE_FONT = "'Microsoft YaHei UI', 'Microsoft YaHei'";
 const DARK = "#4f514c";
 const LIGHT = "#cfd5c2";
@@ -49,6 +49,10 @@ const RETICLE_VALUE = "#c1c3bc";
 const RETICLE_RING_WIDTH = 8;
 const RETICLE_NOTCH_WIDTH = 8;
 const RETICLE_NOTCH_DEPTH = 14;
+const CARD_CORNER_RADIUS = 18;
+const CARD_CORNER_SHADE_SIZE = 54;
+const CARD_CORNER_SHADE = "rgba(28, 24, 17, 0.12)";
+const CARD_CORNER_SHADE_FADE = "rgba(28, 24, 17, 0)";
 const NEUTRAL_ARTWORK_CROP: CardSpec["artwork"]["crop"] = { x: 0, y: 0, scale: 1 };
 const ACTIVATED = "#ce8a31";
 const CJK_RE = /[\u3400-\u9fff\uf900-\ufaff]/;
@@ -157,6 +161,43 @@ export function renderCard(
   drawValues(ctx, layout, card, options, assetContext, fonts);
   drawTypeIcon(ctx, layout, card.kind, kind.symbol, options, assetContext, fonts);
   drawText(ctx, layout, card, fonts, options);
+  drawCardCornerShade(ctx);
+}
+
+function drawCardCornerShade(ctx: CanvasRenderingContext2D): void {
+  const corners = [
+    { centerX: 0, centerY: 0, x: 0, y: 0 },
+    { centerX: CARD_WIDTH, centerY: 0, x: CARD_WIDTH - CARD_CORNER_SHADE_SIZE, y: 0 },
+    { centerX: 0, centerY: CARD_HEIGHT, x: 0, y: CARD_HEIGHT - CARD_CORNER_SHADE_SIZE },
+    {
+      centerX: CARD_WIDTH,
+      centerY: CARD_HEIGHT,
+      x: CARD_WIDTH - CARD_CORNER_SHADE_SIZE,
+      y: CARD_HEIGHT - CARD_CORNER_SHADE_SIZE,
+    },
+  ];
+
+  ctx.save();
+  roundRect(ctx, 0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_CORNER_RADIUS);
+  ctx.clip();
+
+  for (const corner of corners) {
+    const gradient = ctx.createRadialGradient(
+      corner.centerX,
+      corner.centerY,
+      0,
+      corner.centerX,
+      corner.centerY,
+      CARD_CORNER_SHADE_SIZE,
+    );
+    gradient.addColorStop(0, CARD_CORNER_SHADE);
+    gradient.addColorStop(0.55, "rgba(28, 24, 17, 0.045)");
+    gradient.addColorStop(1, CARD_CORNER_SHADE_FADE);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(corner.x, corner.y, CARD_CORNER_SHADE_SIZE, CARD_CORNER_SHADE_SIZE);
+  }
+
+  ctx.restore();
 }
 
 function drawCardMat(
@@ -170,7 +211,7 @@ function drawCardMat(
     return;
   }
 
-  roundRect(ctx, 0, 0, CARD_WIDTH, CARD_HEIGHT, 18);
+  roundRect(ctx, 0, 0, CARD_WIDTH, CARD_HEIGHT, CARD_CORNER_RADIUS);
   ctx.fillStyle = PAPER;
   ctx.fill();
   ctx.restore();
@@ -714,8 +755,7 @@ function drawStatBoard(
   shape: StatBoardShape = "shield",
 ): void {
   ctx.save();
-  const hasAsset = drawAsset(ctx, options, assetSlot, rect, assetContext);
-  if (!hasAsset) {
+  const drawFallbackBoard = () => {
     if (shape === "reticle") {
       drawReticleBoardFallback(ctx, rect);
     } else {
@@ -728,6 +768,13 @@ function drawStatBoard(
       ctx.lineWidth = shape === "hq-shield" ? 9 : 3;
       ctx.stroke();
     }
+  };
+
+  if (shape === "hq-shield") {
+    drawFallbackBoard();
+    drawAsset(ctx, options, assetSlot, rect, assetContext);
+  } else if (!drawAsset(ctx, options, assetSlot, rect, assetContext)) {
+    drawFallbackBoard();
   }
 
   ctx.fillStyle = shape === "reticle" ? RETICLE_VALUE : LIGHT;
@@ -799,14 +846,12 @@ function drawStatBoardFallbackPath(ctx: CanvasRenderingContext2D, rect: Rect, sh
 
   if (shape === "hq-shield") {
     const shoulderY = rect.y + rect.height * 0.58;
-    ctx.moveTo(left + radius, top);
-    ctx.lineTo(right - radius, top);
-    ctx.quadraticCurveTo(right, top, right, top + radius);
+    ctx.moveTo(left, top);
+    ctx.lineTo(right, top);
     ctx.lineTo(right, shoulderY);
-    ctx.quadraticCurveTo(right, bottom - 24, centerX, bottom);
-    ctx.quadraticCurveTo(left, bottom - 24, left, shoulderY);
-    ctx.lineTo(left, top + radius);
-    ctx.quadraticCurveTo(left, top, left + radius, top);
+    ctx.quadraticCurveTo(right, bottom, centerX, bottom);
+    ctx.quadraticCurveTo(left, bottom, left, shoulderY);
+    ctx.lineTo(left, top);
     return;
   }
 

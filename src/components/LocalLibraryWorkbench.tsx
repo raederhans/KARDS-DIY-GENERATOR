@@ -10,8 +10,8 @@ import {
   pickReadableDirectory,
   readLocalLibrary,
   reconcileActiveLibraryEntryId,
+  requestDirectoryWritePermission,
   requestLocalLibraryReadPermission,
-  requestLocalLibraryWritePermission,
   saveLibraryDirectoryHandle,
   updateCardInLocalLibrary,
   type CardLibraryEntry,
@@ -196,7 +196,7 @@ export function LocalLibraryWorkbench({
       if (!directory) {
         return;
       }
-      await requestLocalLibraryWritePermission(directory);
+      await requestDirectoryWritePermission(directory);
       await operation();
     } catch (writeError) {
       setError(toErrorMessage(writeError));

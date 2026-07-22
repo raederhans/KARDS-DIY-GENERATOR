@@ -21,7 +21,7 @@ const FORBIDDEN_MARKERS = [
   "steamapps",
 ];
 const TEXT_EXTENSIONS = new Set([".css", ".html", ".js", ".json", ".map", ".svg", ".txt"]);
-const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+const IMAGE_EXTENSIONS = new Set([".avif", ".jpg", ".jpeg", ".png", ".webp"]);
 const SENSITIVE_PATTERNS = [
   { label: "Windows user path", pattern: /[a-z]:[\\/]+users[\\/]+[^\\/]+[\\/]+/i },
   { label: "Unix user path", pattern: /\/users\/[^/]+\//i },
@@ -158,20 +158,35 @@ async function verifyPublicReferencePack() {
     "manifest images",
     true,
   );
-  await assertExactFiles(
+  await assertDirectoryShape(
     path.join(REFERENCE_PACK_DIR, "samples"),
     sampleIds.map((id) => `${id}.card.json`),
-    "sample cards",
+    ["zh"],
   );
   await assertExactFiles(
+    path.join(REFERENCE_PACK_DIR, "samples", "zh"),
+    sampleIds.map((id) => `${id}.card.json`),
+    "Chinese sample cards",
+  );
+  await assertDirectoryShape(
     path.join(REFERENCE_PACK_DIR, "references", "cards"),
     sampleIds.map((id) => `${id}.png`),
-    "card references",
+    ["zh"],
   );
   await assertExactFiles(
+    path.join(REFERENCE_PACK_DIR, "references", "cards", "zh"),
+    sampleIds.map((id) => `${id}.avif`),
+    "Chinese card references",
+  );
+  await assertDirectoryShape(
     path.join(REFERENCE_PACK_DIR, "references", "hq"),
     hqFiles,
-    "HQ references",
+    ["en"],
+  );
+  await assertExactFiles(
+    path.join(REFERENCE_PACK_DIR, "references", "hq", "en"),
+    hqFiles,
+    "English HQ references",
   );
 
   for (const sampleId of sampleIds) {
@@ -180,6 +195,32 @@ async function verifyPublicReferencePack() {
     );
     if (sample.version !== 1 || !sample.artwork?.dataUrl?.startsWith("data:image/png;base64,")) {
       throw new Error(`Invalid bundled sample card: ${sampleId}`);
+    }
+    const chineseSample = JSON.parse(
+      await readFile(path.join(REFERENCE_PACK_DIR, "samples", "zh", `${sampleId}.card.json`), "utf8"),
+    );
+    if (
+      typeof chineseSample.title !== "string"
+      || !chineseSample.title
+      || typeof chineseSample.body !== "string"
+      || chineseSample.keywordLanguage !== "zh"
+    ) {
+      throw new Error(`Invalid Chinese bundled sample card: ${sampleId}`);
+    }
+    if (!(await hasAvifSignature(path.join(
+      REFERENCE_PACK_DIR,
+      "references",
+      "cards",
+      "zh",
+      `${sampleId}.avif`,
+    )))) {
+      throw new Error(`Invalid Chinese bundled reference image: ${sampleId}`);
+    }
+  }
+
+  for (const hqFile of hqFiles) {
+    if (!(await hasPngSignature(path.join(REFERENCE_PACK_DIR, "references", "hq", "en", hqFile)))) {
+      throw new Error(`Invalid English HQ reference image: ${hqFile}`);
     }
   }
 }
@@ -238,6 +279,13 @@ async function listRelativeFiles(directory, root = directory) {
 async function hasPngSignature(filePath) {
   const content = await readFile(filePath);
   return content.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+}
+
+async function hasAvifSignature(filePath) {
+  const content = await readFile(filePath);
+  return content.length >= 16
+    && content.toString("ascii", 4, 8) === "ftyp"
+    && /avi[fs]/.test(content.subarray(8, Math.min(content.length, 32)).toString("ascii"));
 }
 
 function addSensitiveFindings(relativePath, content) {

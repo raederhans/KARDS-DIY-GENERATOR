@@ -1,5 +1,5 @@
 // @ts-expect-error Vitest executes this contract test in Node while the app tsconfig excludes Node globals.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CARD } from "./cardModel";
 import {
@@ -12,6 +12,7 @@ import {
   findUniqueAutomaticArtworkSample,
   getDefaultDevPreviewSample,
   getDevPreviewReferenceForCard,
+  getDevPreviewReferenceUrl,
   getDevPreviewSampleById,
   getDevPreviewSampleByKind,
   getDevPreviewSampleForCard,
@@ -20,6 +21,7 @@ import {
 } from "./devPreviewCatalog";
 import {
   applyCardUpdate,
+  getTemplateSampleIdForLanguageRefresh,
   resolveDevPreviewSampleCard,
   resolveDevPreviewReferenceSelection,
   resolveDevPreviewTemplateSelection,
@@ -47,16 +49,57 @@ describe("dev preview sample catalog", () => {
 
   it("keeps bundled reference text in the language shown by its reference image", async () => {
     const t70 = getDevPreviewSampleById("t70");
+    const readBundledCard = async (cardUrl: string) => JSON.parse(readFileSync(
+      new URL(`../public${cardUrl}`, import.meta.url),
+      "utf8",
+    ));
 
     expect(t70).toBeDefined();
-    await expect(resolveDevPreviewSampleCard(t70!, async () => JSON.parse(readFileSync(
-      new URL("../public/reference-pack/v1/samples/t70.card.json", import.meta.url),
-      "utf8",
-    )))).resolves.toMatchObject({
+    await expect(resolveDevPreviewSampleCard(t70!, readBundledCard, undefined, "en")).resolves.toMatchObject({
       title: "T-70",
       keywordLanguage: "en",
       keywordLine: "GUARD",
     });
+    await expect(resolveDevPreviewSampleCard(t70!, readBundledCard, undefined, "zh")).resolves.toMatchObject({
+      title: "T-70",
+      keywordLanguage: "zh",
+      keywordLine: "GUARD",
+    });
+
+    const carelessTalk = getDevPreviewSampleById("careless_talk");
+    await expect(resolveDevPreviewSampleCard(carelessTalk!, readBundledCard, undefined, "zh")).resolves.toMatchObject({
+      title: "无心漫谈",
+      body: "敌方单位部署时，对其造成 3 点伤害。",
+      keywordLanguage: "zh",
+    });
+  });
+
+  it("provides complete English and Chinese content and reference images for every sample", () => {
+    for (const sample of DEV_PREVIEW_REFERENCE_SAMPLES) {
+      const english = JSON.parse(readFileSync(
+        new URL(`../public/reference-pack/v1/samples/${sample.id}.card.json`, import.meta.url),
+        "utf8",
+      ));
+      const chinese = JSON.parse(readFileSync(
+        new URL(`../public/reference-pack/v1/samples/zh/${sample.id}.card.json`, import.meta.url),
+        "utf8",
+      ));
+
+      expect(typeof english.title).toBe("string");
+      expect(typeof english.body).toBe("string");
+      expect(chinese).toMatchObject({ keywordLanguage: "zh" });
+      expect(typeof chinese.title).toBe("string");
+      expect(typeof chinese.body).toBe("string");
+      expect(existsSync(new URL(`../public${getDevPreviewReferenceUrl(sample, "en")}`, import.meta.url))).toBe(true);
+      expect(existsSync(new URL(`../public${getDevPreviewReferenceUrl(sample, "zh")}`, import.meta.url))).toBe(true);
+    }
+
+    for (const sample of DEV_PREVIEW_HQ_SAMPLES) {
+      expect("card" in sample && sample.card.title).toBeTruthy();
+      expect(sample.cardLocalizations?.zh?.title).toBeTruthy();
+      expect(existsSync(new URL(`../public${getDevPreviewReferenceUrl(sample, "en")}`, import.meta.url))).toBe(true);
+      expect(existsSync(new URL(`../public${getDevPreviewReferenceUrl(sample, "zh")}`, import.meta.url))).toBe(true);
+    }
   });
 
   it("applies text and metadata filters with AND semantics", () => {
@@ -139,13 +182,17 @@ describe("dev preview sample catalog", () => {
       "/reference-pack/v1/kards-asset-pack.json",
     );
     expect(DEV_PREVIEW_REFERENCE_SAMPLES.every((sample) =>
-      sample.referenceUrl.startsWith("/reference-pack/v1/references/cards/"),
+      sample.referenceUrl.startsWith("/reference-pack/v1/references/cards/")
+      && getDevPreviewReferenceUrl(sample, "zh").includes("/references/cards/zh/"),
     )).toBe(true);
     expect(DEV_PREVIEW_REFERENCE_SAMPLES.every((sample) =>
-      "cardUrl" in sample && sample.cardUrl.startsWith("/reference-pack/v1/samples/"),
+      "cardUrl" in sample
+      && sample.cardUrl.startsWith("/reference-pack/v1/samples/")
+      && sample.cardLocalizationUrls?.zh?.includes("/samples/zh/"),
     )).toBe(true);
     expect(DEV_PREVIEW_HQ_SAMPLES.every((sample) =>
-      sample.referenceUrl.startsWith("/reference-pack/v1/references/hq/"),
+      sample.referenceUrl.startsWith("/reference-pack/v1/references/hq/en/")
+      && getDevPreviewReferenceUrl(sample, "zh").startsWith("/reference-pack/v1/references/hq/"),
     )).toBe(true);
   });
 
@@ -177,22 +224,22 @@ describe("dev preview sample catalog", () => {
       "TRUK",
       "DANZIG",
     ]);
-    expect(getDevPreviewSampleById("london_hq")?.referenceUrl).toContain("London.png");
-    expect(getDevPreviewSampleById("moscow_hq")?.referenceUrl).toContain("Moscow.png");
+    expect(getDevPreviewSampleById("london_hq")?.referenceUrl).toContain("/en/London.png");
+    expect(getDevPreviewSampleById("moscow_hq")?.referenceUrl).toContain("/en/Moscow.png");
     expect(DEV_PREVIEW_HQ_SAMPLE.referenceUrl).toContain("Washington.png");
     expect(DEV_PREVIEW_REFERENCE_SAMPLES.every((sample) => sample.kind !== "hq")).toBe(true);
     expect(DEV_PREVIEW_HQ_SAMPLES.every((sample) => sample.kind === "hq")).toBe(true);
-    expect("card" in DEV_PREVIEW_HQ_SAMPLE ? DEV_PREVIEW_HQ_SAMPLE.card.title : "").toBe("华盛顿");
+    expect("card" in DEV_PREVIEW_HQ_SAMPLE ? DEV_PREVIEW_HQ_SAMPLE.card.title : "").toBe("WASHINGTON");
     expect(DEV_PREVIEW_HQ_SAMPLE.artworkReferenceCrop).toEqual({
-      sourceUrl: DEV_PREVIEW_HQ_SAMPLE.referenceUrl,
+      sourceUrl: getDevPreviewReferenceUrl(DEV_PREVIEW_HQ_SAMPLE, "zh"),
       sourceRect: { x: 12, y: 13, width: 476, height: 476 },
     });
   });
 
   it("resolves the reference image from the current card type and set", () => {
-    expect(getDevPreviewReferenceForCard({ kind: "tank", set: "blood-and-iron" })).toContain("macchi_c_200.png");
-    expect(getDevPreviewReferenceForCard({ kind: "tank", set: "oceania-storm" })).toContain("dingo.png");
-    expect(getDevPreviewReferenceForCard({ kind: "hq", set: "blood-and-iron" })).toContain("Washington.png");
+    expect(getDevPreviewReferenceForCard({ kind: "tank", set: "blood-and-iron" }, "en")).toContain("macchi_c_200.png");
+    expect(getDevPreviewReferenceForCard({ kind: "tank", set: "oceania-storm" }, "zh")).toContain("/zh/dingo.avif");
+    expect(getDevPreviewReferenceForCard({ kind: "hq", set: "blood-and-iron" }, "en")).toContain("/en/Washington.png");
     expect(getDevPreviewReferenceForCard({ kind: "tank", set: "custom" })).toBeUndefined();
   });
 
@@ -252,9 +299,9 @@ describe("dev preview sample catalog", () => {
     const selectedSample = DEV_PREVIEW_REFERENCE_SAMPLES.find((sample) => sample.id === "dingo");
 
     expect(selectedSample).toBeDefined();
-    expect(resolveDevPreviewReferenceSelection(selectedSample!)).toEqual({
+    expect(resolveDevPreviewReferenceSelection(selectedSample!, "zh")).toEqual({
       selectedReferenceSampleId: "dingo",
-      referenceImageUrl: selectedSample!.referenceUrl,
+      referenceImageUrl: getDevPreviewReferenceUrl(selectedSample!, "zh"),
     });
     expect(draftCard.title).toBe("Custom draft");
     expect(draftCard.body).toBe("Do not replace me");
@@ -284,7 +331,7 @@ describe("dev preview sample catalog", () => {
         async () => "data:image/png;base64,hq-artwork",
       ),
     ).toMatchObject({
-      title: "华盛顿",
+      title: "WASHINGTON",
       kind: "hq",
       artwork: {
         source: "upload",
@@ -302,9 +349,10 @@ describe("dev preview sample catalog", () => {
         sample!,
         async () => DEFAULT_CARD,
         async () => "data:image/png;base64,london-artwork",
+        "zh",
       ),
     ).resolves.toMatchObject({
-      referenceImageUrl: sample!.referenceUrl,
+      referenceImageUrl: getDevPreviewReferenceUrl(sample!, "zh"),
       card: {
         kind: "hq",
         title: "伦敦",
@@ -326,6 +374,12 @@ describe("dev preview sample catalog", () => {
     expect(shouldApplyDevPreviewSampleResult({ ...currentRequest, isMounted: false })).toBe(false);
     expect(shouldApplyDevPreviewSampleResult({ ...currentRequest, activeRequestId: 5 })).toBe(false);
     expect(shouldApplyDevPreviewSampleResult({ ...currentRequest, currentCardEditVersion: 3 })).toBe(false);
+  });
+
+  it("refreshes the pending template on a language switch before falling back to the active template", () => {
+    expect(getTemplateSampleIdForLanguageRefresh("active-sample", "pending-sample")).toBe("pending-sample");
+    expect(getTemplateSampleIdForLanguageRefresh("active-sample", null)).toBe("active-sample");
+    expect(getTemplateSampleIdForLanguageRefresh(null, null)).toBeNull();
   });
 
   it("rejects stale automatic artwork but permits unrelated edits during loading", () => {

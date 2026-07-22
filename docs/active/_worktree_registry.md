@@ -1,5 +1,22 @@
 # Worktree Registry
 
+## KARDS v1.3.0 release
+
+- Worktree name/path: sole main checkout, repository root
+- Thread/task: audit the complete bilingual workshop candidate and publish GitHub Release `v1.3.0`
+- Base branch/base commit: `main`, `94e6b59a7479d6e965127a05ac4f3fb7deeab5e4`
+- Current branch/HEAD: `main`; candidate commit not yet frozen
+- Task goal: ship bilingual sample/reference flows, local startup, preview/HQ/UI repairs, and reliable directory export as one exact-SHA release without weakening resource-rights or code-only artifact boundaries
+- Status: final code review `APPROVE` and architecture `CLEAR`; candidate commit and external publication pending
+- Main changed files: app/reference/export state, renderer and workbench UI, startup and bilingual generators, 69 Chinese sample/reference pairs, 5 English HQ references, focused tests, version metadata, and task records
+- Shared hotspots: package version, reference-pack closure, generated-image identities, local port/log ownership, release archive exclusions, GitHub tag/Release, Pages, and Vercel Production
+- Validation: initial review findings repaired; the final image-manifest bootstrap fallback was removed and all 69 images were re-downloaded from the configured official source; final code review `APPROVE`, architecture `CLEAR`; focused checks, 69 sample identities, 5 current-renderer HQ comparisons, local startup and browser smoke passed; full `npm run validate` passed 18 files / 276 Vitest tests, 26 Python contracts, typecheck/build/boundary; Pages-mode build and standard rebuild passed; dependency audit found 0 vulnerabilities
+- Tests not run: immutable-candidate archive scan, remote CI/Pages/Vercel, tag, Release, and fresh asset download
+- Potential overlap: green; `git worktree list` shows only this checkout and independent reviewers are read-only
+- Recommended integration order: freeze records and candidate, obtain final review clearance, run full local gates, commit/push once, verify exact remote SHA, then tag and publish
+- Delivery package: `docs/active/kards-v1.3.0-release/task.md`
+- Next action: freeze the Lore candidate commit and inspect its exact-SHA code-only archive
+
 ## KARDS v1.2.0 release
 
 - Worktree name/path: sole main checkout, `C:\Users\raede\Documents\KARDS`

@@ -1,5 +1,5 @@
-import type { DevPreviewArtworkReferenceCrop } from "./devPreviewState";
-import type { CardKeywordLanguage, CardKind, CardSpec } from "./types";
+import type { DevPreviewArtworkReferenceCrop, DevPreviewSampleCardSource } from "./devPreviewState";
+import type { CardKind, CardSpec } from "./types";
 import { DEFAULT_CARD_APPEARANCE } from "./cardModel";
 import { CARD_KINDS, SETS } from "./presets";
 import type { Language } from "./i18n";
@@ -20,17 +20,17 @@ export type DevPreviewSample = {
   nation: string;
   rarity: string;
   set: string;
-  keywordLanguage?: CardKeywordLanguage;
   referenceUrl: string;
+  referenceUrls?: Partial<Record<Language, string>>;
   artworkReferenceCrop?: DevPreviewArtworkReferenceCrop;
-} & ({ cardUrl: string } | { card: CardSpec });
+} & DevPreviewSampleCardSource;
 
 export const DEV_PREVIEW_HQ_SAMPLES: DevPreviewSample[] = [
-  hqSample("washington_hq", "WASHINGTON", "华盛顿", "us", "Washington.png", "华盛顿特区在美国规划和准备二战的过程中发挥了重要作用。"),
-  hqSample("london_hq", "LONDON", "伦敦", "britain", "London.png", "大英帝国的首都，也是英国和盟国在欧洲的战时行政中心。"),
-  hqSample("moscow_hq", "MOSCOW", "莫斯科", "soviet", "Moscow.png", "莫斯科是苏联的首都。"),
-  hqSample("truk_hq", "TRUK", "特鲁克", "japan", "Truk.png", "特鲁克环礁是二战期间日本在南太平洋的主要海军基地。"),
-  hqSample("danzig_hq", "DANZIG", "但泽", "germany", "Danzig.png", "战争开始时被德军占领的但泽。"),
+  hqSample("washington_hq", "WASHINGTON", "华盛顿", "us", "Washington.png", "Washington, D.C. played an important role in the United States' planning and preparation for World War II.", "华盛顿特区在美国规划和准备二战的过程中发挥了重要作用。"),
+  hqSample("london_hq", "LONDON", "伦敦", "britain", "London.png", "Capital of the British Empire and the wartime administrative center of Britain and the Allies in Europe.", "大英帝国的首都，也是英国和盟国在欧洲的战时行政中心。"),
+  hqSample("moscow_hq", "MOSCOW", "莫斯科", "soviet", "Moscow.png", "Moscow is the capital of the Soviet Union.", "莫斯科是苏联的首都。"),
+  hqSample("truk_hq", "TRUK", "特鲁克", "japan", "Truk.png", "Truk Atoll was Japan's primary naval base in the South Pacific during World War II.", "特鲁克环礁是二战期间日本在南太平洋的主要海军基地。"),
+  hqSample("danzig_hq", "DANZIG", "但泽", "germany", "Danzig.png", "Danzig was occupied by German forces at the beginning of the war.", "战争开始时被德军占领的但泽。"),
 ];
 
 export const DEV_PREVIEW_HQ_SAMPLE: DevPreviewSample = DEV_PREVIEW_HQ_SAMPLES[0];
@@ -214,8 +214,16 @@ export function getDevPreviewSampleForCard(card: Pick<CardSpec, "kind" | "set">)
   return getDevPreviewSampleByKind(card.kind) ?? getDevPreviewSampleBySet(card.set);
 }
 
-export function getDevPreviewReferenceForCard(card: Pick<CardSpec, "kind" | "set">): string | undefined {
-  return getDevPreviewSampleForCard(card)?.referenceUrl;
+export function getDevPreviewReferenceForCard(
+  card: Pick<CardSpec, "kind" | "set">,
+  language: Language = "en",
+): string | undefined {
+  const sample = getDevPreviewSampleForCard(card);
+  return sample ? getDevPreviewReferenceUrl(sample, language) : undefined;
+}
+
+export function getDevPreviewReferenceUrl(sample: DevPreviewSample, language: Language): string {
+  return sample.referenceUrls?.[language] ?? sample.referenceUrl;
 }
 
 function cardSample(id: string, set: string, kind: CardKind, label: string, labelZh?: string): DevPreviewSample {
@@ -231,9 +239,14 @@ function cardSample(id: string, set: string, kind: CardKind, label: string, labe
     nation: metadata.nation,
     rarity: metadata.rarity,
     set,
-    keywordLanguage: "en",
     cardUrl: `${SAMPLE_ROOT}/${id}.card.json`,
+    cardLocalizationUrls: {
+      zh: `${SAMPLE_ROOT}/zh/${id}.card.json`,
+    },
     referenceUrl: `${REFERENCE_ROOT}/${id}.png`,
+    referenceUrls: {
+      zh: `${REFERENCE_ROOT}/zh/${id}.avif`,
+    },
   };
 }
 
@@ -243,9 +256,11 @@ function hqSample(
   labelZh: string,
   nation: string,
   imageFile: string,
-  body: string,
+  bodyEn: string,
+  bodyZh: string,
 ): DevPreviewSample {
-  const referenceUrl = `${HQ_REFERENCE_ROOT}/${imageFile}`;
+  const referenceUrl = `${HQ_REFERENCE_ROOT}/en/${imageFile}`;
+  const referenceUrlZh = `${HQ_REFERENCE_ROOT}/${imageFile}`;
   return {
     id,
     label,
@@ -255,8 +270,11 @@ function hqSample(
     rarity: "none",
     set: "base",
     referenceUrl,
+    referenceUrls: {
+      zh: referenceUrlZh,
+    },
     artworkReferenceCrop: {
-      sourceUrl: referenceUrl,
+      sourceUrl: referenceUrlZh,
       sourceRect: { x: 12, y: 13, width: 476, height: 476 },
     },
     card: {
@@ -265,8 +283,8 @@ function hqSample(
       nation,
       rarity: "standard",
       set: "base",
-      title: labelZh,
-      body,
+      title: label,
+      body: bodyEn,
       keywords: [],
       keywordLine: "",
       costs: {},
@@ -282,6 +300,18 @@ function hqSample(
         },
       },
       appearance: DEFAULT_CARD_APPEARANCE,
+    },
+    cardLocalizations: {
+      zh: {
+        title: labelZh,
+        body: bodyZh,
+        keywordLanguage: "zh",
+      },
+      en: {
+        title: label,
+        body: bodyEn,
+        keywordLanguage: "en",
+      },
     },
   };
 }

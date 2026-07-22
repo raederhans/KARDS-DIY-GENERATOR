@@ -456,10 +456,15 @@ export function FieldPanel({
           onDragLeave={handleArtworkDragLeave}
           onDrop={handleArtworkDrop}
         >
-          <label className="field-block">
-            <span>{text.artwork}</span>
-            <input name="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleArtworkUpload} />
-          </label>
+          <div className="field-block">
+            <input
+              aria-label={text.artwork}
+              name="artwork-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleArtworkUpload}
+            />
+          </div>
 
           <div className="crop-grid">
             <label className="crop-control">
@@ -543,15 +548,15 @@ export function FieldPanel({
         toggleLabel={text.toggleSection(text.title)}
         onToggle={toggleSection}
       >
-        <label className="field-block">
-          <span>{text.title}</span>
+        <div className="field-block">
           <input
+            aria-label={text.title}
             name="card-title"
             value={card.title}
             maxLength={TITLE_MAX_LENGTH}
             onChange={(event) => update({ title: event.target.value })}
           />
-        </label>
+        </div>
         <div className="text-appearance-grid" aria-label={text.titleAppearance}>
           <TextAppearanceRange
             label={text.fontSize}
@@ -609,7 +614,6 @@ export function FieldPanel({
           onToggle={toggleSection}
         >
         <div className="field-block keyword-field">
-          <span>{text.keywords}</span>
           <div className="keyword-chip-list">
             {selectedKeywordIds.map((keywordId, index) => {
               const keyword = KEYWORD_PRESETS.find((keywordOption) => keywordOption.id === keywordId);
@@ -638,6 +642,7 @@ export function FieldPanel({
             })}
           </div>
           <select
+            aria-label={text.keywords}
             name="card-keyword-add"
             value=""
             disabled={selectedKeywordIds.length >= MAX_CARD_KEYWORDS || availableKeywords.length === 0}
@@ -699,7 +704,6 @@ export function FieldPanel({
         onToggle={toggleSection}
       >
         <div className="field-block body-field">
-          <span>{text.body}</span>
           <div className="body-effect-buttons" aria-label={text.addBodyEmphasis}>
             <button
               type="button"
@@ -717,6 +721,7 @@ export function FieldPanel({
             ))}
           </div>
           <textarea
+            aria-label={text.body}
             ref={bodyTextareaRef}
             name="card-body"
             value={card.body}

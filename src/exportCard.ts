@@ -110,6 +110,16 @@ export function normalizeExportOptions(options: CardExportOptions): CardExportOp
   };
 }
 
+export function getCardAdjustmentFilter(exposure: number, contrast: number): string {
+  const normalizedExposure = clamp(Math.round(exposure), -30, 30);
+  const normalizedContrast = clamp(Math.round(contrast), -30, 30);
+  if (normalizedExposure === 0 && normalizedContrast === 0) {
+    return "none";
+  }
+
+  return `brightness(${100 + normalizedExposure}%) contrast(${100 + normalizedContrast}%)`;
+}
+
 export function getCardExportPreflight(input: {
   canvasAvailable: boolean;
   artworkReady: boolean;
@@ -264,7 +274,7 @@ function drawAdjustedCanvas(
 
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
-  context.filter = `brightness(${100 + options.exposure}%) contrast(${100 + options.contrast}%)`;
+  context.filter = getCardAdjustmentFilter(options.exposure, options.contrast);
   context.drawImage(sourceCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
   context.filter = "none";
 

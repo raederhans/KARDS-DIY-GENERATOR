@@ -11,11 +11,14 @@ import {
   TEXTURE_CONTROL_LIMITS,
   WorkbenchTabList,
   WorkbenchTabPanel,
+  applyCardPreviewAdjustment,
   canStartCardExport,
+  createCardExportAfterDirectoryPermission,
   downloadBlob,
   isImportableReferenceImageFile,
   isArtworkReadyForExport,
   parseImportedCardProject,
+  requestCardExportDirectoryWritePermission,
   safeFileName,
 } from "./ProjectPanel";
 import {
@@ -26,6 +29,7 @@ import {
 import { ReferenceWorkbench } from "./ReferenceWorkbench";
 import { consumeSelectedFile, readBrowserFile } from "../browserFiles";
 import { isAllowedEmbeddedImageDataUrl } from "../limits";
+import type { LocalDirectoryHandle } from "../localLibrary";
 
 afterEach(() => {
   vi.useRealTimers();
@@ -92,6 +96,55 @@ describe("ProjectPanel file names", () => {
 describe("ProjectPanel texture controls", () => {
   it("uses the same texture range as imported card normalization", () => {
     expect(TEXTURE_CONTROL_LIMITS).toEqual(CARD_TEXTURE_BOUNDS);
+  });
+});
+
+describe("ProjectPanel export adjustment preview", () => {
+  it("applies the normalized export filter to the generated canvas and restores it on cleanup", () => {
+    const canvas = { style: { filter: "" } } as HTMLCanvasElement;
+
+    const cleanup = applyCardPreviewAdjustment(canvas, 12.4, -9.6);
+
+    expect(canvas.style.filter).toBe("brightness(112%) contrast(90%)");
+    cleanup();
+    expect(canvas.style.filter).toBe("");
+  });
+});
+
+describe("ProjectPanel directory export permission", () => {
+  it("requests write access immediately and classifies permission failures as write errors", async () => {
+    const directory = { name: "Exports" } as LocalDirectoryHandle;
+    const requestPermission = vi.fn(async () => undefined);
+
+    const permission = requestCardExportDirectoryWritePermission(directory, requestPermission);
+
+    expect(requestPermission).toHaveBeenCalledWith(directory);
+    await expect(permission).resolves.toBeUndefined();
+
+    const denial = new DOMException("User activation is no longer valid.", "SecurityError");
+    await expect(requestCardExportDirectoryWritePermission(
+      directory,
+      vi.fn(async () => Promise.reject(denial)),
+    )).rejects.toMatchObject({ phase: "write", code: "write-failed", cause: denial });
+  });
+
+  it("finishes directory permission before starting asynchronous card rendering", async () => {
+    const directory = { name: "Exports" } as LocalDirectoryHandle;
+    const calls: string[] = [];
+    const requestPermission = vi.fn(async () => {
+      calls.push("permission");
+    });
+    const createResult = vi.fn(async () => {
+      calls.push("render");
+      return "card";
+    });
+
+    await expect(createCardExportAfterDirectoryPermission(
+      directory,
+      createResult,
+      requestPermission,
+    )).resolves.toBe("card");
+    expect(calls).toEqual(["permission", "render"]);
   });
 });
 

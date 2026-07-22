@@ -86,6 +86,24 @@ describe("card renderer output", () => {
     expect(calls.fills.some((call) => call.fillStyle === "#12110d")).toBe(false);
   });
 
+  it("adds a subtle clipped inner shade at all four card corners", () => {
+    const { canvas, calls } = createFakeCanvas();
+
+    renderCard(canvas, DEFAULT_CARD, null, { disablePrintWear: true });
+
+    const cornerGradients = calls.gradients.filter((gradient) => gradient.kind === "radial");
+    expect(cornerGradients.map((gradient) => gradient.args)).toEqual([
+      [0, 0, 0, 0, 0, 54],
+      [CARD_WIDTH, 0, 0, CARD_WIDTH, 0, 54],
+      [0, CARD_HEIGHT, 0, 0, CARD_HEIGHT, 54],
+      [CARD_WIDTH, CARD_HEIGHT, 0, CARD_WIDTH, CARD_HEIGHT, 54],
+    ]);
+    expect(cornerGradients.every((gradient) => gradient.stops[0]?.[1] === "rgba(28, 24, 17, 0.12)")).toBe(true);
+    expect(cornerGradients.every((gradient) => gradient.stops.at(-1)?.[1] === "rgba(28, 24, 17, 0)")).toBe(true);
+    expect(calls.fillRectStyles.filter((call) => cornerGradients.includes(call.fillStyle as (typeof cornerGradients)[number]))).toHaveLength(4);
+    expect(calls.clips.at(-1)?.points.some((point) => point.kind === "arcTo" && point.radius === 18)).toBe(true);
+  });
+
   it("adds layered deterministic paper aging by default", () => {
     const first = createFakeCanvas();
     const second = createFakeCanvas();
@@ -1012,11 +1030,37 @@ describe("card renderer output", () => {
     expect(calls.drawImage.some(([image]) => image === nationImage)).toBe(false);
     expect(hqLabel).toBeUndefined();
     expect(calls.fillText.some(([text]) => text === "Guard")).toBe(false);
-    expect(hqValue?.[2]).toBeCloseTo(420.5);
+    expect(hqValue?.[2]).toBeCloseTo(432.5);
     expect(hqValueStyle?.font).toContain("104px");
     expect(hqValueStyle?.font).toContain("Microsoft YaHei UI");
     expect(hqValueStyle?.scaleX).toBeCloseTo(0.85);
+    expect(calls.paths.some((path) => path.points.some((point) => point.kind === "moveTo" && point.x === 172 && point.y === 347))).toBe(true);
     expect(boardOpIndex).toBeLessThan(valueOpIndex);
+  });
+
+  it("keeps the HQ fallback shield square at the top with one continuous lower curve", () => {
+    const { canvas, calls } = createFakeCanvas();
+    const hqCard: CardSpec = {
+      ...DEFAULT_CARD,
+      kind: "hq",
+      costs: {},
+      stats: { hqDefense: 20 },
+    };
+
+    renderCard(canvas, hqCard, null, { disablePrintWear: true });
+
+    const shieldPath = calls.paths.find((path) =>
+      path.points.some((point) => point.kind === "moveTo" && point.x === 172 && point.y === 347),
+    );
+    expect(shieldPath?.points).toEqual([
+      { kind: "moveTo", x: 172, y: 347 },
+      { kind: "lineTo", x: 326, y: 347 },
+      { kind: "lineTo", x: 326, y: 446.82 },
+      { kind: "quadraticCurveTo", cpx: 326, cpy: 518, x: 249, y: 518 },
+      { kind: "quadraticCurveTo", cpx: 172, cpy: 518, x: 172, y: 446.82 },
+      { kind: "lineTo", x: 172, y: 347 },
+    ]);
+    expect(calls.fillText.find(([text]) => text === "20")?.[2]).toBeCloseTo(432.5);
   });
 
   it("draws limited rarity pips with a subtle fan perspective", () => {
@@ -1164,7 +1208,7 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
     strokes: Array<{ strokeStyle: unknown; lineWidth: number; points: CanvasPathPoint[] }>;
     clips: Array<{ fillRule: CanvasFillRule | undefined; points: CanvasPathPoint[] }>;
     scales: Array<[number, number]>;
-    gradients: Array<{ stops: Array<[number, string]> }>;
+    gradients: Array<{ kind: "linear" | "radial"; args: number[]; stops: Array<[number, string]> }>;
     layerCanvases: Array<ReturnType<typeof createFakeCanvas>>;
   } = {
     clearRect: [],
@@ -1314,8 +1358,22 @@ function createFakeCanvas(options: { enableLayerCanvas?: boolean } = {}) {
       calls.fillTextStyles.push({ text: args[0], font, fillStyle, scaleX: transform.scaleX, scaleY: transform.scaleY });
       calls.operations.push({ kind: "fillText", value: args[0] });
     },
-    createLinearGradient() {
+    createLinearGradient(...args: number[]) {
       const gradient = {
+        kind: "linear" as const,
+        args,
+        stops: [] as Array<[number, string]>,
+        addColorStop(offset: number, color: string) {
+          this.stops.push([offset, color]);
+        },
+      };
+      calls.gradients.push(gradient);
+      return gradient;
+    },
+    createRadialGradient(...args: number[]) {
+      const gradient = {
+        kind: "radial" as const,
+        args,
         stops: [] as Array<[number, string]>,
         addColorStop(offset: number, color: string) {
           this.stops.push([offset, color]);

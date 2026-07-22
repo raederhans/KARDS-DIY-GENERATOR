@@ -140,6 +140,10 @@ button:disabled {
   overflow: hidden;
 }
 
+.workspace[hidden] {
+  display: none;
+}
+
 .panel {
   min-width: 0;
   min-height: 0;
@@ -881,13 +885,14 @@ input[type="range"] {
 
 .control-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 0.36fr) minmax(0, 0.64fr);
   gap: 8px;
 }
 
 .control-grid label,
 .export-range {
   display: grid;
+  min-width: 0;
   gap: 4px;
 }
 

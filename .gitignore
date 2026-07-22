@@ -10,3 +10,4 @@ __pycache__/
 *.py[cod]
 .vercel
 .env*
+.playwright-cli/

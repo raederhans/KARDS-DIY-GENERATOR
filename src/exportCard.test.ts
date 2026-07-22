@@ -5,6 +5,7 @@ import {
   createCardExportBlob,
   createCardExportResult,
   completeCardExportDelivery,
+  getCardAdjustmentFilter,
   getCardExportPreflight,
   getExportDimensions,
   getExportExtension,
@@ -100,6 +101,12 @@ describe("card export options", () => {
       contrast: -30,
       jpegQuality: 0.98,
     });
+  });
+
+  it("uses one normalized exposure and contrast filter for preview and export", () => {
+    expect(getCardAdjustmentFilter(0, 0)).toBe("none");
+    expect(getCardAdjustmentFilter(12.4, -9.6)).toBe("brightness(112%) contrast(90%)");
+    expect(getCardAdjustmentFilter(99, -99)).toBe("brightness(130%) contrast(70%)");
   });
 
   it("rerenders source cards at the requested backing resolution", async () => {

@@ -38,7 +38,6 @@ export function HelpPage({ open, text, onClose }: HelpPageProps) {
             aria-label={text.closeAria}
             onClick={onClose}
           >
-            <span aria-hidden="true">←</span>
             {text.close}
           </button>
         </header>

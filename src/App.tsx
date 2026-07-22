@@ -22,6 +22,7 @@ import {
   resolveDevPreviewReferenceSelection,
   resolveDevPreviewSampleCard,
   resolveDevPreviewTemplateSelection,
+  getTemplateSampleIdForLanguageRefresh,
   shouldApplyAutomaticArtworkResult,
   shouldApplyDevPreviewSampleResult,
   type DevPreviewArtworkReferenceCrop,
@@ -75,6 +76,7 @@ function App() {
   const [assetPackError, setAssetPackError] = useState<string | null>(null);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
   const [selectedReferenceSampleId, setSelectedReferenceSampleId] = useState("t70");
+  const [activeTemplateSampleId, setActiveTemplateSampleId] = useState<string | null>(null);
   const [isTemplateLoading, setIsTemplateLoading] = useState(false);
   const [isAutoArtworkLoading, setIsAutoArtworkLoading] = useState(false);
   const [autoArtworkEnabled, setAutoArtworkEnabled] = useState(() => loadAutoArtworkPreference(window.localStorage));
@@ -94,6 +96,7 @@ function App() {
   const autoArtworkRequestRef = useRef(0);
   const artworkApplyRequestRef = useRef(0);
   const cardEditVersionRef = useRef(0);
+  const pendingTemplateSampleIdRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const didLoadDevPreviewRef = useRef(false);
   useEffect(() => {
@@ -275,7 +278,9 @@ function App() {
     [devPreviewCatalog, language, previewCard, referenceSamples],
   );
   useEffect(() => {
-    const nextReferenceUrl = referenceSample?.referenceUrl ?? null;
+    const nextReferenceUrl = referenceSample && devPreviewCatalog
+      ? devPreviewCatalog.getDevPreviewReferenceUrl(referenceSample, language)
+      : null;
     if (nextReferenceUrl === referenceImageUrl) {
       return;
     }
@@ -283,7 +288,7 @@ function App() {
     setReferenceImageUrl(nextReferenceUrl);
     setReferenceDiff(null);
     setReferenceDiffError(null);
-  }, [referenceImageUrl, referenceSample]);
+  }, [devPreviewCatalog, language, referenceImageUrl, referenceSample]);
 
   useEffect(() => {
     const requestId = autoArtworkRequestRef.current + 1;
@@ -318,7 +323,7 @@ function App() {
     const matchingKeyAtStart = devPreviewCatalog.getAutomaticArtworkMatchingKey(card);
     setIsAutoArtworkLoading(true);
     setAutoArtworkError(null);
-    void resolveDevPreviewSampleCard(sample, readDevPreviewCardUrl, cropDevPreviewArtwork)
+    void resolveDevPreviewSampleCard(sample, readDevPreviewCardUrl, cropDevPreviewArtwork, language)
       .then((resolvedCard) => {
         setEditorState((currentState) => {
           if (!shouldApplyAutomaticArtworkResult({
@@ -361,16 +366,21 @@ function App() {
     devPreviewCatalog,
     editorState.artworkOrigin.kind,
     editorState.artworkOrigin.kind === "auto-reference" ? editorState.artworkOrigin.sampleId : null,
+    language,
     referenceSamples,
   ]);
 
   function updateCard(update: CardUpdate) {
     cardEditVersionRef.current += 1;
+    pendingTemplateSampleIdRef.current = null;
+    setActiveTemplateSampleId(null);
     setEditorState((currentState) => applyUserCardUpdate(currentState, update));
   }
 
   function handleCardKindChange(kind: CardKind) {
     cardEditVersionRef.current += 1;
+    pendingTemplateSampleIdRef.current = null;
+    setActiveTemplateSampleId(null);
     setEditorState((currentState) => selectCardKind(currentState, kind, language));
   }
 
@@ -379,10 +389,12 @@ function App() {
     autoArtworkRequestRef.current += 1;
     sampleLoadRequestRef.current += 1;
     artworkApplyRequestRef.current += 1;
+    pendingTemplateSampleIdRef.current = null;
     setIsTemplateLoading(false);
     setTemplateLoadError(null);
     setAutoArtworkError(null);
     setActiveLibraryEntryId(null);
+    setActiveTemplateSampleId(null);
     setEditorState(resetCardEditorState(language));
   }
 
@@ -391,10 +403,12 @@ function App() {
     autoArtworkRequestRef.current += 1;
     sampleLoadRequestRef.current += 1;
     artworkApplyRequestRef.current += 1;
+    pendingTemplateSampleIdRef.current = null;
     setIsTemplateLoading(false);
     setTemplateLoadError(null);
     setAutoArtworkError(null);
     setActiveLibraryEntryId(null);
+    setActiveTemplateSampleId(null);
     setEditorState(replaceCardEditorContent(importedCard));
   }
 
@@ -449,17 +463,18 @@ function App() {
   }
 
   function selectReferenceSample(sample: DevPreviewSample) {
-    const selection = resolveDevPreviewReferenceSelection(sample);
+    const selection = resolveDevPreviewReferenceSelection(sample, language);
     setSelectedReferenceSampleId(selection.selectedReferenceSampleId);
     setReferenceImageUrl(selection.referenceImageUrl);
     setReferenceDiff(null);
     setReferenceDiffError(null);
   }
 
-  async function loadDevPreviewTemplate(sample: DevPreviewSample) {
+  async function loadDevPreviewTemplate(sample: DevPreviewSample, sampleLanguage: Language = language) {
     const requestId = sampleLoadRequestRef.current + 1;
     const cardEditVersionAtStart = cardEditVersionRef.current;
     sampleLoadRequestRef.current = requestId;
+    pendingTemplateSampleIdRef.current = sample.id;
     artworkApplyRequestRef.current += 1;
     setAutoArtworkError(null);
     setTemplateLoadError(null);
@@ -470,6 +485,7 @@ function App() {
         sample,
         readDevPreviewCardUrl,
         cropDevPreviewArtwork,
+        sampleLanguage,
       );
 
       if (!shouldApplyDevPreviewSampleResult({
@@ -486,6 +502,7 @@ function App() {
       autoArtworkRequestRef.current += 1;
       setAutoArtworkError(null);
       setActiveLibraryEntryId(null);
+      setActiveTemplateSampleId(sample.id);
       setEditorState(replaceCardEditorContent(selection.card));
       setSelectedReferenceSampleId(sample.id);
       setReferenceImageUrl(selection.referenceImageUrl);
@@ -500,6 +517,7 @@ function App() {
       );
     } finally {
       if (requestId === sampleLoadRequestRef.current && isMountedRef.current) {
+        pendingTemplateSampleIdRef.current = null;
         setIsTemplateLoading(false);
       }
     }
@@ -539,8 +557,10 @@ function App() {
 
     const requestId = artworkApplyRequestRef.current + 1;
     const artworkRevisionAtStart = editorState.artworkRevision;
+    const cardEditVersionAtStart = cardEditVersionRef.current;
     artworkApplyRequestRef.current = requestId;
     sampleLoadRequestRef.current += 1;
+    pendingTemplateSampleIdRef.current = null;
     setAutoArtworkError(null);
     setTemplateLoadError(null);
     setIsTemplateLoading(true);
@@ -549,13 +569,21 @@ function App() {
         sample,
         readDevPreviewCardUrl,
         cropDevPreviewArtwork,
+        language,
       );
-      if (!isMountedRef.current || requestId !== artworkApplyRequestRef.current) {
+      if (!shouldApplyDevPreviewSampleResult({
+        isMounted: isMountedRef.current,
+        requestId,
+        activeRequestId: artworkApplyRequestRef.current,
+        cardEditVersionAtStart,
+        currentCardEditVersion: cardEditVersionRef.current,
+      })) {
         return;
       }
       autoArtworkRequestRef.current += 1;
       setAutoArtworkError(null);
       cardEditVersionRef.current += 1;
+      setActiveTemplateSampleId(null);
       setEditorState((currentState) => applyUserArtworkIfRevisionMatches(
         currentState,
         artworkRevisionAtStart,
@@ -579,9 +607,11 @@ function App() {
     autoArtworkRequestRef.current += 1;
     sampleLoadRequestRef.current += 1;
     artworkApplyRequestRef.current += 1;
+    pendingTemplateSampleIdRef.current = null;
     setIsTemplateLoading(false);
     setTemplateLoadError(null);
     setAutoArtworkError(null);
+    setActiveTemplateSampleId(null);
     setEditorState(createCardEditorState(entry.card, true));
     setActiveLibraryEntryId(entry.id);
   }
@@ -609,7 +639,20 @@ function App() {
   }
 
   function toggleLanguage() {
-    setLanguage((currentLanguage) => getNextLanguage(currentLanguage));
+    const nextLanguage = getNextLanguage(language);
+    setLanguage(nextLanguage);
+    const templateSampleId = getTemplateSampleIdForLanguageRefresh(
+      activeTemplateSampleId,
+      pendingTemplateSampleIdRef.current,
+    );
+    if (!templateSampleId || !devPreviewCatalog) {
+      return;
+    }
+
+    const sample = devPreviewCatalog.getDevPreviewSampleById(templateSampleId);
+    if (sample) {
+      void loadDevPreviewTemplate(sample, nextLanguage);
+    }
   }
 
   function randomizeTexture() {
