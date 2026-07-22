@@ -4,10 +4,10 @@
 
 - Task class: complex external publication.
 - Sole worktree: repository root on `main`; refreshed `HEAD` and `origin/main` both equal `3c83d776a453593cb22f8f6a5b1557d19da6dd6a` before release edits.
-- Latest published release: `v1.3.0`; `v1.4.0` does not yet exist.
+- Published release: `v1.4.0`; candidate and annotated tag resolve to `caa2d5e6e57cf818128b1e6c56d912455cee4bde`.
 - Package and lockfile metadata now resolve to `1.4.0`; no dependency versions changed.
 - GitHub CLI is authenticated as `raederhans` with repository and workflow access.
-- The candidate is intentionally dirty and uncommitted; no tag, push, or publication has occurred in this task.
+- Candidate commit, remote CI, workflow-driven Pages, annotated tag, GitHub Release, and attached assets are published and verified.
 
 ## Decisions and deviations
 
@@ -25,6 +25,10 @@
 | 2026-07-22 | The README Pages link still used the repository's former `/KARDS/` path. | Replace the verified 404 URL with the Pages API's current `KARDS-DIY-GENERATOR` URL, which returns HTTP 200. |
 | 2026-07-22 | Official WAI/MDN guidance confirmed the existing shortcut and text-alternative approach. | Add only explicit Canvas `role="img"`, atomic diff status, and user-facing Help/README text; do not introduce a parallel accessibility framework. |
 | 2026-07-22 | README, Help, version metadata, and bilingual Release notes were synchronized. | Documentation-focused tests passed 30/30 and `git diff --check` remained clean. |
+| 2026-07-22 | Candidate `caa2d5e6e57cf818128b1e6c56d912455cee4bde` passed GitHub CI `29916863641` and Pages `29916863717`; live root and hashed JavaScript returned HTTP 200 with v1.4 markers. | Freeze annotated tag `v1.4.0` on that candidate and publish only its inspected archive. |
+| 2026-07-22 | Live Vercel root and hashed JavaScript also returned HTTP 200 with Undo and Clear reading markers. | Keep the documented Vercel entry point; do not claim an exact deployment SHA because the probe establishes content, not provider provenance. |
+| 2026-07-22 | Freshly downloaded Release ZIP matched the published checksum and GitHub `sha256:` digest, expanded to 91 files, and contained no forbidden or sensitive paths. | Release asset verification is complete; preserve ZIP SHA-256 `801d6f9e1a0f86f19f390dc4b9cd0c31a21fe325ada132e8e903f16bda972784`. |
+| 2026-07-22 | `gh release verify` and `verify-asset` reported no attestations for this tag. | Record immutable-release attestation as unavailable; do not change repository settings or weaken the independent checksum/digest evidence. |
 
 ## Live process ownership
 
@@ -38,10 +42,10 @@ Success requires exit code 0, an `ok: true` smoke report, and the expected Pages
 
 ## Handoff
 
-- Review agents are read-only and must not edit files, start shared servers, stage changes, create refs, or publish.
-- The primary agent owns fixes, documentation, versioning, validation, commit, push, tag, Release, and final truth reconciliation.
-- Preserve all unrelated user work; current untracked research and v1.4 implementation records are part of the candidate until audit proves otherwise.
+- Candidate publication is complete; preserve tag and Release on `caa2d5e6e57cf818128b1e6c56d912455cee4bde`.
+- This records-only closeout may advance `main` but must not rebuild, retag, or replace Release assets.
+- Manual screen-reader, zoom, forced-colors, and contrast review remain explicit human follow-up work.
 
 ## Next step
 
-Run the serialized browser smoke, full validation, dependency audit, Pages-mode build, and code-only archive checks.
+None. Archive this record and preserve the published candidate evidence.

@@ -1,6 +1,6 @@
 # KARDS Card Forge Roadmap
 
-## Current Baseline — v1.3.0
+## Current Baseline — v1.4.0
 
 KARDS Card Forge is a local, static tool for creating one custom card at a
 time. The current release includes:
@@ -12,54 +12,54 @@ time. The current release includes:
   search, comparison, explicit artwork application, and full-card loading.
 - Bundled reference assets, optional local style packs, export preflight, and
   structured diagnostics.
+- Bounded Undo/Redo for authored changes and deliberate full-card replacements,
+  with visible controls and standard shortcuts that preserve native text edit
+  behavior.
+- Visual comparison with an explicit threshold, review level, and changed-area
+  coordinates; differences remain human review signals rather than pass/fail
+  compliance results.
+- Five serialized appearance presets, keyboard-reachable workbench controls,
+  and a readable Canvas summary with keyboard alternatives for artwork crop.
 - Verified Vercel and GitHub Pages release paths plus a code-only Release
   boundary.
 
 The product boundary remains unchanged: a local single-card design tool, not a
 gameplay, account, deck, batch-generation, or network-content platform.
 
-## Release Scope — v1.4.0 Editing Safety and Visual Quality
+## Next
 
-The v1.4.0 scope is a bounded editor-quality increment that preserves the
-local single-card product boundary.
+### 1. Text Health and Editing Safety
 
-### 1. Bounded Undo and Redo
+- Surface title/body truncation before export instead of silently relying on
+  renderer clipping.
+- Reuse the existing diagnostics and authored-history boundaries; do not add a
+  second validation or state framework.
+- Keep Chinese and English warnings under the same tested behavior contract.
 
-- Add a bounded editor-state history for authored card changes and deliberate
-  full-card replacements.
-- Provide visible Undo/Redo actions and standard keyboard shortcuts.
-- Keep asynchronous artwork derivation, loading state, export settings, and
-  library filesystem operations outside authored history.
-- Clear Redo after a new authored edit and avoid recording no-op transitions.
+### 2. Representative Visual Baselines
 
-### 2. Useful Visual Difference Review
+- Record a small fixed-environment baseline for representative card types and
+  text lengths.
+- State whether each baseline proves layout, selected elements, or whole-card
+  appearance.
+- Keep runtime comparison lightweight; do not turn it into a user-side baseline
+  manager or treat pixel drift as automatic proof of a defect.
 
-- Extend the existing comparison metrics with a visible diff result that helps
-  locate changed pixels.
-- Keep thresholds and scope explicit; a visual difference remains a review
-  signal, not automatic proof of a defect.
-- Keep fixed-environment browser baselines limited to representative cards and
-  text lengths; do not turn runtime comparison into a baseline manager.
+### 3. Manual Accessibility Closure
 
-### 3. Focused Accessibility
+- Exercise the complete editor with common screen readers, 200% zoom, forced
+  colors, and contrast review.
+- Convert only reproduced failures into focused semantics, styles, and tests.
+- Keep automated checks as regression support, not a WCAG-conformance claim.
 
-- Make Undo/Redo, visual comparison, presets, tabs, and status changes usable
-  from the keyboard with clear names and focus behavior.
-- Add focused DOM and browser keyboard contracts for history, tabs, focus,
-  diff text, presets, and the Canvas text alternative.
-- Keep Canvas-specific layout, contrast, zoom, and screen-reader behavior in a
-  documented manual review because automated checks cannot prove them.
+### 4. Reference and Preset Growth
 
-### 4. Reference and Appearance Preset Library
-
-- Keep the current 74-card public catalog unchanged until a candidate has the
-  full bilingual image/JSON, source identity, SHA-256, rights, catalog, and
-  closed-world build closure; private metadata alone is not publishable art.
-- Add a small named appearance preset catalog backed by serialized
-  `CardSpec.appearance`, so preview, export, project files, drafts, and local
-  library restores remain identical.
-- Presets may adjust existing supported appearance fields; they must not create
-  a second renderer, arbitrary theme schema, or hidden runtime dependency.
+- Admit more public cards only when bilingual JSON/images, exact source
+  identity, SHA-256, rights, catalog, and closed-world build coverage all close.
+- Evaluate the first five appearance presets in real editing tasks before
+  expanding the catalog.
+- Keep all presets inside serialized `CardSpec.appearance`; do not introduce a
+  second renderer, arbitrary theme schema, or hidden runtime dependency.
 
 ## Later, If Evidence Supports It
 

@@ -25,10 +25,10 @@ Audit the complete local editor-quality candidate, repair confirmed blockers, do
 - [x] Stage 1: establish candidate, version, worktree, remote, authentication, and release-record truth.
 - [x] Stage 2: complete independent review and repair every confirmed release blocker.
 - [x] Stage 3: synchronize README, Help, version metadata, and bilingual Release notes.
-- [ ] Stage 4: run release-grade local verification and inspect the code-only archive.
-- [ ] Stage 5: create and push one Lore candidate commit, then verify remote CI and Pages.
-- [ ] Stage 6: tag and publish `v1.4.0`, re-download assets, and verify live endpoints.
-- [ ] Stage 7: reconcile roadmap/registry truth and archive this record.
+- [x] Stage 4: run release-grade local verification and inspect the code-only archive.
+- [x] Stage 5: create and push one Lore candidate commit, then verify remote CI and Pages.
+- [x] Stage 6: tag and publish `v1.4.0`, re-download assets, and verify live endpoints.
+- [x] Stage 7: reconcile roadmap/registry truth and archive this record.
 
 ## Acceptance criteria
 

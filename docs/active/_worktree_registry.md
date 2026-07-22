@@ -1,21 +1,22 @@
 # Worktree Registry
 
-## KARDS v1.4 editor quality
+## KARDS v1.4.0 release
 
 - Worktree name/path: sole main checkout, repository root
 - Thread/task: bounded Undo/Redo, locatable visual differences, focused accessibility, verified references, and serialized appearance presets
 - Base branch/base commit: `main`, `3c83d776a453593cb22f8f6a5b1557d19da6dd6a`
-- Current branch/HEAD: `main`; HEAD remains aligned with `origin/main` at the task-start commit while the verified `v1.4.0` candidate is prepared in this worktree
+- Current branch/HEAD: release candidate and annotated tag `v1.4.0` are `caa2d5e6e57cf818128b1e6c56d912455cee4bde`; this records-only closeout is the sole allowed subsequent `main` change
 - Task goal: deliver a narrow editing-safety and visual-quality increment without changing the local single-card product boundary
-- Status: release candidate verified locally; audit repairs, documentation, versioning, smoke, full validation, dependency audit, and Pages-mode build are complete; publication remains pending
+- Status: integrated and published
 - Main changed files: editor history and App integration, visual-difference algorithm/UI, Canvas and keyboard accessibility, appearance presets, focused tests and browser smoke, roadmap, lessons, and archived task records
 - Shared hotspots: `App.tsx`, `CardEditorState`, visual comparison state/UI, workbench accessibility, reference-pack closure, `CardSpec.appearance`, and package validation
-- Validation: `npm run validate` passed 24 Vitest files / 308 tests, 26 private-tool contracts, TypeScript, Vite build, and dist boundary; browser smoke passed 16 checks with zero errors and released port 5184; dependency audit found 0 vulnerabilities; independent re-review `APPROVE`
-- Tests not run: manual screen-reader, Canvas zoom, and contrast review remain release-level human checks; no new public card image was admitted because no candidate met the bilingual source/hash/rights/build closure
-- Potential overlap: prior product-direction research is untracked but completed; no other worktree or active implementation lane exists
-- Recommended integration order: implementation is one locally verified change set; preserve the untracked prior research archive when reviewing or committing it
-- Delivery package: `docs/archive/kards-v1.4-editor-quality/task.md`
-- Next action: freeze the verified candidate commit, push and verify exact-SHA CI/Pages, then tag and publish `v1.4.0`
+- Validation: final independent review `APPROVE`; `npm run validate` passed 24 Vitest files / 308 tests, 26 private-tool contracts, TypeScript, Vite build, and dist boundary; browser smoke passed 16 checks with zero errors and released port 5184; dependency audit found 0 vulnerabilities; GitHub CI `29916863641`, Pages `29916863717`, live Pages and Vercel root/hashed-JS probes, annotated tag, Release, GitHub asset digest, checksum, exclusions, and fresh download all passed
+- Tests not run: manual screen-reader, 200% zoom, forced-colors, and contrast review remain human checks; no new public card image was admitted because no candidate met the bilingual source/hash/rights/build closure; immutable-release attestation is unavailable for this tag
+- Potential overlap: green; prior research and implementation records are committed and archived, one worktree exists, and reviewers were read-only
+- Recommended integration order: complete; keep tag and Release fixed on `caa2d5e6e57cf818128b1e6c56d912455cee4bde`, and allow only this records-only closeout to advance `main`
+- Delivery package: `docs/archive/kards-v1.4.0-release/task.md`
+- Release: `https://github.com/raederhans/KARDS-DIY-GENERATOR/releases/tag/v1.4.0`; code-only ZIP SHA-256 `801d6f9e1a0f86f19f390dc4b9cd0c31a21fe325ada132e8e903f16bda972784`
+- Next action: none; preserve the candidate tag and archived evidence
 
 ## KARDS v1.3.0 release
 

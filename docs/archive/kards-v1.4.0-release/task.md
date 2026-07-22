@@ -2,7 +2,7 @@
 
 ## Current status
 
-In progress. Independent review, repairs, and documentation synchronization are complete; release-grade local validation is running.
+Complete. v1.4.0 is published from the reviewed candidate, all local and remote gates passed, and this record is archived by a records-only closeout.
 
 ## Checklist
 
@@ -12,11 +12,11 @@ In progress. Independent review, repairs, and documentation synchronization are 
 - [x] Repair every confirmed release blocker with focused regression coverage.
 - [x] Update English and Chinese README files plus in-app Help.
 - [x] Bump package and lockfile metadata to `1.4.0` and write bilingual Release notes.
-- [ ] Run focused tests, browser smoke, full validation, dependency audit, Pages build, and archive checks.
-- [ ] Create and inspect the Lore candidate commit, then push `main`.
-- [ ] Verify GitHub CI and Pages against the exact candidate SHA.
-- [ ] Create annotated tag `v1.4.0`, publish the GitHub Release, and verify fresh downloads.
-- [ ] Reconcile roadmap/registry truth and archive this task record.
+- [x] Run focused tests, browser smoke, full validation, dependency audit, Pages build, and archive checks.
+- [x] Create and inspect the Lore candidate commit, then push `main`.
+- [x] Verify GitHub CI and Pages against the exact candidate SHA.
+- [x] Create annotated tag `v1.4.0`, publish the GitHub Release, and verify fresh downloads.
+- [x] Reconcile roadmap/registry truth and archive this task record.
 
 ## Validation evidence
 
@@ -39,8 +39,16 @@ In progress. Independent review, repairs, and documentation synchronization are 
 | `npm audit --audit-level=moderate` | Passed: 0 vulnerabilities |
 | Pages-mode build | Passed: `/KARDS-DIY-GENERATOR/` favicon, JavaScript, and CSS paths verified |
 | Standard build restoration | Passed: root-relative production paths restored and dist boundary rechecked |
+| Candidate commit and remote main | `caa2d5e6e57cf818128b1e6c56d912455cee4bde`; push verified |
+| GitHub Actions | CI `29916863641` and Pages `29916863717` completed successfully on the exact candidate SHA |
+| Live Pages | Root and hashed JavaScript returned HTTP 200; JavaScript contained Undo and Clear reading preset markers |
+| Live Vercel | Root and hashed JavaScript returned HTTP 200; JavaScript contained Undo and Clear reading preset markers |
+| Annotated tag and Release | `v1.4.0` dereferences to the candidate; Release published at `https://github.com/raederhans/KARDS-DIY-GENERATOR/releases/tag/v1.4.0` |
+| Code-only archive | 91 files; all required files present; 0 forbidden paths; 0 sensitive matches |
+| Fresh Release download | ZIP checksum and GitHub asset digest both equal `801d6f9e1a0f86f19f390dc4b9cd0c31a21fe325ada132e8e903f16bda972784`; re-expanded boundary checks passed |
+| Immutable-release verification | No GitHub attestation exists for this tag; repository settings were not changed |
 
 ## Open risks and remaining work
 
-- Code-only archive inspection and remote publication checks remain.
-- Commit, tag, and publication are not yet complete.
+- No release-blocking work remains.
+- Manual screen-reader, 200% zoom, forced-colors, and contrast review remain future human checks and are not claimed by this release.
