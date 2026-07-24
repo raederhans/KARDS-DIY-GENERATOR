@@ -23,15 +23,16 @@ Release and deploy that same candidate to Vercel Production.
   package version, Vercel project binding, and release-process truth.
 - [x] Stage 2: synchronize v1.5.0 metadata, roadmap, bilingual notes, and
   durable release records.
-- [ ] Stage 3: run full validation, dependency audit, Pages build, standard
+- [x] Stage 3: run full validation, dependency audit, Pages build, standard
   build restoration, and code-only archive checks.
-- [ ] Stage 4: create and push one Lore candidate commit, then verify GitHub CI
+- [x] Stage 4: create and push one Lore candidate commit, then verify GitHub CI
   and Pages against its exact SHA.
-- [ ] Stage 5: create annotated tag `v1.5.0`, publish the GitHub Release, and
+- [x] Stage 5: create annotated tag `v1.5.0`, publish the GitHub Release, and
   verify freshly downloaded assets.
-- [ ] Stage 6: deploy the exact candidate to Vercel Production and verify the
-  public root and hashed JavaScript.
-- [ ] Stage 7: reconcile registry truth and archive this release record in a
+- [x] Stage 6: deploy the exact candidate to Vercel Production, confirm Ready
+  status and a public-root HTTP 200, and record the later local-network asset
+  probe gap without treating it as a deployment failure.
+- [x] Stage 7: reconcile registry truth and archive this release record in a
   records-only closeout.
 
 ## Acceptance criteria

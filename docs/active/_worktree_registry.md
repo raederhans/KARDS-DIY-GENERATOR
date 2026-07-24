@@ -5,20 +5,20 @@
 - Worktree name/path: sole main checkout, repository root
 - Thread/task: publish the adaptive title/body fitting and export-safety increment as GitHub Release `v1.5.0`, then deploy the same candidate to Vercel Production
 - Base branch/base commit: `main`, `caa2d5e6e57cf818128b1e6c56d912455cee4bde` (`v1.4.0`)
-- Current branch/HEAD: pre-release `main`; immutable candidate SHA is not frozen yet
+- Current branch/HEAD: `main`; immutable candidate and annotated tag `v1.5.0` are `85e455b014a6e9756f8c743bb0d37fdaa857b137`, followed only by this records-only closeout
 - Task goal: ship renderer-owned text fitting, localized accessible status, and export freshness checks without changing serialized manual appearance or release-resource boundaries
-- Status: in progress
+- Status: integrated and published
 - Main changed files: title/body Canvas rendering, text-fit reports, editor and export diagnostics, focused tests, Help/roadmap, version metadata, and release records
 - Shared hotspots: `dist/`, Vite/npm caches, package version, code-only archive exclusions, GitHub tag/Release, workflow-driven Pages, and Vercel Production
 - Live-process owner: primary agent exclusively owns validation, Pages/standard builds, workflow polling, archive inspection, and the Vercel production deployment
-- Validation: pre-candidate `npm run validate` passed 24 Vitest files / 316 tests, 26 private-tool contracts, TypeScript, production build, and dist boundary; dependency audit found 0 vulnerabilities; Pages and standard path builds passed; exact candidate archive and remote gates remain pending
+- Validation: `npm run validate` passed 24 Vitest files / 316 tests, 26 private-tool contracts, TypeScript, production build, and dist boundary; dependency audit found 0 vulnerabilities; Pages and standard path builds passed; CI `30072029362` and Pages `30072029376` succeeded; live Pages root/JS and text-fit markers passed; Release asset checksum/digest and exclusions passed; Vercel deployment is Ready and stable root returned 200, while a later hashed-JS reread was blocked by the local network route
 - Tests not run: manual screen-reader, 200% zoom, forced-colors, cross-OS font-metric identity, and manual-offset safe-region geometry remain explicit non-claims
 - Potential overlap: green; one worktree exists and no parallel release process is active
-- Recommended integration order: version and records → validation/audit/builds → Lore candidate → push/CI/Pages → tag/Release/assets → exact-candidate Vercel deploy → records-only closeout
-- Delivery package: `docs/active/kards-v1.5.0-release/`
-- Release: pending
-- Vercel: pending
-- Next action: validate and freeze the exact v1.5.0 candidate
+- Recommended integration order: complete; preserve candidate tag/Release and Vercel deployment, and allow only this records-only closeout to advance `main`
+- Delivery package: `docs/archive/kards-v1.5.0-release/`
+- Release: `https://github.com/raederhans/KARDS-DIY-GENERATOR/releases/tag/v1.5.0`; code-only ZIP SHA-256 `e07b5f4a2ee430e68c14bc496705b342333f2df0acf24c988f88119fb67f7963`
+- Vercel: production deployment `dpl_CXFDPNQ6H2WCxYYXyw8TNhwwciSL` is Ready at `https://kards-card-forge.vercel.app/`
+- Next action: none; optionally repeat the Vercel hashed-JS probe from a network route that can reach `*.vercel.app:443`
 
 ## KARDS v1.4.0 release
 
