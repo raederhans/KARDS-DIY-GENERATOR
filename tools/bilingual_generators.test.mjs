@@ -5,6 +5,7 @@ import {
   shouldReuseExistingReference,
 } from "./generate_bilingual_sample_assets.mjs";
 import { assertMatchingRenderedReference } from "./generate_bilingual_hq_references.mjs";
+import * as HqGeneratorModule from "./generate_bilingual_hq_references.mjs";
 
 describe("bilingual sample generator contracts", () => {
   it("fails closed instead of using English when Chinese copy is missing", () => {
@@ -46,6 +47,17 @@ describe("bilingual sample generator contracts", () => {
 });
 
 describe("bilingual HQ generator contracts", () => {
+  it("owns a strict-port Vite server from the current repository", () => {
+    const createOwnedHqServerCommand = HqGeneratorModule.createOwnedHqServerCommand;
+
+    expect(createOwnedHqServerCommand).toBeTypeOf("function");
+    if (typeof createOwnedHqServerCommand !== "function") return;
+    expect(createOwnedHqServerCommand("C:/repo", 5186)).toMatchObject({
+      cwd: "C:/repo",
+      args: expect.arrayContaining(["--host", "127.0.0.1", "--port", "5186", "--strictPort"]),
+    });
+  });
+
   it("rejects a valid PNG whose bytes drift from the current renderer", () => {
     const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
     const committed = Buffer.concat([signature, Buffer.from("old")]);

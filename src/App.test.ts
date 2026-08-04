@@ -11,6 +11,7 @@ import {
   isLatestRequest,
   resolveEditorHistoryNavigation,
 } from "./App";
+import * as AppModule from "./App";
 
 describe("EditorHistoryControls", () => {
   it("exposes visible, disabled-aware undo and redo buttons with keyboard hints", () => {
@@ -66,6 +67,29 @@ describe("App async and history coordination", () => {
     expect(isLatestRequest(explicitWork, templateGeneration)).toBe(false);
     expect(isLatestRequest(explicitWork, referenceGeneration)).toBe(false);
     expect(isLatestRequest(explicitWork, uploadGeneration)).toBe(true);
+  });
+
+  it("invalidates a pending upload when a full-card replacement is requested", () => {
+    const explicitWork = { current: 0 };
+    const cardEditVersion = { current: 0 };
+    const autoArtworkRequest = { current: 0 };
+    const sampleLoadRequest = { current: 0 };
+    const uploadGeneration = beginLatestRequest(explicitWork);
+    const invalidateCardReplacementWork = (
+      AppModule as unknown as Record<string, unknown>
+    ).invalidateCardReplacementWork;
+
+    expect(invalidateCardReplacementWork).toBeTypeOf("function");
+    if (typeof invalidateCardReplacementWork !== "function") return;
+    invalidateCardReplacementWork(
+      explicitWork,
+      cardEditVersion,
+      autoArtworkRequest,
+      sampleLoadRequest,
+    );
+
+    expect(isLatestRequest(explicitWork, uploadGeneration)).toBe(false);
+    expect([cardEditVersion.current, autoArtworkRequest.current, sampleLoadRequest.current]).toEqual([1, 1, 1]);
   });
 
   it("detaches a loaded library entry after successful undo and redo", () => {

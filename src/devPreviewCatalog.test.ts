@@ -74,6 +74,28 @@ describe("dev preview sample catalog", () => {
     });
   });
 
+  it("rejects a configured localization resource that is malformed or declares the wrong language", async () => {
+    const sample = {
+      ...getDevPreviewSampleById("t70")!,
+      card: DEFAULT_CARD,
+      cardLocalizationUrls: { zh: "/broken-zh.card.json" },
+    };
+
+    await expect(resolveDevPreviewSampleCard(
+      sample,
+      async () => ({ title: "损坏", keywordLanguage: "zh" }),
+      undefined,
+      "zh",
+    )).rejects.toThrow(/localization/i);
+
+    await expect(resolveDevPreviewSampleCard(
+      sample,
+      async () => ({ title: "损坏", body: "损坏", keywordLanguage: "en" }),
+      undefined,
+      "zh",
+    )).rejects.toThrow(/localization/i);
+  });
+
   it("provides complete English and Chinese content and reference images for every sample", () => {
     for (const sample of DEV_PREVIEW_REFERENCE_SAMPLES) {
       const english = JSON.parse(readFileSync(

@@ -118,6 +118,10 @@ export function invalidateLatestRequest(identity: LatestRequestIdentity): void {
   identity.current += 1;
 }
 
+export function invalidateCardReplacementWork(...identities: LatestRequestIdentity[]): void {
+  identities.forEach(invalidateLatestRequest);
+}
+
 export function isLatestRequest(identity: LatestRequestIdentity, requestId: number): boolean {
   return identity.current === requestId;
 }
@@ -588,9 +592,12 @@ function App() {
   }
 
   function handleCardReset() {
-    cardEditVersionRef.current += 1;
-    autoArtworkRequestRef.current += 1;
-    sampleLoadRequestRef.current += 1;
+    invalidateCardReplacementWork(
+      explicitArtworkWorkGenerationRef.current,
+      cardEditVersionRef,
+      autoArtworkRequestRef,
+      sampleLoadRequestRef,
+    );
     artworkApplyRequestRef.current += 1;
     pendingTemplateSampleIdRef.current = null;
     setIsTemplateLoading(false);
@@ -602,9 +609,12 @@ function App() {
   }
 
   function handleCardImport(importedCard: CardSpec) {
-    cardEditVersionRef.current += 1;
-    autoArtworkRequestRef.current += 1;
-    sampleLoadRequestRef.current += 1;
+    invalidateCardReplacementWork(
+      explicitArtworkWorkGenerationRef.current,
+      cardEditVersionRef,
+      autoArtworkRequestRef,
+      sampleLoadRequestRef,
+    );
     artworkApplyRequestRef.current += 1;
     pendingTemplateSampleIdRef.current = null;
     setIsTemplateLoading(false);
@@ -817,9 +827,12 @@ function App() {
   }
 
   function handleLibraryEntryLoad(entry: CardLibraryEntry) {
-    cardEditVersionRef.current += 1;
-    autoArtworkRequestRef.current += 1;
-    sampleLoadRequestRef.current += 1;
+    invalidateCardReplacementWork(
+      explicitArtworkWorkGenerationRef.current,
+      cardEditVersionRef,
+      autoArtworkRequestRef,
+      sampleLoadRequestRef,
+    );
     artworkApplyRequestRef.current += 1;
     pendingTemplateSampleIdRef.current = null;
     setIsTemplateLoading(false);
@@ -918,9 +931,12 @@ function App() {
   }
 
   const invalidatePendingCardWork = useCallback(() => {
-    cardEditVersionRef.current += 1;
-    autoArtworkRequestRef.current += 1;
-    sampleLoadRequestRef.current += 1;
+    invalidateCardReplacementWork(
+      explicitArtworkWorkGenerationRef.current,
+      cardEditVersionRef,
+      autoArtworkRequestRef,
+      sampleLoadRequestRef,
+    );
     artworkApplyRequestRef.current += 1;
     pendingTemplateSampleIdRef.current = null;
     setIsTemplateLoading(false);

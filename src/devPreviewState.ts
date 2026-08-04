@@ -83,9 +83,10 @@ export async function resolveDevPreviewSampleCard(
   language: Language = "en",
 ): Promise<CardSpec> {
   const loadedCard = normalizeCardSpec("card" in sample ? sample.card : await readCardUrl(sample.cardUrl));
+  const localizationUrl = sample.cardLocalizationUrls?.[language];
   const localization = sample.cardLocalizations?.[language]
-    ?? (sample.cardLocalizationUrls?.[language]
-      ? parseCardLocalization(await readCardUrl(sample.cardLocalizationUrls[language]))
+    ?? (localizationUrl
+      ? parseCardLocalization(await readCardUrl(localizationUrl), language)
       : undefined);
   const card = normalizeCardSpec({
     ...loadedCard,
@@ -118,24 +119,24 @@ export async function resolveDevPreviewTemplateSelection(
   };
 }
 
-function parseCardLocalization(value: unknown): DevPreviewCardLocalization | undefined {
+function parseCardLocalization(value: unknown, language: Language): DevPreviewCardLocalization {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return undefined;
+    throw new Error(`Invalid ${language} card localization resource.`);
   }
 
   const localization = value as Record<string, unknown>;
   if (
     typeof localization.title !== "string"
     || typeof localization.body !== "string"
-    || (localization.keywordLanguage !== "en" && localization.keywordLanguage !== "zh")
+    || localization.keywordLanguage !== language
   ) {
-    return undefined;
+    throw new Error(`Invalid ${language} card localization resource.`);
   }
 
   return {
     title: localization.title,
     body: localization.body,
-    keywordLanguage: localization.keywordLanguage,
+    keywordLanguage: language,
   };
 }
 

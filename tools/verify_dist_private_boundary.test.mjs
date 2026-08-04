@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadConfigFromFile } from "vite";
 import { assertExactFileNames, findMarker } from "./verify_dist_private_boundary.mjs";
+import * as DistBoundaryModule from "./verify_dist_private_boundary.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BRAND_MARK_PATH = path.join(REPO_ROOT, "public", "brand", "card-forge-mark.png");
@@ -69,6 +70,30 @@ describe("dist private boundary contracts", () => {
       ["declared.png"],
       "manifest images",
     )).toThrow(/reference catalog/i);
+  });
+
+  it("rejects a Chinese reference whose bytes drift from the trusted hash manifest", async () => {
+    const tempRoot = fs.mkdtempSync(path.join(process.env.TEMP ?? process.cwd(), "kards-reference-hash-"));
+    const referenceDirectory = path.join(tempRoot, "references");
+    const manifestPath = path.join(tempRoot, "hashes.json");
+    fs.mkdirSync(referenceDirectory, { recursive: true });
+    fs.writeFileSync(path.join(referenceDirectory, "sample-a.avif"), Buffer.from("drifted"));
+    fs.writeFileSync(manifestPath, JSON.stringify({
+      version: 1,
+      references: {
+        "sample-a": { source: "sample-a.avif", sha256: createHash("sha256").update("trusted").digest("hex") },
+      },
+    }));
+    const verifyReferenceFileHashes = DistBoundaryModule.verifyReferenceFileHashes;
+
+    try {
+      expect(verifyReferenceFileHashes).toBeTypeOf("function");
+      if (typeof verifyReferenceFileHashes !== "function") return;
+      await expect(verifyReferenceFileHashes(referenceDirectory, manifestPath, ["sample-a"]))
+        .rejects.toThrow(/hash/i);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it("keeps the header brand mark sized for its rendered slot", () => {

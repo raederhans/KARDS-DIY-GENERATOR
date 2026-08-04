@@ -1,10 +1,12 @@
 import { readFile, readdir, stat } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const DIST_DIR = path.resolve("dist");
 const REFERENCE_PACK_DIR = path.join(DIST_DIR, "reference-pack", "v1");
 const CATALOG_SOURCE = path.resolve("src", "devPreviewCatalog.ts");
+const REFERENCE_HASH_MANIFEST = path.resolve("tools", "bilingual_sample_reference_hashes.json");
 const FORBIDDEN_MARKERS = [
   ".runtime",
   "kards-private-assets",
@@ -178,6 +180,11 @@ async function verifyPublicReferencePack() {
     sampleIds.map((id) => `${id}.avif`),
     "Chinese card references",
   );
+  await verifyReferenceFileHashes(
+    path.join(REFERENCE_PACK_DIR, "references", "cards", "zh"),
+    REFERENCE_HASH_MANIFEST,
+    sampleIds,
+  );
   await assertDirectoryShape(
     path.join(REFERENCE_PACK_DIR, "references", "hq"),
     hqFiles,
@@ -279,6 +286,36 @@ async function listRelativeFiles(directory, root = directory) {
 async function hasPngSignature(filePath) {
   const content = await readFile(filePath);
   return content.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+}
+
+export async function verifyReferenceFileHashes(referenceDirectory, manifestPath, expectedIds) {
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const references = manifest?.references;
+  const actualIds = references && typeof references === "object" && !Array.isArray(references)
+    ? Object.keys(references).sort()
+    : [];
+  const expected = [...expectedIds].sort();
+  if (manifest?.version !== 1 || JSON.stringify(actualIds) !== JSON.stringify(expected)) {
+    throw new Error("Chinese reference hash manifest does not match the reference catalog.");
+  }
+
+  for (const id of expected) {
+    const entry = references[id];
+    if (
+      !entry
+      || typeof entry.source !== "string"
+      || !entry.source
+      || typeof entry.sha256 !== "string"
+      || !/^[a-f0-9]{64}$/.test(entry.sha256)
+    ) {
+      throw new Error(`Invalid Chinese reference hash manifest entry: ${id}`);
+    }
+    const bytes = await readFile(path.join(referenceDirectory, `${id}.avif`));
+    const actualHash = createHash("sha256").update(bytes).digest("hex");
+    if (actualHash !== entry.sha256) {
+      throw new Error(`Chinese reference hash mismatch: ${id}`);
+    }
+  }
 }
 
 async function hasAvifSignature(filePath) {

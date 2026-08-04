@@ -16,6 +16,7 @@ import {
   replaceEditorHistoryPresent,
   undoEditorHistory,
 } from "./editorHistory";
+import * as EditorHistoryModule from "./editorHistory";
 
 describe("editor history", () => {
   it("undoes and redoes a complete authored editor state", () => {
@@ -235,6 +236,42 @@ describe("editor history", () => {
 
     expect(history.past).toHaveLength(EDITOR_HISTORY_LIMIT);
     expect(history.past[0].card.title).toBe("Title 2");
+  });
+
+  it("keeps the nearest undo states within a cumulative unique-artwork budget", () => {
+    const initial = createCardEditorState(DEFAULT_CARD, true);
+    const withArtwork = (title: string, dataUrl: string) => applyUserCardUpdate(initial, (card) => ({
+      ...card,
+      title,
+      artwork: { source: "upload", dataUrl, crop: { x: 0, y: 0, scale: 1 } },
+    }));
+    const history = {
+      past: [
+        withArtwork("oldest", "data:image/png;base64,AAAA").card,
+        withArtwork("nearest", "data:image/png;base64,BBBB").card,
+      ].map((card) => ({
+        card,
+        hasUserEdits: true,
+        clearedNumericFields: [],
+        artworkOrigin: { kind: "user" as const },
+      })),
+      present: withArtwork("present", "data:image/png;base64,CCCC"),
+      future: [],
+      lastMerge: null,
+    };
+    const trimEditorHistoryArtwork = (
+      EditorHistoryModule as unknown as Record<string, unknown>
+    ).trimEditorHistoryArtwork;
+
+    expect(trimEditorHistoryArtwork).toBeTypeOf("function");
+    if (typeof trimEditorHistoryArtwork !== "function") return;
+    const trimmed = trimEditorHistoryArtwork(
+      history,
+      "data:image/png;base64,BBBB".length + "data:image/png;base64,CCCC".length,
+    ) as typeof history;
+
+    expect(trimmed.past.map((snapshot) => snapshot.card.title)).toEqual(["nearest"]);
+    expect(trimmed.present.card.title).toBe("present");
   });
 });
 
