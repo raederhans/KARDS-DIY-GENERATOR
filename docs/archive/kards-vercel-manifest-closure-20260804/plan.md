@@ -24,8 +24,8 @@ Restore automatic Vercel production deployment for the latest `main` without wea
 - [x] Stage 2: Add a failing deploy-closure regression test.
 - [x] Stage 3: Apply the smallest ignore-rule and registry repair.
 - [x] Stage 4: Run focused and full validation plus review.
-- [ ] Stage 5: Commit, push, monitor CI/Pages/Vercel, and verify live sites.
-- [ ] Stage 6: Reconcile registry truth and archive records.
+- [x] Stage 5: Commit, push, monitor CI/Pages/Vercel, and verify live sites.
+- [x] Stage 6: Reconcile registry truth and archive records.
 
 ## Acceptance criteria
 

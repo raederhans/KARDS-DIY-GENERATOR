@@ -17,15 +17,18 @@
 | 2026-08-04 | Preserve all other tool exclusions and allowlist only the hash manifest. | Minimal repair maintains the small-upload/private-tool boundary. |
 | 2026-08-04 | Regression failed with manifest allowlist index `-1`, then passed after one exact `.vercelignore` negation rule. | TDD proves the new contract detects the production failure mechanism. |
 | 2026-08-04 | Full validation, dependency audit, diff check, and first-principles review passed. | Candidate is ready for a narrow Lore commit and external deployment proof. |
+| 2026-08-04 | GitHub CI `30877836228` and Pages `30877836220` succeeded for `d90e2b7`. | GitHub host and verification gates accept the repaired candidate. |
+| 2026-08-04 | Vercel Production `dpl_9DecfBLubjZmRWzfkf9mR55tzj55` cloned `d90e2b7`, passed the dist verifier, reached READY, and received the stable alias. | The production failure is closed without bypassing the trust gate. |
+| 2026-08-04 | Fresh Pages/Vercel HTTP, manifest, JS, and browser probes passed with zero console errors/warnings. | Both public sites are operational; current Pages URL truth is recorded. |
 
 ## Live process ownership
 
 | Process | Owner | Log path | State |
 | --- | --- | --- | --- |
 | Focused/full local validation | primary agent | captured command output | completed successfully |
-| GitHub CI/Pages workflow monitoring | primary agent | GitHub run URLs recorded in task evidence | pending |
-| Vercel Production deployment monitoring | primary agent | Vercel deployment URL and build logs recorded in task evidence | pending |
-| Public Pages/Vercel Playwright smoke | primary agent | captured CLI output; temporary snapshots removed | pending |
+| GitHub CI/Pages workflow monitoring | primary agent | GitHub run URLs recorded in task evidence | functional repair complete; closeout run pending |
+| Vercel Production deployment monitoring | primary agent | Vercel deployment URL and build logs recorded in task evidence | functional repair complete; closeout deploy pending |
+| Public Pages/Vercel Playwright smoke | primary agent | captured CLI output; temporary snapshots removed | completed successfully |
 
 ## Handoff
 
@@ -34,4 +37,4 @@
 
 ## Next step
 
-Create and push the narrow fix commit, then monitor GitHub and Vercel to terminal states.
+Commit and push this records-only archive, monitor the final automatic deployments, then verify local/remote identity and a clean worktree.

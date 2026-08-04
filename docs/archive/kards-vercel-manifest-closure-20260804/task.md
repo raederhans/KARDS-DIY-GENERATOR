@@ -2,7 +2,7 @@
 
 ## Current status
 
-The exact deploy-input allowlist repair passes all local gates and is ready to commit and publish.
+The functional repair is pushed, all three deployment lanes succeeded, and both public sites pass live probes. This records-only archive closes the task.
 
 ## Checklist
 
@@ -13,10 +13,10 @@ The exact deploy-input allowlist repair passes all local gates and is ready to c
 - [x] Repair deploy closure; current registry URL truth will be recorded after live deployment verification.
 - [x] Run focused tests and `npm run validate`.
 - [x] Perform post-fix review and first-principles check.
-- [ ] Create Lore commit and push.
-- [ ] Monitor GitHub CI/Pages and Vercel Production to terminal success.
-- [ ] Verify stable alias, live assets, browser runtime, remote identity, and clean worktree.
-- [ ] Archive task records and push records-only closeout.
+- [x] Create Lore commit and push.
+- [x] Monitor GitHub CI/Pages and Vercel Production to terminal success.
+- [x] Verify stable alias, live assets, and browser runtime.
+- [x] Archive task records and prepare the records-only closeout; final remote identity follows its push.
 
 ## Validation evidence
 
@@ -33,8 +33,11 @@ The exact deploy-input allowlist repair passes all local gates and is ready to c
 | `npm run validate` | Passed: 24 Vitest files / 322 tests, 26 private-tool tests, TypeScript, 65-module Vite build, and dist verifier. |
 | `npm audit --audit-level=moderate` | Passed: 0 vulnerabilities. |
 | `git diff --check` | Passed; only expected line-ending notices. |
+| GitHub CI | Run `30877836228` succeeded for `d90e2b7`. |
+| GitHub Pages | Run `30877836220` succeeded; current URL root, JS, manifest, favicon, and 105-image closure returned 200. |
+| Vercel Production | `dpl_9DecfBLubjZmRWzfkf9mR55tzj55` is READY for `d90e2b7`; stable alias points to it. |
+| Final browser smoke | Pages and Vercel stable show the editor; Canvas is 500x702 and nonempty; console has 0 errors/warnings. |
 
 ## Open risks and remaining work
 
-- Vercel stable alias serves an older Ready deployment until a repaired candidate reaches Production.
-- Current active registry still contains historical `/KARDS/` deployment evidence; add an explicit current-status row instead of rewriting history.
+- No blocking risk remains. Historical `/KARDS/` entries remain as evidence; the new top registry row records the current `/KARDS-DIY-GENERATOR/` URL.

@@ -1,5 +1,24 @@
 # Worktree Registry
 
+## 2026-08-04 Vercel verifier-input closure
+
+- Worktree name/path: sole `main` checkout, repository root
+- Thread/task: restore Git-connected Vercel Production after the trusted reference-hash verifier input was excluded from the deployment upload
+- Base branch/base commit: `main`, `0a072d9771ae9a30fc5ff2fc7cc052006bfb7ced`
+- Current branch/HEAD: functional deployment repair `d90e2b79fcd3112aff69c01fdf930d7d8b6691a2` is pushed, followed only by this records-only closeout
+- Task goal: keep the strict dist verifier active on every host while retaining narrow Vercel upload exclusions
+- Status: integrated, deployed, and live-verified
+- Main changed files: `.vercelignore`, the existing dist-boundary regression suite, and task records
+- Shared hotspots: Vercel Git integration, `.vercelignore`, default verified build, GitHub Pages workflow, production aliases, and public live probes
+- Validation: regression RED reproduced the missing allowlist and GREEN passed 9/9; `npm run validate` passed 24 Vitest files / 322 tests, 26 private-tool tests, TypeScript, a 65-module build, and dist verification; dependency audit found 0 vulnerabilities; GitHub CI `30877836228` and Pages `30877836220` succeeded; Vercel Production `dpl_9DecfBLubjZmRWzfkf9mR55tzj55` cloned `d90e2b7`, passed the verified build, reached READY, and owns the stable alias; Pages and Vercel stable root/JS/manifest probes returned 200 and browser smoke found a nonempty 500x702 Canvas with zero console errors/warnings
+- Tests not run: no exhaustive cross-browser or manual accessibility sweep; the change does not alter runtime UI code
+- Potential overlap: green; one worktree exists, no parallel writer remains, and all browser sessions are closed
+- Recommended integration order: complete; preserve `d90e2b7` as the functional repair and allow only this records-only closeout to follow it
+- GitHub Pages: `https://raederhans.github.io/KARDS-DIY-GENERATOR/`
+- Vercel: `https://kards-card-forge.vercel.app/`
+- Delivery package: `docs/archive/kards-vercel-manifest-closure-20260804/`
+- Next action: none after this records-only closeout reaches successful CI, Pages, and Vercel terminal states
+
 ## 2026-08-04 adjacent functional-window audit
 
 - Worktree name/path: sole `main` checkout, repository root
