@@ -6,6 +6,7 @@ coverage
 docs
 tools/*
 !tools/verify_dist_private_boundary.mjs
+!tools/bilingual_sample_reference_hashes.json
 *.tsbuildinfo
 *.local
 .env*

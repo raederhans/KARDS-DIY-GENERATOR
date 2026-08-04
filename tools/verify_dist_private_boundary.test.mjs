@@ -12,6 +12,7 @@ const BRAND_MARK_PATH = path.join(REPO_ROOT, "public", "brand", "card-forge-mark
 const THIRD_PARTY_NOTICES_PATH = path.join(REPO_ROOT, "public", "THIRD-PARTY-NOTICES.txt");
 const RESOURCE_RIGHTS_PATH = path.join(REPO_ROOT, "RESOURCE-RIGHTS.md");
 const SPEED_INSIGHTS_LICENSE_PATH = path.join(REPO_ROOT, "node_modules", "@vercel", "speed-insights", "LICENSE");
+const VERCEL_IGNORE_PATH = path.join(REPO_ROOT, ".vercelignore");
 const REFERENCE_PACK_ROOT = path.join(REPO_ROOT, "public", "reference-pack", "v1");
 const REFERENCE_PACK_MANIFEST_PATH = path.join(REFERENCE_PACK_ROOT, "kards-asset-pack.json");
 const REFERENCE_PACK_RIGHTS_PATH = path.join(REFERENCE_PACK_ROOT, "RIGHTS-NOTICE.txt");
@@ -38,6 +39,18 @@ function normalizeLineEndings(text) {
 }
 
 describe("dist private boundary contracts", () => {
+  it("keeps every dist-verifier input in the Vercel build upload", () => {
+    const rules = normalizeLineEndings(fs.readFileSync(VERCEL_IGNORE_PATH, "utf8"))
+      .split("\n")
+      .map((rule) => rule.trim())
+      .filter(Boolean);
+    const toolsExclusionIndex = rules.indexOf("tools/*");
+
+    expect(toolsExclusionIndex).toBeGreaterThanOrEqual(0);
+    expect(rules.indexOf("!tools/verify_dist_private_boundary.mjs")).toBeGreaterThan(toolsExclusionIndex);
+    expect(rules.indexOf("!tools/bilingual_sample_reference_hashes.json")).toBeGreaterThan(toolsExclusionIndex);
+  });
+
   it("builds GitHub Pages assets under the current repository path", async () => {
     const previousPagesFlag = process.env.KARDS_GITHUB_PAGES;
     const previousRepository = process.env.GITHUB_REPOSITORY;
