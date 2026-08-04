@@ -23,7 +23,7 @@ Review the latest adjacent functional delivery window, repair only evidence-back
 - [x] Stage 2: Independent code-quality/security and architecture review.
 - [x] Stage 3: Reproduce and minimally repair confirmed findings.
 - [x] Stage 4: Run targeted and full validation plus final review.
-- [ ] Stage 5: Commit, push, reconcile registry, and archive this task record.
+- [x] Stage 5: Commit, push, reconcile registry, and archive this task record.
 
 ## Acceptance criteria
 

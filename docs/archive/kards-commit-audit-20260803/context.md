@@ -18,6 +18,7 @@
 | 2026-08-04 | Independent reviewers reproduced four correctness/trust gaps and one memory-pressure defect. | Added fail-closed localization parsing, replacement-work invalidation, cumulative artwork-history budgeting, reference hash verification, and checkout-owned HQ generation. |
 | 2026-08-04 | Full validation and the HQ renderer check pass on the final candidate. | Candidate is ready for post-fix independent review and Lore commit. |
 | 2026-08-04 | Post-fix reviews returned code `APPROVE` and architecture `CLEAR`. | No blocking finding remains; manual CardSpec equality is retained as a future-only watch item. |
+| 2026-08-04 | Fix commit `bec31a4483cf5160c621deb3bf6fa332ca067de5` was pushed to `origin/main`. | Registry reconciliation and this records-only archive are the sole follow-up. |
 
 ## Live process ownership
 
@@ -33,4 +34,4 @@
 
 ## Next step
 
-Create the Lore fix commit, push it, then reconcile and archive the task record in a records-only closeout commit.
+None after the records-only closeout is pushed and local/remote identity is rechecked.

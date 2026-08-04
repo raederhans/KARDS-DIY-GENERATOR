@@ -1,5 +1,22 @@
 # Worktree Registry
 
+## 2026-08-04 adjacent functional-window audit
+
+- Worktree name/path: sole `main` checkout, repository root
+- Thread/task: review the latest adjacent non-records functional window, repair confirmed defects, validate, and push
+- Base branch/base commit: `main`, `02e850c3eed3d37345d176b632ca47554ce8ff91`
+- Current branch/HEAD: `main`; fix commit `bec31a4483cf5160c621deb3bf6fa332ca067de5` is pushed, followed only by this records-only closeout
+- Task goal: close correctness, memory, dependency, and reference-trust gaps without changing the v1.5 product boundary
+- Status: integrated and verified
+- Main changed files: App async coordination, localization loading, editor history, bilingual generators, dist reference verification, focused tests, and transitive lockfile entries
+- Shared hotspots: editor state/history, browser-owned Vite ports, public reference-pack closure, `dist/`, and dependency lockfile
+- Validation: post-fix code review `APPROVE` and architecture review `CLEAR`; `npm run validate` passed 24 Vitest files / 321 tests, 26 private-tool tests, TypeScript, a 65-module production build, and dist boundary verification; the current-renderer HQ check matched 5 images and released port 5186; dependency audit found 0 vulnerabilities
+- Tests not run: manual screen-reader, zoom, forced-colors, and exhaustive visual comparison remain outside this defect-focused audit
+- Potential overlap: green; only one worktree exists, no parallel writer or live process remains, and reviewers were read-only
+- Recommended integration order: complete; preserve `bec31a4` and allow only this records-only closeout to follow it
+- Delivery package: `docs/archive/kards-commit-audit-20260803/`
+- Next action: none after this records-only closeout is pushed
+
 ## KARDS v1.5.0 release
 
 - Worktree name/path: sole main checkout, repository root

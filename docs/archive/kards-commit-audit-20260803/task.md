@@ -2,7 +2,7 @@
 
 ## Current status
 
-Five evidence-backed defects are repaired, the final candidate passes the full validation gate, and post-fix reviews returned `APPROVE` / `CLEAR`. Git closeout remains.
+Five evidence-backed defects are repaired, the final candidate passes the full validation gate, post-fix reviews returned `APPROVE` / `CLEAR`, and fix commit `bec31a4` is pushed. This records-only archive closes the audit.
 
 ## Checklist
 
@@ -14,7 +14,7 @@ Five evidence-backed defects are repaired, the final candidate passes the full v
 - [x] Reproduce and fix confirmed issues.
 - [x] Run targeted tests and `npm run validate`.
 - [x] Perform final bug/review/first-principles check.
-- [ ] Create Lore commit, push, reconcile registry, and archive records.
+- [x] Create Lore commit, push, reconcile registry, and archive records.
 
 ## Validation evidence
 
@@ -33,5 +33,4 @@ Five evidence-backed defects are repaired, the final candidate passes the full v
 
 ## Open risks and remaining work
 
-- The CardSpec history equality helper remains manually enumerated; this is a future schema-drift watch item, not a reproduced current defect.
-- The fix commit, registry reconciliation, archive move, and push are not yet complete.
+- No current blocking risk remains. `areCardsEqual` is still a future schema-drift watch item.
