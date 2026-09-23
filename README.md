@@ -1,4 +1,4 @@
-# KARDS Card Forge
+# KARDS Card Forge - 卡兹牌DIY神器
 
 English | [简体中文](README.zh-CN.md)
 
