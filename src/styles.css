@@ -148,6 +148,31 @@ button:focus-visible,
   font-size: 12px;
 }
 
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+  text-decoration: none;
+  background: linear-gradient(180deg, #29271c, #171712);
+}
+
+.github-link:hover {
+  border-color: var(--accent);
+  color: #fff4d4;
+}
+
+.github-link:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
 .language-toggle {
   min-width: 58px;
   min-height: 32px;
@@ -1168,6 +1193,14 @@ input[type="range"] {
 
   .language-toggle {
     margin-left: auto;
+  }
+
+  .github-link {
+    padding: 0 9px;
+  }
+
+  .github-link span {
+    display: none;
   }
 
 

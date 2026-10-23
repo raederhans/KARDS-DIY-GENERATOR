@@ -13,6 +13,8 @@ export const UI_TEXT = {
     appSubtitle: "Design custom KARDS-style cards",
     languageToggle: "中文",
     languageToggleAria: "Switch language to Chinese",
+    githubLink: "Star on GitHub",
+    githubLinkAria: "Star KARDS Card Forge on GitHub",
     history: {
       undo: "Undo",
       redo: "Redo",
@@ -263,6 +265,8 @@ export const UI_TEXT = {
     appSubtitle: "制作自定义 KARDS 风格卡牌",
     languageToggle: "EN",
     languageToggleAria: "切换到英文界面",
+    githubLink: "在 GitHub 点 Star",
+    githubLinkAria: "在 GitHub 为 KARDS Card Forge 点 Star",
     history: {
       undo: "撤销",
       redo: "重做",
